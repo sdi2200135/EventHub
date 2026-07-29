@@ -2,11 +2,11 @@
 
 from django.db import models
 from .event import Event
-from .category import Categpory
+from .category import Category
 
 class EventCategory(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    category = models.ForeignKey(Categpory, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['event', 'category']

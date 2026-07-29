@@ -19,8 +19,8 @@ class User(AbstractUser):
         APPROVED = 'APPROVED', 'Approved'
         REJECTED = 'REJECTED', 'Rejected'
     
-    role = models.CharField(max_length=10, choices=Role.choices, default='PARTICIPANT')
-    status = models.CharField(max_length=10, choices=Status.choices, default='PENDING')
+    role = models.CharField(max_length=20, choices=Role.choices, default='PARTICIPANT')
+    status = models.CharField(max_length=20, choices=Status.choices, default='PENDING')
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"   #που ειναι αυτη η συναρτηση 
