@@ -17,7 +17,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'email', 'role', 'status', 'is_active')
     list_filter = ('role', 'status', 'is_active')
     fieldsets = UserAdmin.fieldsets + (
-        ('Custom Fields', {'fields': ('phone', 'city', 'afm', 'latitude', 'longitude', 'role', 'status')}),
+        ('Custom Fields', {'fields': ('phone', 'address', 'city', 'country', 'afm', 'role', 'status')}),
     )
 
 @admin.register(Event)
