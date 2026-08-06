@@ -2,6 +2,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from .user import User
+from django.utils import timezone
 
 class Event(models.Model):
     class EventStatus(models.TextChoices):

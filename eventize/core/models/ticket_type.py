@@ -1,6 +1,7 @@
 # core/models/ticket_type.py
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from .event import Event
 
 class TicketType(models.Model):
@@ -12,11 +13,16 @@ class TicketType(models.Model):
         related_name='ticket_types'
     )
     
-    name = models.CharField(max_length=100)  # π.χ. "General Admission", "Student"
+    name = models.CharField(max_length=100)  # π.χ. "General Admission", "Student", "VIP"
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     quantity = models.IntegerField(validators=[MinValueValidator(0)])  # Συνολική ποσότητα
     available = models.IntegerField(validators=[MinValueValidator(0)])  # Διαθέσιμο υπόλοιπο
-    
+
+    def clean(self):
+        if self.available > self.quantity:
+            raise ValidationError({
+                'available': 'available tickers more than total'
+            })
     class Meta:
         unique_together = ['event', 'ticket_type_id']
     
