@@ -5,7 +5,7 @@ from core.models import Category, Event
 from core.utils import generate_id
 
 from .category import CategorySerializer
-from .media import MediaSerializer
+from .photo import EventPhotoSerializer
 from .ticket_type import TicketTypeSerializer
 from .user import UserPublicSerializer
 
@@ -31,7 +31,7 @@ class EventListSerializer(serializers.ModelSerializer):
 class EventDetailSerializer(serializers.ModelSerializer):
     organizer = UserPublicSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True, read_only=True)
-    media = MediaSerializer(many=True, read_only=True)
+    photo = EventPhotoSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     available_capacity = serializers.IntegerField(source='get_available_capacity', read_only=True)
     total_booked = serializers.IntegerField(source='get_total_booked', read_only=True)
@@ -42,7 +42,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
             'id', 'event_id', 'organizer', 'title', 'description', 'event_type',
             'venue', 'address', 'city', 'country', 'latitude', 'longitude',
             'start_datetime', 'end_datetime', 'capacity', 'status',
-            'categories', 'ticket_types', 'media',
+            'categories', 'ticket_types', 'photo',
             'available_capacity', 'total_booked', 'created_at', 'updated_at',
         ]
 

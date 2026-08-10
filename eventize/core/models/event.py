@@ -1,4 +1,5 @@
 # core/models/event.py
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from .user import User
@@ -63,7 +64,7 @@ class Event(models.Model):
                 name='event_end_after_start',
             ),
         ]
-        # create iundexing for faster search
+        # create indexing for faster search
         indexes = [
             models.Index(fields=['status', 'start_datetime']),
             models.Index(fields=['city', 'start_datetime']),
@@ -95,4 +96,4 @@ class Event(models.Model):
     def clean(self):
         super().clean()
         if self.start_datetime and self.end_datetime and self.end_datetime <= self.start_datetime:
-            raise ValidationError({'End time must be after start time.'})
+            raise ValidationError({'end_datetime': 'End time must be after start time.'})

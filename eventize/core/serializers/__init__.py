@@ -6,7 +6,7 @@ from .user import (
     RegisterSerializer,
 )
 from .category import CategorySerializer
-from .media import MediaSerializer
+from .photo import EventPhotoSerializer
 from .ticket_type import TicketTypeSerializer
 from .event import EventListSerializer, EventDetailSerializer, EventWriteSerializer
 from .booking import BookingSerializer
@@ -18,7 +18,7 @@ __all__ = [
     'UserAdminSerializer',
     'RegisterSerializer',
     'CategorySerializer',
-    'MediaSerializer',
+    'EventPhotoSerializer',
     'TicketTypeSerializer',
     'EventListSerializer',
     'EventDetailSerializer',
