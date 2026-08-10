@@ -79,16 +79,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # new Database (neon  sahred db)
 import os
-from dotenv import load_dotenv
 import dj_database_url
 
-load_dotenv()
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default = os.getenv('DATABASE_URL'),
-        conn_max_age = 600,
+    'default': dj_database_url.parse(
+        os.environ['DATABASE_URL'],
+        conn_max_age = 60,
         conn_health_checks = True,
+        ssl_require=True,
     )
 }
 

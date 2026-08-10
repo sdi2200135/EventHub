@@ -12,7 +12,7 @@ venv/
 /media/
 
 # Secrets
-../.env
+.env
 
 # Node / React (for later)
 node_modules/
