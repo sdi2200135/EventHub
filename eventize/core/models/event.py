@@ -3,6 +3,8 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from .user import User
 from django.utils import timezone
+from django.db.models import Sum, Q, F
+from django.core.exceptions import ValidationError
 
 class Event(models.Model):
     class EventStatus(models.TextChoices):
@@ -23,13 +25,13 @@ class Event(models.Model):
     
     organizer = models.ForeignKey(
         User, 
-        on_delete=models.CASCADE, 
-        related_name='events'
+        on_delete=models.PROTECT, 
+        related_name='organized_events'
     )
     
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    event_type = models.CharField(max_length=50, choices=EventType.choices, default='OTHER')
+    event_type = models.CharField(max_length=50, choices=EventType.choices, default=EventType.OTHER)
     venue = models.CharField(max_length=200)
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
@@ -38,38 +40,59 @@ class Event(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
-    capacity = models.IntegerField(validators=[MinValueValidator(1)])
-    status = models.CharField(max_length=20, choices=EventStatus.choices, default='DRAFT')
+    capacity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    status = models.CharField(max_length=20, choices=EventStatus.choices, default=EventStatus.DRAFT)
     
     categories = models.ManyToManyField(
         'Category', 
-        through='EventCategory',
         related_name='events',
-        blank=True
     )
-    
+
+    # update time
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    # rules for the db
+    class Meta:
+        # order by latest start time
+        ordering = ['-start_datetime']
+        # db rule end_datetime > start_datetime
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(end_datetime__gt=F('start_datetime')),
+                name='event_end_after_start',
+            ),
+        ]
+        # create iundexing for faster search
+        indexes = [
+            models.Index(fields=['status', 'start_datetime']),
+            models.Index(fields=['city', 'start_datetime']),
+        ]
+
     def __str__(self):
         return f"{self.event_id} - {self.title}"
-    
+
+    @property
     def is_published(self):
-        return self.status == 'PUBLISHED'
+        return self.status == self.EventStatus.PUBLISHED
     
+    @property
     def is_cancelled(self):
-        return self.status == 'CANCELLED'
+        return self.status == self.EventStatus.CANCELLED
     
+    @property
     def is_active(self):
-        return self.status == 'PUBLISHED' and self.start_datetime > timezone.now()
+        return self.status == self.EventStatus.PUBLISHED and self.start_datetime > timezone.now()
     
-    def get_available_capacity(self):
-        """Υπολογίζει συνολικές διαθέσιμες θέσεις"""
-        return sum(ticket.available for ticket in self.ticket_types.all())
-    
-    def get_total_booked(self):
-        """Υπολογίζει συνολικές κρατημένες θέσεις"""
-        return sum(
-            booking.number_of_tickets 
-            for booking in self.bookings.filter(status='CONFIRMED')
-        )
+    @property
+    def total_reserved(self):
+        return self.ticket_types.aggregate(t=Sum('reserved'))['t'] or 0
+
+    @property
+    def available_capacity(self):
+        return self.capacity - self.total_reserved
+
+    def clean(self):
+        super().clean()
+        if self.start_datetime and self.end_datetime and self.end_datetime <= self.start_datetime:
+            raise ValidationError({'End time must be after start time.'})

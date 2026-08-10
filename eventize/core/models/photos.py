@@ -6,7 +6,7 @@ class Media(models.Model):
     event = models.ForeignKey(
         Event, 
         on_delete=models.CASCADE, 
-        related_name='media'
+        related_name='photos'
     )
     # Μπορεί να είναι URL ή διαδρομή αρχείου
     photo = models.CharField(max_length=255)  # π.χ. "cover1.jpg"
