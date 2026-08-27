@@ -6,17 +6,15 @@ from core.models import User
 
 
 class UserPublicSerializer(serializers.ModelSerializer):
-    """Ό,τι βλέπει οποιοσδήποτε — π.χ. ο διοργανωτής μιας εκδήλωσης."""
+    """info about what anyone can see"""
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name']
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Το προφίλ του ίδιου του χρήστη (/users/me/)."""
-    approval_status_display = serializers.CharField(
-        source='get_approval_status_display', read_only=True
-    )
+    """user's accouunt info"""
+    approval_status_display = serializers.CharField(source='get_approval_status_display', read_only=True)
 
     class Meta:
         model = User
@@ -26,15 +24,12 @@ class UserSerializer(serializers.ModelSerializer):
             'latitude', 'longitude',
             'approval_status', 'approval_status_display', 'is_staff',
         ]
-        read_only_fields = ['id', 'username', 'afm',
-                            'approval_status', 'is_staff']
+        read_only_fields = ['id', 'username', 'afm','approval_status', 'is_staff']
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
-    """Λίστα/λεπτομέρειες χρηστών για τον διαχειριστή."""
-    approval_status_display = serializers.CharField(
-        source='get_approval_status_display', read_only=True
-    )
+    """detailed user's info for admin"""
+    approval_status_display = serializers.CharField(source='get_approval_status_display', read_only=True)
 
     class Meta:
         model = User
@@ -44,7 +39,7 @@ class UserAdminSerializer(serializers.ModelSerializer):
             'approval_status', 'approval_status_display',
             'is_active', 'is_staff', 'date_joined',
         ]
-        read_only_fields = fields          # ← read-only ολόκληρο
+        read_only_fields = fields        #all the fields are read only
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -67,6 +62,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
+        validated_data['email']=User.objects.normalize_email(validated_data['email'])
         user = User(**validated_data, approval_status=User.Status.PENDING)
         user.set_password(password)
         user.save()

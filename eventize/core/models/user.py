@@ -1,7 +1,7 @@
 # core/models/user.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-
+from django.db.models.functions import Lower
 
 # the class user has all these fields in order to know 
 class User(AbstractUser):
@@ -26,9 +26,18 @@ class User(AbstractUser):
     
     approval_status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING,db_index=True)
 
+    # lowercase the email
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(Lower('email'), name='uniq_user_email_ci'),
+        ]
     def __str__(self):
         return f"{self.username} ({self.get_approval_status_display()})" 
     
+    @property
+    def is_admin(self):
+        return self.is_staff or self.is_superuser
+
     @property
     def is_organizer(self):
         return self.organized_events.exists()
@@ -36,4 +45,5 @@ class User(AbstractUser):
     @property
     def is_approved(self):
         return self.approval_status == self.Status.APPROVED
+    
     

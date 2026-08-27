@@ -53,7 +53,7 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
         queryset = super().get_queryset()
 
         if 'event_id' in self.kwargs:   #checks if there is an event_id in the URL, to filter only for this event
-            queryset = queryset.filter(event_id = self.kwards['event_id'])
+            queryset = queryset.filter(event_id = self.kwargs['event_id'])
 
         if not self.request.user.is_authenticated:  #checks if the user isn't authenticated, to let him see only published events
             queryset = queryset.filter(event__status=Event.EventStatus.PUBLISHED)
@@ -107,7 +107,7 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if event.organizer_id != request.user.id and not request.user.is_admin(): #check permissions
+        if event.organizer_id != request.user.id and not request.user.is_admin: #check permissions
             return Response(
                 {'detail':'Only the event organizer or an admin can add ticket types'},
                 status=status.HTTP_403_FORBIDDEN

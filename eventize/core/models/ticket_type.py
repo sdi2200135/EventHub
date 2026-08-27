@@ -7,8 +7,6 @@ from .event import Event
 from django.db.models import Sum, Q, F
 
 class TicketType(models.Model):
-    ticket_type_id = models.CharField(max_length=20)
-    
     event = models.ForeignKey(
         Event, 
         on_delete=models.CASCADE, 
@@ -28,10 +26,8 @@ class TicketType(models.Model):
         ordering = ['price']
 
         constraints = [
-            models.UniqueConstraint(fields=['event', 'ticket_type_id'],
-                                    name='unique_ticket_type_per_event'),      # check that on the same event there are not the same ticket typed twice
             models.CheckConstraint(condition=Q(reserved__lte=F('quantity')),
-                                   name='tickettype_reserved_within_quantity'), # check that the reserved tickers are not more than the capacity of tickets 
+                                   name='tickettype_reserved_within_quantity'), # check that the reserved tickers are not more than the capacity of tickets
         ]
 
     @property

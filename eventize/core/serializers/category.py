@@ -5,6 +5,8 @@ from core.models import Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(read_only=True)
+
     class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'slug']

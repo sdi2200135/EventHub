@@ -1,7 +1,6 @@
 # core/serializers/booking.py
 from rest_framework import serializers
 from core.models import Booking
-from core.utils import generate_id
 from core.services.booking import (
     create_booking,
     confirm_booking,
@@ -37,7 +36,7 @@ class BookingSerializer(serializers.ModelSerializer):
         if ticket_type and event and ticket_type.event_id != event.id:
             errors['ticket_type'] = 'Ticket type does not belong to this event.'
         #check event is active
-        if event and not event.is_active():
+        if event and not event.is_active:
             errors['event'] = 'Bookings are only allowed for published, upcoming events.'
         #check availability
         if ticket_type and number_of_tickets and not ticket_type.is_available(number_of_tickets):

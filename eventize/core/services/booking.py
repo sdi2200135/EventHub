@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from core.models import Booking, TicketType, Event, User
 from core.services.ticket_type import reserve_tickets
+from core.utils import generate_id
 
 #Domain Exceptions
 class BookingError(Exception):
@@ -44,7 +45,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
         )
 
     ticket_type = TicketType.objects.select_for_update().get(pk=ticket_type_id)
-    if ticket_type_id != event.id: #check ticket type belongs to event
+    if ticket_type.event_id != event.id: #check ticket type belongs to event
         raise TicketTypeMismatchError(
             f"Ticket type '{ticket_type.name}' doesn't belong to event '{event.title}'."
         )
@@ -60,6 +61,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
     )
     total_cost = ticket_type.price*number_of_tickets
     booking = Booking.objects.create(
+        booking_id=generate_id(Booking, 'booking_id', 'BK'),
         event=event,
         attendee=user,
         ticket_type=ticket_type,

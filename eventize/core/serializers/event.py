@@ -2,23 +2,23 @@
 from rest_framework import serializers
 
 from core.models import Category, Event
-from core.utils import generate_id
 
 from .category import CategorySerializer
 from .photo import EventPhotoSerializer
 from .ticket_type import TicketTypeSerializer
 from .user import UserPublicSerializer
 
-
+# serializer in order to list many events in grid 
 class EventListSerializer(serializers.ModelSerializer):
-    available_capacity = serializers.IntegerField(source='get_available_capacity', read_only=True)
+    
+    available_capacity = serializers.IntegerField(read_only=True)
     min_price = serializers.SerializerMethodField()
     categories = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
 
     class Meta:
         model = Event
         fields = [
-            'id', 'event_id', 'title', 'event_type', 'venue', 'city', 'country',
+            'event_id', 'title', 'event_type', 'venue', 'city', 'country',
             'start_datetime', 'end_datetime', 'capacity', 'status',
             'available_capacity', 'min_price', 'categories',
         ]
@@ -27,14 +27,14 @@ class EventListSerializer(serializers.ModelSerializer):
         prices = [tt.price for tt in obj.ticket_types.all()]
         return min(prices) if prices else None
 
-
+# serializer for full details about the event basically when u ahve the event alone
 class EventDetailSerializer(serializers.ModelSerializer):
     organizer = UserPublicSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True, read_only=True)
     photo = EventPhotoSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
-    available_capacity = serializers.IntegerField(source='get_available_capacity', read_only=True)
-    total_booked = serializers.IntegerField(source='get_total_booked', read_only=True)
+    available_capacity = serializers.IntegerField(read_only=True)
+    total_booked = serializers.IntegerField(source='total_reserved', read_only=True)
 
     class Meta:
         model = Event
@@ -46,7 +46,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
             'available_capacity', 'total_booked', 'created_at', 'updated_at',
         ]
 
-
+# serializer for creating and updating an event — defines what a client is allowed to send
 class EventWriteSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Category.objects.all(), required=False,
@@ -67,19 +67,3 @@ class EventWriteSerializer(serializers.ModelSerializer):
         if start and end and end <= start:
             raise serializers.ValidationError({'end_datetime': 'Must be after start_datetime.'})
         return attrs
-
-    def create(self, validated_data):
-        categories = validated_data.pop('categories', [])
-        validated_data['event_id'] = generate_id(Event, 'event_id', 'EV')
-        validated_data['organizer'] = self.context['request'].user
-        event = Event.objects.create(**validated_data)
-        if categories:
-            event.categories.set(categories)
-        return event
-
-    def update(self, instance, validated_data):
-        categories = validated_data.pop('categories', None)
-        event = super().update(instance, validated_data)
-        if categories is not None:
-            event.categories.set(categories)
-        return event
