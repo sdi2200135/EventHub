@@ -1,18 +1,23 @@
 # core/models/user.py
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.functions import Lower
+from django.db.models import Q
 
 # the class user has all these fields in order to know 
 class User(AbstractUser):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
-    email = models.EmailField(unique=True)
+    email = models.EmailField()  # constraint check
     phone = models.CharField(max_length=30)
     address = models.CharField(max_length=255)
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
-    afm = models.CharField(max_length=9, unique=True)
+    afm = models.CharField(
+        max_length=9, unique=True,
+        validators=[RegexValidator(r'^\d{9}$', 'AFM is a 9-digit number')],
+    )
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
@@ -30,6 +35,10 @@ class User(AbstractUser):
     class Meta:
         constraints = [
             models.UniqueConstraint(Lower('email'), name='uniq_user_email_ci'),
+            models.CheckConstraint(condition=(
+                Q(latitude__isnull = False, longitude__isnull=False) |
+                Q(latitude__isnull = True, longitude__isnull= True)),
+                name="pair_latitude_longitude_user"),
         ]
     def __str__(self):
         return f"{self.username} ({self.get_approval_status_display()})" 

@@ -63,6 +63,10 @@ class Event(models.Model):
                 condition=Q(end_datetime__gt=F('start_datetime')),
                 name='event_end_after_start',
             ),
+            models.CheckConstraint(condition=(
+                Q(latitude__isnull = False, longitude__isnull=False) |
+                Q(latitude__isnull = True, longitude__isnull= True)),
+                name="pair_latitude_longitude_event"),
         ]
         # create indexing for faster search
         indexes = [
