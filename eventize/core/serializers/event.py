@@ -31,7 +31,7 @@ class EventListSerializer(serializers.ModelSerializer):
 class EventDetailSerializer(serializers.ModelSerializer):
     organizer = UserPublicSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True, read_only=True)
-    photo = EventPhotoSerializer(many=True, read_only=True)
+    photo = EventPhotoSerializer(source='photos',many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     available_capacity = serializers.IntegerField(read_only=True)
     total_booked = serializers.IntegerField(source='total_reserved', read_only=True)
@@ -49,7 +49,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
 # serializer for creating and updating an event — defines what a client is allowed to send
 class EventWriteSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Category.objects.all(), required=False,
+        many=True, queryset=Category.objects.all(), required=True, allow_empty=False
     )
 
     class Meta:

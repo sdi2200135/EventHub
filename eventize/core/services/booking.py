@@ -75,7 +75,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
 def confirm_booking(*, booking_id, user):
     booking=Booking.objects.select_for_update().get(pk=booking_id)
     if booking.attendee_id != user.id: #check permissions
-        raise PermissionError("Only the attendee csn confirm thiw booking.")
+        raise PermissionError("Only the attendee can confirm thi booking.")
 
     if booking.status != Booking.BookingStatus.PENDING: #check status is PENDING
         raise BookingNotPendingError(
