@@ -15,7 +15,8 @@ from core.services.booking import (
     cancel_booking,
     get_booking_queryset,
     SoldOutError,
-    BookingNotPendingError
+    BookingNotPendingError,
+    EventNotActiveError
 )
 
 class BookingViewSet(viewsets.ModelViewSet):
@@ -51,7 +52,9 @@ class BookingViewSet(viewsets.ModelViewSet):
         try:
             booking = confirm_booking(
                 booking_id=booking.id,
-                user=request.user
+                event_id=booking.event_id,
+                user=request.user,
+                
             )
         except BookingNotPendingError as e:
             return Response({'detail':str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -59,7 +62,8 @@ class BookingViewSet(viewsets.ModelViewSet):
             return Response({'detail':str(e)}, status=status.HTTP_409_CONFLICT)
         except PermissionError as e:
             return Response({'detail':str(e)}, status=status.HTTP_403_FORBIDDEN)
-
+        except EventNotActiveError as e:
+            return Response({'detail':str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(BookingSerializer(booking).data)
 
     @action(detail=True, methods=['post'])
@@ -77,8 +81,10 @@ class BookingViewSet(viewsets.ModelViewSet):
         return Response(BookingSerializer(booking).data)
 
     def update(self, request, *args, **kwargs):
-        return Response({'detail':'Bookings cannot be updated directly. Use confirm or cancel actions.'},
-                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response({'detail':'Bookings cannot be updated directly. Use confirm or cancel actions.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def partial_update(self, request, *args, **kwargs): #partial booking updates are not permitted
         return self.update(request, *args, **kwargs)
+
+    def destroy(self,requests,*args,**kwargs):
+        return Response({'detail':'Bookings cannot be deleted. They can only be cancelled'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)

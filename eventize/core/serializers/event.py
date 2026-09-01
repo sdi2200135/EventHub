@@ -18,7 +18,7 @@ class EventListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = [
-            'event_id', 'title', 'event_type', 'venue', 'city', 'country',
+            'id', 'event_id', 'title', 'event_type', 'venue', 'city', 'country',
             'start_datetime', 'end_datetime', 'capacity', 'status',
             'available_capacity', 'min_price', 'categories',
         ]
@@ -62,6 +62,16 @@ class EventWriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'event_id', 'status']
 
     def validate(self, attrs):
+
+        # check the longitude latitude is given as a pair 
+        lat = attrs.get('latitude', getattr(self.instance, 'latitude', None))
+        lon = attrs.get('longitude', getattr(self.instance, 'longitude', None))
+        if (lat is None) != (lon is None):
+            raise serializers.ValidationError(
+                {'longitude': 'Latitude and longitude must be provided together.'}
+            )
+
+        # make sure start/end time is correct
         start = attrs.get('start_datetime', getattr(self.instance, 'start_datetime', None))
         end = attrs.get('end_datetime', getattr(self.instance, 'end_datetime', None))
         if start and end and end <= start:

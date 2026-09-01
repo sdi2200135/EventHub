@@ -1,5 +1,7 @@
 # core/serializers/booking.py
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+
 from core.models import Booking
 from core.services.booking import (
     create_booking,
@@ -68,7 +70,7 @@ class BookingSerializer(serializers.ModelSerializer):
         except SoldOutError as e:
             raise serializers.ValidationError({'detail':str(e)})
         except PermissionError as e:
-            raise serializers.ValidationError({'detail':str(e)})
+            raise PermissionDenied(str(e))
 
         return booking
 

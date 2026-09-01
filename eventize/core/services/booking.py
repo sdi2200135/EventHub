@@ -72,17 +72,25 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
     return booking
 
 @transaction.atomic
-def confirm_booking(*, booking_id, user):
+def confirm_booking(*, booking_id,event_id, user):
     booking=Booking.objects.select_for_update().get(pk=booking_id)
+
     if booking.attendee_id != user.id: #check permissions
         raise PermissionError("Only the attendee can confirm thi booking.")
 
-    if booking.status != Booking.BookingStatus.PENDING: #check status is PENDING
+    if booking.status != Booking.BookingStatus.PENDING: #check status of booking is PENDING
         raise BookingNotPendingError(
             f"Cannot confirm booking with status '{booking.status}'."
             "Only PENDING bookings can be confirmed."
         )
-
+    
+    # check for the active event status
+    event = Event.objects.select_for_update().get(pk=event_id)
+    if not event.is_active: #check event is active
+        raise EventNotActiveError(
+            f"Event '{event.title}' is not active."
+            f"Status: {event.status}, Start: {event.start_datetime}"
+        )
     ticket_type = booking.ticket_type
     if ticket_type.available < booking.number_of_tickets: #check if the available tickets changed since the booking was made
         raise SoldOutError(
@@ -99,7 +107,7 @@ def cancel_booking(*, booking_id, user):
     booking = Booking.objects.select_for_update().get(pk=booking_id)
     event = booking.event
     #the attendee, the event organizer, or an admin can cancel.
-    if not (booking.attendee_id == user.id or event.organizer_id == user.id or user.is_admin()):
+    if not (booking.attendee_id == user.id or event.organizer_id == user.id or user.is_admin):
         raise PermissionError(
             "You are not allowed to cancel this booking."
             "Only the attendee, organizer, or admin can cancel."
@@ -122,7 +130,7 @@ def cancel_booking(*, booking_id, user):
     return booking
 
 def get_booking_queryset(user): #returns the queryset of bookings that a user can view
-    if user.is_admin(): #admin can see them all
+    if user.is_admin: #admin can see them all
         return Booking.objects.all()
     return Booking.objects.filter(  #attendee can see his own, organizer can see the ones in the events he organizes
         models.Q(attendee=user) | models.Q(event__organizer=user)
