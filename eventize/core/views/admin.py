@@ -14,18 +14,20 @@ class UserAdminViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserAdminSerializer
     permission_classes = [IsAdmin]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status', 'role']
+    filterset_fields = ['approval_status']
 
+    # approve a user
     @action(detail=True, methods=['post'])
     def approve(self, request, pk=None):
         user = self.get_object()
-        user.status = User.Status.APPROVED
+        user.approval_status = User.Status.APPROVED
         user.save()
         return Response(UserAdminSerializer(user).data)
 
+    # reject
     @action(detail=True, methods=['post'])
     def reject(self, request, pk=None):
         user = self.get_object()
-        user.status = User.Status.REJECTED
+        user.approval_status = User.Status.REJECTED
         user.save()
         return Response(UserAdminSerializer(user).data)

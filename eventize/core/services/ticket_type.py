@@ -30,7 +30,7 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
     event = Event.objects.select_for_update().get(pk=event_id)
 
     # check if the user has the right to create a ticket type (if the user is event's organizer or admin)
-    if event.organizer_id != user.id and not user.is_admin():
+    if event.organizer_id != user.id and not user.is_admin:
         raise PermissionError("Only the event organizer or an admin can add ticket types.")
 
     # check if the event is Draft to modify it
@@ -51,8 +51,7 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
         name = name,
         price = price,
         quantity = quantity,
-        reversed = 0
-    ) 
+    )
 
     return ticket_type
 
@@ -97,7 +96,7 @@ def delete_ticket_type(*, ticket_type_id, user):
     ticket_type = TicketType.objects.select_for_update().get(pk = ticket_type_id)
     event = ticket_type.event
 
-    if event.organizer_id != user.id and not user.is_admin():
+    if event.organizer_id != user.id and not user.is_admin:
         raise PermissionError("Only the event organizer or an admin can modify ticket types.")
 
     if event.status != Event.EventStatus.DRAFT:

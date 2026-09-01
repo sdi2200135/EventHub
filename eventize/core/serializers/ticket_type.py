@@ -1,9 +1,16 @@
 # core/serializers/ticket_type.py
 from django.db.models import Sum
+
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
+
 from core.models import TicketType
 from core.services.ticket_type import (
-    create_ticket_type, update_ticket_type, CapacityExceededError, ReservedTicketsError, EventNotEditableError
+    create_ticket_type, 
+    update_ticket_type, 
+    CapacityExceededError, 
+    ReservedTicketsError,
+    EventNotEditableError
 )
 
 
@@ -64,7 +71,7 @@ class TicketTypeSerializer(serializers.ModelSerializer):
         except EventNotEditableError as e:
                     raise serializers.ValidationError({'detail': str(e)})
         except PermissionError as e:
-                    raise serializers.ValidationError({'detail': str(e)})
+                    raise PermissionDenied(str(e))
 
         return ticket_type
 
@@ -90,6 +97,6 @@ class TicketTypeSerializer(serializers.ModelSerializer):
         except EventNotEditableError as e:
                     raise serializers.ValidationError({'detail': str(e)})
         except PermissionError as e:
-                    raise serializers.ValidationError({'detail': str(e)})
+                    raise PermissionDenied(str(e))
 
         return ticket_type

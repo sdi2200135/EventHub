@@ -14,13 +14,14 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
+# log in
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         user = self.user
-        if not (user.is_superuser or user.is_staff or user.status == User.Status.APPROVED):
-            if user.status == User.Status.PENDING:
-                detail = 'Your account is pending administrator approval.'
+        if not (user.is_superuser or user.is_staff or user.approval_status == User.Status.APPROVED):
+            if user.approval_status == User.Status.PENDING:
+                detail = 'Account is pending approval by admin.'
             else:
                 detail = 'Your account registration was rejected.'
             raise serializers.ValidationError({'detail': detail})
