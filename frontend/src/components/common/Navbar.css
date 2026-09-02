@@ -1,0 +1,251 @@
+/* src/components/common/Navbar.css */
+
+/* ============================================
+   NAVBAR - CUSTOM
+   ============================================ */
+.navbar {
+  background: #121212;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid #1a1a2a;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 1.5rem;
+}
+
+/* LOGO - Τετράγωνο πλαίσιο */
+.navbar .logo-wrapper {
+  background: #203855;
+  height: 64px;
+  padding: 0 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -12rem;
+}
+
+.navbar .logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.navbar .logo span {
+  color: #FFFFFF;
+}
+
+/* Nav Center - Search */
+.navbar .nav-center {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  max-width: 450px;
+  margin: 0 1.5rem;
+}
+
+.navbar .nav-center .search-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 1px solid #2a2a3e;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #1a1a2a;
+  color: #e0e0e0;
+}
+
+.navbar .nav-center .search-input::placeholder {
+  color: #6c7a89;
+}
+
+.navbar .nav-center .search-input:focus {
+  border-color: #203855;
+}
+
+.navbar .nav-center .btn-search {
+  background: #203855;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.navbar .nav-center .btn-search:hover {
+  background: #2a4a6a;
+}
+
+/* Nav Right */
+.navbar .nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-right: -8rem;
+}
+
+.navbar .nav-right .nav-link {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  padding-bottom: 2px;
+  position: relative;
+}
+
+.navbar .nav-right .nav-link:hover {
+  color: #FFFFFF;
+}
+
+.navbar .nav-right .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #FFFFFF;
+  border-radius: 2px;
+}
+
+.navbar .nav-right .btn-signin {
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.4rem 1.2rem;
+  border-radius: 50px;
+  background: #203855;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-block;
+  position: relative;
+}
+
+.navbar .nav-right .btn-signin:hover {
+  background: #2a4a6a;
+  transform: scale(1.02);
+}
+
+.navbar .nav-right .btn-signin.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: #FFFFFF;
+  border-radius: 2px;
+}
+
+.navbar .nav-right .btn-signup {
+  color: #B0B0B0;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  padding-bottom: 2px;
+  position: relative;
+}
+
+.navbar .nav-right .btn-signup:hover {
+  color: #FFFFFF;
+}
+
+.navbar .nav-right .btn-signup.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #FFFFFF;
+  border-radius: 2px;
+}
+
+/* ============================================
+   RESPONSIVE - NAVBAR
+   ============================================ */
+@media (max-width: 768px) {
+  .navbar .container {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 0.5rem 1rem;
+  }
+
+  .navbar .logo-wrapper {
+    height: 50px;
+    padding: 0 1rem;
+    margin-left: -1rem;
+  }
+
+  .navbar .logo {
+    font-size: 1.1rem;
+  }
+
+  .navbar .nav-center {
+    order: 3;
+    max-width: 100%;
+    margin: 0.5rem 0 0;
+    flex-basis: 100%;
+  }
+
+  .navbar .nav-right {
+    gap: 0.8rem;
+  }
+
+  .navbar .nav-right .nav-link,
+  .navbar .nav-right .btn-signup {
+    font-size: 0.85rem;
+  }
+
+  .navbar .nav-right .btn-signin {
+    font-size: 0.85rem;
+    padding: 0.3rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar .nav-right {
+    gap: 0.5rem;
+  }
+
+  .navbar .nav-right .nav-link {
+    font-size: 0.75rem;
+  }
+
+  .navbar .nav-right .btn-signin {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.8rem;
+  }
+
+  .navbar .nav-right .btn-signup {
+    font-size: 0.75rem;
+  }
+
+  .navbar .logo-wrapper {
+    padding: 0 0.8rem;
+  }
+
+  .navbar .logo {
+    font-size: 0.95rem;
+  }
+}
