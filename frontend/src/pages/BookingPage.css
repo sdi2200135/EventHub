@@ -314,7 +314,9 @@
   background: #2a4a6f;
 }
 
-/* Success State */
+/* ============================================
+   SUCCESS STATE - ΕΝΗΜΕΡΩΜΕΝΟ
+   ============================================ */
 .booking-success {
   display: flex;
   flex-direction: column;
@@ -331,6 +333,13 @@
   font-size: 80px;
   color: #2ecc71;
   margin-bottom: 20px;
+  animation: successPop 0.6s ease;
+}
+
+@keyframes successPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
 
 .booking-success h2 {
@@ -351,6 +360,15 @@
   margin-bottom: 24px;
 }
 
+/* Success Actions - Δύο κουμπιά */
+.success-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .btn-success {
   background: linear-gradient(135deg, #1a782e, #2ecc71);
   color: #ffffff;
@@ -358,10 +376,163 @@
   border-radius: 12px;
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  min-width: 180px;
 }
 
 .btn-success:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
+}
+
+.btn-success-secondary {
+  background: #2A2A2A;
+  color: #e0e0e0;
+  padding: 14px 32px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid #3A3A3A;
+  min-width: 180px;
+}
+
+.btn-success-secondary:hover {
+  background: #3A3A3A;
+  transform: translateY(-2px);
+  border-color: #4A4A4A;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .booking-container {
+    padding: 24px 20px;
+  }
+
+  .booking-header h1 {
+    font-size: 22px;
+  }
+
+  .booking-event-summary {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .event-image {
+    width: 100%;
+    max-width: 200px;
+    height: 150px;
+  }
+
+  .event-details h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .booking-page {
+    padding: 20px 10px;
+  }
+
+  .booking-container {
+    padding: 20px 16px;
+  }
+
+  .booking-header h1 {
+    font-size: 18px;
+  }
+
+  .booking-header .btn-back {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .event-image {
+    max-width: 150px;
+    height: 120px;
+  }
+
+  .event-details h2 {
+    font-size: 16px;
+  }
+
+  .event-location,
+  .event-date {
+    font-size: 12px;
+  }
+
+  .user-info-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 14px 16px;
+  }
+
+  .ticket-row {
+    font-size: 13px;
+    padding: 8px 0;
+  }
+
+  .ticket-row.total .ticket-value {
+    font-size: 17px;
+  }
+
+  .btn-confirm-booking {
+    font-size: 16px;
+    padding: 14px;
+  }
+
+  /* Success - Responsive */
+  .success-icon {
+    font-size: 60px;
+  }
+
+  .booking-success h2 {
+    font-size: 24px;
+  }
+
+  .booking-success p {
+    font-size: 14px;
+  }
+
+  .success-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .btn-success,
+  .btn-success-secondary {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 14px;
+    min-width: unset;
+  }
+}
+
+@media (max-width: 360px) {
+  .booking-container {
+    padding: 16px 12px;
+  }
+
+  .booking-header h1 {
+    font-size: 16px;
+  }
+
+  .ticket-row {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .ticket-row.total .ticket-value {
+    font-size: 15px;
+  }
+
+  .btn-confirm-booking {
+    font-size: 14px;
+    padding: 12px;
+  }
 }

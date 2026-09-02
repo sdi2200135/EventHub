@@ -157,15 +157,15 @@ const BookingPage = () => {
       
       console.log('Submitting booking:', bookingPayload);
       
-      // Κλήση στο backend
       const response = await bookingService.createBooking(bookingPayload);
       console.log('Booking response:', response.data);
 
       clearBookingData();
       setSuccess(true);
       
+      // Αλλαγή: Μετά από 3 δευτερόλεπτα πάει στην αρχική σελίδα
       setTimeout(() => {
-        navigate('/profile/bookings');
+        navigate('/');
       }, 3000);
     } catch (err) {
       console.error('Booking error:', err);
@@ -222,7 +222,7 @@ const BookingPage = () => {
   }
 
   // ============================================
-  // 11. SUCCESS
+  // 11. SUCCESS - ΜΕ ΚΟΥΜΠΙ ΓΙΑ ΕΠΙΣΤΡΟΦΗ ΣΤΗΝ ΑΡΧΙΚΗ
   // ============================================
   if (success) {
     return (
@@ -233,9 +233,16 @@ const BookingPage = () => {
         <p className="success-detail">
           You will receive a confirmation email shortly.
         </p>
-        <Link to="/profile/bookings" className="btn-success">
-          View My Bookings
-        </Link>
+        <div className="success-actions">
+          <Link to="/" className="btn-success">
+            Return to Home
+          </Link>
+          {/* Το κουμπί για τις κρατήσεις υπάρχει αλλά δεν φαίνεται ακόμα
+          <Link to="/profile/bookings" className="btn-success-secondary">
+            View My Bookings
+          </Link>
+          */}
+        </div>
       </div>
     );
   }
