@@ -1,0 +1,20 @@
+# core/views/__init__.py
+from .auth import RegisterView, CustomTokenObtainPairView, MeView
+from .admin import UserAdminViewSet
+from .category import CategoryViewSet
+from .event import EventViewSet
+from .ticket_type import TicketTypeViewSet
+from .booking import BookingViewSet
+from .message import MessageViewSet
+
+__all__ = [
+    'RegisterView',
+    'CustomTokenObtainPairView',
+    'MeView',
+    'UserAdminViewSet',
+    'CategoryViewSet',
+    'EventViewSet',
+    'TicketTypeViewSet',
+    'BookingViewSet',
+    'MessageViewSet',
+]

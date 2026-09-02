@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.venv/
+
+# Django
+*.log
+/staticfiles/
+/media/
+
+# Secrets
+.env
+
+# Node / React (for later)
+node_modules/
+dist/
+build/
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
