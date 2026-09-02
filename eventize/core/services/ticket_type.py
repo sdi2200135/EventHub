@@ -3,6 +3,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.core.exceptions import ValidationError
 from core.models import TicketType, Event
+from core.utils import generate_id
 
 # Domain Exceptions (relate to the logic of ticket types)
 class TicketTypeError(Exception):
@@ -48,6 +49,7 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
     # create new ticket type
     ticket_type = TicketType.objects.create(
         event = event,
+        ticket_type_id = generate_id(TicketType, 'ticket_type_id', 'T', scope={'event': event}),
         name = name,
         price = price,
         quantity = quantity,

@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from core.filters import EventFilter
-from core.models import Event, EventPhoto, EventView, Message
+from core.models import Event, EventPhoto, EventView, Message, Conversation
 from core.permissions import IsEventOwnerOrReadOnly, IsOrganizer
 from core.serializers import EventDetailSerializer, EventListSerializer, EventWriteSerializer, EventPhotoSerializer
 from core.services.event import (
@@ -101,16 +101,19 @@ class EventViewSet(viewsets.ModelViewSet):
         event.save()
 
         attendee_ids = event.bookings.values_list('attendee', flat=True).distinct()
-        Message.objects.bulk_create([
-            Message(
+        for attendee_id in attendee_ids:
+            conversation, _ = Conversation.objects.get_or_create(
+                attendee_id=attendee_id, 
+                defaults={'organizer': event.organizer},
+                event=event,
+            )
+            Message.objects.create(
                 sender=event.organizer,
                 receiver_id=attendee_id,
-                event=event,
-                subject=f'Event Cancelled: {event.title}',
+                conversation=conversation,
                 body=f'The event "{event.title}" scheduled for {event.start_datetime} has been cancelled.',
             )
-            for attendee_id in attendee_ids
-        ])
+
         return Response(EventDetailSerializer(event).data)
 
     # add photos on publishing an event

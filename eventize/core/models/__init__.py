@@ -8,6 +8,7 @@ from .photo import EventPhoto
 from .booking import Booking
 from .message import Message
 from .event_view import EventView
+from .conversation import Conversation
 
 __all__ = [
     'User',
@@ -18,4 +19,5 @@ __all__ = [
     'Booking',
     'Message',
     'EventView',
+    'Conversation',
 ]

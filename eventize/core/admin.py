@@ -65,7 +65,7 @@ class BookingAdmin(admin.ModelAdmin):
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('subject', 'sender', 'receiver', 'is_read', 'created_at')
+    list_display = ('sender', 'receiver', 'is_read', 'created_at')
     list_filter = ('is_read',)
 
 

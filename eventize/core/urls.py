@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from core.views import (
     BookingViewSet,
     CategoryViewSet,
+    ConversationViewSet,
     CustomTokenObtainPairView,
     EventViewSet,
     MeView,
@@ -22,6 +23,7 @@ router.register('ticket-types', TicketTypeViewSet, basename='tickettype')
 router.register('bookings', BookingViewSet, basename='booking')
 router.register('messages', MessageViewSet, basename='message')
 router.register('admin/users', UserAdminViewSet, basename='admin-user')
+router.register('conversations', ConversationViewSet, basename='conversation')
 
 urlpatterns = [
     path('auth/register/', RegisterView.as_view(), name='register'),

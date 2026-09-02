@@ -23,6 +23,21 @@ from .booking import (
     BookingError
 )
 
+from .event import (
+    create_event,
+    update_event,
+    CapacityExceeded,
+    InvalidTransition,
+    DomainError,
+)
+
+from .conv_mess import (
+    delete_conversation_for_organizer,
+    delete_conversation_for_attendee,
+    delete_message_for_sender,
+    delete_message_for_receiver,
+)
+
 __all__ = [
     # Ticket Type services
     'create_ticket_type',
@@ -45,4 +60,17 @@ __all__ = [
     'BookingNotPendingError',
     'BookingAlreadyConfirmedError',
     'BookingError',
+
+    # Event services
+    'create_event',
+    'update_event',
+    'CapacityExceeded',
+    'InvalidTransition',
+    'DomainError',
+
+    # Conversation / Message services
+    'delete_conversation_for_organizer',
+    'delete_conversation_for_attendee',
+    'delete_message_for_sender',
+    'delete_message_for_receiver',
 ]

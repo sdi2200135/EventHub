@@ -3,6 +3,8 @@
 from django.db import models
 from .user import User
 from .event import Event
+from .conversation import Conversation
+
 
 class Message(models.Model):
     # relations
@@ -16,21 +18,20 @@ class Message(models.Model):
         on_delete=models.PROTECT, 
         related_name='received_messages'
     )
-    event = models.ForeignKey(
-        Event, 
-        on_delete=models.CASCADE, 
-        null=True, 
-        blank=True, 
+
+    # if conversation is deleted, its messages are deleted too
+    conversation = models.ForeignKey(
+        Conversation,
+        on_delete=models.CASCADE,
         related_name='messages'
     )
-    
+
     # context
-    subject = models.CharField(max_length=200)
-    body = models.TextField()
+    body = models.TextField(max_length=2048)
     
     is_read = models.BooleanField(default=False)
     
-    # delete flags
+    # soft delete flags
     deleted_by_sender = models.BooleanField(default=False)
     deleted_by_receiver = models.BooleanField(default=False)
     
@@ -46,19 +47,9 @@ class Message(models.Model):
         ]
     
     def __str__(self):
-        return f"From {self.sender.username} to {self.receiver.username}: {self.subject}"
+        return f"From {self.sender.username} to {self.receiver.username}"
     
     # Marked as read
     def mark_as_read(self):
         self.is_read = True
         self.save(update_fields=['is_read'])
-
-    # deleted by sender
-    def deleted_for_sender(self):
-        self.deleted_by_sender = True
-        self.save(update_fields=['deleted_by_sender'])
-
-    # deleted by receiver
-    def deleted_for_receiver(self):
-        self.deleted_by_receiver = True
-        self.save(update_fields=['deleted_by_receiver'])

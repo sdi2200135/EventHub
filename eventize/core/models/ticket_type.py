@@ -8,11 +8,14 @@ from django.db.models import Sum, Q, F
 
 class TicketType(models.Model):
     event = models.ForeignKey(
-        Event, 
-        on_delete=models.CASCADE, 
+        Event,
+        on_delete=models.CASCADE,
         related_name='ticket_types'
     )
-    
+
+    # unique per event, not globally unique, so every event start from 001
+    ticket_type_id = models.CharField(max_length=20)
+
     name = models.CharField(max_length=100)  # for example VVIP, student, VIP
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     # total tickets
@@ -28,6 +31,7 @@ class TicketType(models.Model):
         constraints = [
             models.CheckConstraint(condition=Q(reserved__lte=F('quantity')),
                                    name='tickettype_reserved_within_quantity'), # check that the reserved tickers are not more than the capacity of tickets
+            models.UniqueConstraint(fields=['event', 'ticket_type_id'], name='uniq_tickettype_event_ticket_type_id'),
         ]
 
     @property

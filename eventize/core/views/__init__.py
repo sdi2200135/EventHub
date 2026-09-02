@@ -6,6 +6,7 @@ from .event import EventViewSet
 from .ticket_type import TicketTypeViewSet
 from .booking import BookingViewSet
 from .message import MessageViewSet
+from .conversation import ConversationViewSet
 
 __all__ = [
     'RegisterView',
@@ -17,4 +18,5 @@ __all__ = [
     'TicketTypeViewSet',
     'BookingViewSet',
     'MessageViewSet',
+    'ConversationViewSet',
 ]

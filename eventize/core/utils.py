@@ -5,8 +5,8 @@ from django.db import transaction
 def generate_id(model, field_name, prefix, scope=None):
     """Atomically generate the next '<prefix><n>' value for a model field.
 
-    scope, if given, is a dict of extra filter kwargs (e.g. {'event': event})
-    for models where the id field is only unique within a parent (TicketType).
+    if a scope is given a dict is used in order to filter  exta kwargs. it
+    is used for ticket type till now as it is unique per event
     """
     scope = scope or {}
     with transaction.atomic():

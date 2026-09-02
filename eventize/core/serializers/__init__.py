@@ -11,7 +11,7 @@ from .ticket_type import TicketTypeSerializer
 from .event import EventListSerializer, EventDetailSerializer, EventWriteSerializer
 from .booking import BookingSerializer
 from .message import MessageSerializer
-
+from .conversation import ConversationSerializer
 __all__ = [
     'UserPublicSerializer',
     'UserSerializer',
@@ -25,4 +25,5 @@ __all__ = [
     'EventWriteSerializer',
     'BookingSerializer',
     'MessageSerializer',
+    'ConversationSerializer',
 ]
