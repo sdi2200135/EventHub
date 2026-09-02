@@ -237,11 +237,6 @@ const BookingPage = () => {
           <Link to="/" className="btn-success">
             Return to Home
           </Link>
-          {/* Το κουμπί για τις κρατήσεις υπάρχει αλλά δεν φαίνεται ακόμα
-          <Link to="/profile/bookings" className="btn-success-secondary">
-            View My Bookings
-          </Link>
-          */}
         </div>
       </div>
     );
