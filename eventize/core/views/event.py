@@ -1,11 +1,12 @@
 # core/views/event.py
+from django.db import transaction
 from django.db.models import F, Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.filters import EventFilter
@@ -90,23 +91,23 @@ class EventViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def publish(self, request, pk=None):
-        
-        event = self.get_object()
+        with transaction.atomic():
+            event = self.get_object()
 
-        # check for the state of event
-        if event.status != Event.EventStatus.DRAFT:
-            return Response({'detail': 'Only draft events can be published'}, status = 400)
+            # check for the state of event
+            if event.status != Event.EventStatus.DRAFT:
+                return Response({'detail': 'Only draft events can be published'}, status = 400)
 
-        # check for valid number of tickets and existing ticket types
-        total_quantity = event.ticket_types.aggregate(total=Sum('quantity'))['total'] or 0
-        
-        if total_quantity == 0:
-            return Response({'detail': 'Add at least one ticket type before publishing.'}, status = 400)
-        if total_quantity > event.capacity:
-            return Response({'detail': 'Ticket type quantities exceed event capacity.'}, status = 400)
-        
-        event.status = Event.EventStatus.PUBLISHED
-        event.save()
+            # check for valid number of tickets and existing ticket types
+            total_quantity = event.ticket_types.aggregate(total=Sum('quantity'))['total'] or 0
+            
+            if total_quantity == 0:
+                return Response({'detail': 'Add at least one ticket type before publishing.'}, status = 400)
+            if total_quantity > event.capacity:
+                return Response({'detail': 'Ticket type quantities exceed event capacity.'}, status = 400)
+            
+            event.status = Event.EventStatus.PUBLISHED
+            event.save(update_fields=['status'])
         return Response(EventDetailSerializer(event).data)
 
     # on cancellation of event we cancel bookings and we keep everything no delete so we can trace the attendees

@@ -4,6 +4,7 @@ from rest_framework import serializers
 from core.models import Conversation, Event, User
 
 class ConversationSerializer(serializers.ModelSerializer):
+    
     organizer = serializers.PrimaryKeyRelatedField(read_only=True)
     attendee = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False)
     event = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), required=True)

@@ -21,7 +21,7 @@ class UserAdminViewSet(viewsets.ReadOnlyModelViewSet):
     def approve(self, request, pk=None):
         user = self.get_object()
         user.approval_status = User.Status.APPROVED
-        user.save()
+        user.save(update_fields=['approval_status'])
         return Response(UserAdminSerializer(user).data)
 
     # reject
@@ -29,5 +29,5 @@ class UserAdminViewSet(viewsets.ReadOnlyModelViewSet):
     def reject(self, request, pk=None):
         user = self.get_object()
         user.approval_status = User.Status.REJECTED
-        user.save()
+        user.save(update_fields=['approval_status'])
         return Response(UserAdminSerializer(user).data)

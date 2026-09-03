@@ -13,6 +13,6 @@ class EventPhotoSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         event = self.context.get('event')
         if not event:
-            raise serializers.ValidationError({'detail': 'Event must be known.'})
+            raise serializers.ValidationError({'detail': 'Event is not given.'})
         validated_data['event'] = event
         return super().create(validated_data)

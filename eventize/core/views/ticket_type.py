@@ -1,5 +1,6 @@
 # core/views/ticket_type.py
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import transaction
 from django.db.models import Q
 
 from rest_framework import viewsets, status
@@ -103,6 +104,11 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
             return Response(
                 {'detail':'event_id is required'},status=status.HTTP_400_BAD_REQUEST
             )
+        
+        if not ticket_types_data: 
+            return Response(
+                {'detail':'ticket_types must contain sth'}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             event = Event.objects.get(pk=event_id)
@@ -116,25 +122,40 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
                 {'detail':'Only the event organizer or an admin can add ticket types'}, status=status.HTTP_403_FORBIDDEN
             )
 
-        #process each ticket type
+        #process each ticket type. the whole process is one transaction 
+        # check the tickets and compare with the ones which are inserted in the same request
+        # if sth fails all or nothing
         results = []
         errors = []
 
-        for ticket_data in ticket_types_data:
-            serializer = TicketTypeSerializer(data=ticket_data, context={'event': event, 'request': request})
-            if not serializer.is_valid():
-                errors.append({'data': ticket_data, 'error': serializer.errors})
-                continue
-            try:
-                # this calls the create of serializer
-                serializer.save()
-                results.append(serializer.data)
-            except APIException as e:
-                errors.append({'data': ticket_data, 'error': e.detail})
+        with transaction.atomic():
+            for ticket_data in ticket_types_data:
+                serializer = TicketTypeSerializer(data=ticket_data, context={'event': event, 'request': request})
+                if not serializer.is_valid():
+                    errors.append({'data': ticket_data, 'error': serializer.errors})
+                    continue
+                try:
+                    # this calls the create of serializer
+                    serializer.save()
+                    results.append(serializer.data)
+                except APIException as e:
+                    errors.append({'data': ticket_data, 'error': e.detail})
+
+            if errors:
+                # all or nothing: in case of error undo all the changes u did on ticket types and try again
+                transaction.set_rollback(True)
+
+        if errors:
+            return Response({
+                'created':[],
+                'errors':errors,
+                'total':0,
+                'failed':len(errors)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({   #return response
             'created':results,
-            'errors':errors,
+            'errors':[],
             'total':len(results),
-            'failed':len(errors)
-        }, status=status.HTTP_201_CREATED if results else status.HTTP_400_BAD_REQUEST)
+            'failed':0
+        }, status=status.HTTP_201_CREATED)

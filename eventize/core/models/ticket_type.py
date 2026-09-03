@@ -3,8 +3,10 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
-from .event import Event
 from django.db.models import Sum, Q, F
+from django.db.models.functions import Lower
+
+from .event import Event
 
 class TicketType(models.Model):
     event = models.ForeignKey(
@@ -30,8 +32,10 @@ class TicketType(models.Model):
 
         constraints = [
             models.CheckConstraint(condition=Q(reserved__lte=F('quantity')),
-                                   name='tickettype_reserved_within_quantity'), # check that the reserved tickers are not more than the capacity of tickets
+                                   name='tickettype_reserved_within_quantity'), # check that the reserved tickets are not more than the capacity of tickets
             models.UniqueConstraint(fields=['event', 'ticket_type_id'], name='uniq_tickettype_event_ticket_type_id'),
+            models.UniqueConstraint(Lower('name'), 'event', name='uniq_tickettype_event_name_ci')
+
         ]
 
     @property
