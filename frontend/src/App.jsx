@@ -12,6 +12,7 @@ import SignUp from './pages/SignUp';
 import EventsPage from './pages/EventsPage';
 import EventDetails from './pages/EventDetails';
 import BookingPage from './pages/BookingPage';
+// import ProfilePage from './pages/ProfilePage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/details/:id" element={<EventDetails />} />
               <Route path="/events/details/:id/booking" element={<BookingPage />} />
+              {/* <Route path="/profile" element={<ProfilePage />} /> */}
             </Routes>
           </main>
           <Footer />

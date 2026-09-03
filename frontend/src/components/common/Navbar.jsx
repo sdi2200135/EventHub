@@ -1,6 +1,6 @@
 // src/components/common/Navbar.jsx
 import React, { useState } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'; // ← ΠΡΟΣΘΗΚΗ useLocation
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
@@ -8,7 +8,7 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
-  const location = useLocation(); // ← ΠΡΟΣΘΗΚΗ
+  const location = useLocation();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -21,6 +21,20 @@ const Navbar = () => {
   const isSignInPage = location.pathname === '/signin';
   const isForgotPwdPage = location.pathname === '/signin/forgot-password';
   const isSignUpPage = location.pathname === '/signup';
+
+  // Χειρισμός Logout
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/';
+  };
+
+  // Παίρνουμε τα αρχικά του χρήστη για το avatar
+  const getUserInitials = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase();
+    }
+    return user?.username?.charAt(0)?.toUpperCase() || 'U';
+  };
 
   return (
     <nav className="navbar">
@@ -56,18 +70,23 @@ const Navbar = () => {
 
           {isAuthenticated ? (
             <>
-              <span style={{ color: '#a0a0b8', fontWeight: 500 }}>
-                {user?.username}
-              </span>
+              {/* Profile Button with Avatar */}
+              <NavLink
+                to="/profile"
+                className={({ isActive }) => 
+                  isActive ? 'profile-btn active' : 'profile-btn'
+                }
+              >
+                <div className="profile-avatar">
+                  {getUserInitials()}
+                </div>
+                <span className="profile-text">Profile</span>
+              </NavLink>
+
+              {/* Logout Button */}
               <button 
-                onClick={logout} 
-                className="btn-signup" 
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  cursor: 'pointer',
-                  color: '#B0B0B0'
-                }}
+                onClick={handleLogout} 
+                className="btn-logout"
               >
                 Logout
               </button>
