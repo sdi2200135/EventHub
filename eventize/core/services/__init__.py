@@ -13,7 +13,7 @@ from .ticket_type import (
 from .booking import (
     create_booking,
     confirm_booking,
-    cancel_booking,
+    cancel_event_bookings,
     get_booking_queryset,
     SoldOutError,
     EventNotActiveError,
@@ -52,7 +52,7 @@ __all__ = [
     # Booking services
     'create_booking',
     'confirm_booking',
-    'cancel_booking',
+    'cancel_event_bookings',
     'get_booking_queryset',
     'SoldOutError',
     'EventNotActiveError',

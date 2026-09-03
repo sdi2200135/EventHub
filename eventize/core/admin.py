@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (User, Event, Category, TicketType, Booking,
-                     Message, EventPhoto, EventView)
+                     Conversation, Message, EventPhoto, EventView)
 
 
 @admin.register(User)
@@ -63,10 +63,34 @@ class BookingAdmin(admin.ModelAdmin):
     search_fields = ('booking_id', 'attendee__username')
 
 
+class MessageInline(admin.TabularInline):
+    model = Message
+    extra = 0
+    fields = ('sender', 'receiver', 'body', 'is_read', 'created_at')
+    readonly_fields = ('created_at',)
+
+
+@admin.register(Conversation)
+class ConversationAdmin(admin.ModelAdmin):
+    list_display = ('id', 'event', 'organizer', 'attendee', 'message_count', 'created_at')
+    list_filter = ('deleted_by_organizer', 'deleted_by_attendee')
+    search_fields = ('event__title', 'organizer__username', 'attendee__username')
+    inlines = [MessageInline]
+
+    def get_queryset(self, request):
+        # the list page shows event/organizer/attendee per row, so join them once
+        return super().get_queryset(request).select_related('event', 'organizer', 'attendee')
+
+    @admin.display(description='messages')
+    def message_count(self, obj):
+        return obj.messages.count()
+
+
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('sender', 'receiver', 'is_read', 'created_at')
+    list_display = ('sender', 'receiver', 'conversation', 'is_read', 'created_at')
     list_filter = ('is_read',)
+    search_fields = ('sender__username', 'receiver__username', 'body')
 
 
 @admin.register(EventPhoto)

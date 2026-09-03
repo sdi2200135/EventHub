@@ -91,7 +91,8 @@ class Event(models.Model):
     
     @property
     def total_reserved(self):
-        return self.ticket_types.aggregate(t=Sum('reserved'))['t'] or 0
+        # use sum as the ticket types won't be more than 10 (usual for real events), so sum more efficient
+        return sum(tt.reserved for tt in self.ticket_types.all())
 
     @property
     def available_capacity(self):

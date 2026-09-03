@@ -1,11 +1,11 @@
 # core/serializers/conversation.py
 from rest_framework import serializers
 
-from core.models import Conversation, Event
+from core.models import Conversation, Event, User
 
 class ConversationSerializer(serializers.ModelSerializer):
     organizer = serializers.PrimaryKeyRelatedField(read_only=True)
-    attendee = serializers.PrimaryKeyRelatedField(read_only=True)
+    attendee = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False)
     event = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), required=True)
     has_unread = serializers.SerializerMethodField()
 
@@ -14,9 +14,18 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'organizer', 'attendee', 'event', 'created_at', 'has_unread',
         ]
+        # remove constraint from model for uniqueness, as it creates a problem in attendee
+        # as it makes 'attendee' to be sent and cannot be derived from request.ueser
+        validators = []
 
     # mark the conversation as one with unread messages
     def get_has_unread(self, obj):
+        # when the view fetches the conversations from db it asks in if the convo contains an unread message
+        # so the serializer reads that value off the objec instead of making another query
+        # performance better
+        annotated = getattr(obj, 'has_unread_flag', None)
+        if annotated is not None:
+            return annotated
         request = self.context.get('request')
         if not request:
             return False
@@ -28,7 +37,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
         # check that only organizers or people with bookings can start a convo
 
-        # if the user has a bookinh
+        # if the user has a booking
         if event.bookings.filter(attendee=request.user).exists():
             attrs['attendee_id'] = request.user.id
 

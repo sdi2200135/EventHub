@@ -6,14 +6,13 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from core.models import TicketType, Event
-from core.permissions import IsTicketTypeEventOwnerOrReadOnly
+from core.permissions import IsApprovedUser, IsTicketTypeEventOwnerOrReadOnly
 from core.serializers import TicketTypeSerializer
 from core.services.ticket_type import (
     delete_ticket_type,
-    CapacityExceededError,
     ReservedTicketsError,
     EventNotEditableError
 )
@@ -22,6 +21,7 @@ from core.services.ticket_type import (
 class TicketTypeViewSet(viewsets.ModelViewSet):
     queryset = TicketType.objects.all() #includes all ticket types
     serializer_class = TicketTypeSerializer #the serializer that we use
+
     #filtering per-event 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['event']
@@ -30,8 +30,8 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
         #if the action is list or retrieve everyone can see ticket types
         if self.action in ('list', 'retrieve'): 
             return [AllowAny()]
-        #if the action is create, update or delete only authenticated users and admins
-        return [IsAuthenticated(), IsTicketTypeEventOwnerOrReadOnly()] 
+        #if the action is create, update or delete only approved users and admins
+        return [IsApprovedUser(), IsTicketTypeEventOwnerOrReadOnly()]
 
     def get_serializer_context(self):   #adds the event and the request to the serializer's context
         context = super().get_serializer_context()  #get base context

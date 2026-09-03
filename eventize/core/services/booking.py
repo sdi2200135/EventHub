@@ -34,7 +34,8 @@ class BookingAlreadyConfirmedError(BookingError):
 
 @transaction.atomic
 def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
-    if not user.is_approved:    #check user is approved
+    # make sure only approved users can make bookings and no guests
+    if not (user.is_authenticated and user.is_approved):
         raise PermissionError("Only approved users can make bookings.")
 
     event = Event.objects.select_for_update().get(pk=event_id)
@@ -73,6 +74,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
 
 @transaction.atomic
 def confirm_booking(*, booking_id,event_id, user):
+    Event.objects.select_for_update().get(pk=event_id)
     booking=Booking.objects.select_for_update().get(pk=booking_id)
 
     if booking.attendee_id != user.id: #check permissions
@@ -103,31 +105,16 @@ def confirm_booking(*, booking_id,event_id, user):
     return booking
 
 @transaction.atomic
-def cancel_booking(*, booking_id, user):
-    booking = Booking.objects.select_for_update().get(pk=booking_id)
-    event = booking.event
-    #the attendee, the event organizer, or an admin can cancel.
-    if not (booking.attendee_id == user.id or event.organizer_id == user.id or user.is_admin):
-        raise PermissionError(
-            "You are not allowed to cancel this booking."
-            "Only the attendee, organizer, or admin can cancel."
-        )
+def cancel_event_bookings(*, event):
+    # when an event is canceled the bookings' status switch to cancelled, it is the only way a booking can get this status as user cannot cancel a booking after confirmation
+    # so we just change status and dont make any other change such as decrease tickets etc
+    event = Event.objects.select_for_update().get(pk=event.pk)
 
-    #check status
-    if booking.status not in (Booking.BookingStatus.PENDING, Booking.BookingStatus.CONFIRMED):
-        raise BookingNotPendingError(
-            f"Cannot cancel booking with status '{booking.status}'."
-            "Only PENDING or CONFIRMED bookings can be cancelled."
-        )
+    return Booking.objects.filter(
+        event=event,
+        status__in=(Booking.BookingStatus.PENDING, Booking.BookingStatus.CONFIRMED),
+    ).update(status=Booking.BookingStatus.CANCELLED)
 
-    #reduce the reserved amount for the ticket type
-    ticket_type = booking.ticket_type
-    ticket_type.reserved -= booking.number_of_tickets
-    ticket_type.save()
-    #update booking status
-    booking.status = Booking.BookingStatus.CANCELLED
-    booking.save()
-    return booking
 
 def get_booking_queryset(user): #returns the queryset of bookings that a user can view
     if user.is_admin: #admin can see them all

@@ -20,8 +20,8 @@ class ReservedTicketsError(TicketTypeError):
     pass
 
 class EventNotEditableError(TicketTypeError):
-    """"when we try to modify ticket types for an event that is not Draft
-    Only Draft events allow changes to ticket types"""
+    """"when we try to modify ticket types for an event that is not Draft or published
+    Only Draft or published events allow changes to ticket types"""
     pass
 
 # Create new ticket type for an event and returns it
@@ -34,10 +34,9 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
     if event.organizer_id != user.id and not user.is_admin:
         raise PermissionError("Only the event organizer or an admin can add ticket types.")
 
-    # check if the event is Draft to modify it
-    if event.status != Event.EventStatus.DRAFT:
-        raise EventNotEditableError(f"Can't modify ticket types when event is in '{event.status}' status."
-                                    "Only Draft events can be modified.") 
+    # check if the event is draft or published to modify it
+    if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
+        raise EventNotEditableError(f"Can't modify ticket types when event is in '{event.status}' status. Only draft or published events can be modified.") 
 
     # calc the total num of ticket types that already exist(with an SQL query)
     other_total = event.ticket_types.aggregate(total = Sum('quantity'))['total'] or 0
@@ -60,15 +59,15 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
 # update ticket type
 @transaction.atomic
 def update_ticket_type(*, ticket_type_id, user, **validated_data):
+    event_id = TicketType.objects.values_list('event_id', flat=True).get(pk = ticket_type_id)
+    event = Event.objects.select_for_update().get(pk = event_id)
     ticket_type = TicketType.objects.select_for_update().get(pk = ticket_type_id)
-    event = ticket_type.event
 
     if event.organizer_id != user.id and not user.is_admin:
         raise PermissionError("Only the event organizer or an admin can modify ticket types.")
 
-    if event.status != Event.EventStatus.DRAFT:
-        raise EventNotEditableError(f"Cannot modify ticket types when event is in '{event.status}' status."
-                                    "Only Draft events can be modified.")
+    if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
+        raise EventNotEditableError(f"Cannot modify ticket types when event is in '{event.status}' status. Only draft or published events can be modified.")
 
     # check if the amount of tickets the user is trying to reduce is more than the reserved tickets
     new_quantity = validated_data.get('quantity')
@@ -95,15 +94,16 @@ def update_ticket_type(*, ticket_type_id, user, **validated_data):
 # delete ticket type (if success returns true)
 @transaction.atomic
 def delete_ticket_type(*, ticket_type_id, user):
+    event_id = TicketType.objects.values_list('event_id', flat=True).get(pk = ticket_type_id)
+    event = Event.objects.select_for_update().get(pk = event_id)
     ticket_type = TicketType.objects.select_for_update().get(pk = ticket_type_id)
-    event = ticket_type.event
 
     if event.organizer_id != user.id and not user.is_admin:
         raise PermissionError("Only the event organizer or an admin can modify ticket types.")
 
-    if event.status != Event.EventStatus.DRAFT:
+    if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
             raise EventNotEditableError(f"Cannot modify ticket types when event is in '{event.status}' status."
-                                        "Only Draft events can be modified.")
+                                        "Only published or draft events can be modified.")
 
     # check if there are any bookings to avoid delete
     if ticket_type.bookings.exists():
@@ -125,5 +125,5 @@ def reserve_tickets(*, ticket_type_id, quantity):
                            f"Requested: {quantity}, Available: {ticket_type.available}")
 
     ticket_type.reserved += quantity
-    ticket_type.save()
+    ticket_type.save(update_fields=['reserved'])
     return ticket_type

@@ -1,5 +1,5 @@
 # core/views/__init__.py
-from .auth import RegisterView, CustomTokenObtainPairView, MeView
+from .auth import RegisterView, CustomTokenObtainPairView, CustomTokenRefreshView, MeView
 from .admin import UserAdminViewSet
 from .category import CategoryViewSet
 from .event import EventViewSet
@@ -11,6 +11,7 @@ from .conversation import ConversationViewSet
 __all__ = [
     'RegisterView',
     'CustomTokenObtainPairView',
+    'CustomTokenRefreshView',
     'MeView',
     'UserAdminViewSet',
     'CategoryViewSet',

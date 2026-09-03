@@ -10,12 +10,13 @@ from rest_framework.response import Response
 
 from core.filters import EventFilter
 from core.models import Event, EventPhoto, EventView, Message, Conversation
-from core.permissions import IsEventOwnerOrReadOnly, IsOrganizer
+from core.permissions import IsApprovedUser, IsEventOwnerOrReadOnly, IsOrganizer
 from core.serializers import EventDetailSerializer, EventListSerializer, EventWriteSerializer, EventPhotoSerializer
+from core.services.booking import cancel_event_bookings
 from core.services.event import (
     create_event,
     update_event,
-    InvalidTransition
+    DomainError,
 )
 
 
@@ -26,7 +27,9 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Event.objects.all().order_by('start_datetime', 'pk')
+        qs = Event.objects.select_related('organizer').prefetch_related(
+            'categories', 'ticket_types'
+        ).order_by('start_datetime', 'pk')
         if not user.is_authenticated:
             return qs.filter(status=Event.EventStatus.PUBLISHED)
         if user.is_admin:
@@ -46,13 +49,16 @@ class EventViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return [AllowAny()]
         if self.action == 'create':
-            return [IsAuthenticated(), IsOrganizer()]
-        return [IsAuthenticated(), IsEventOwnerOrReadOnly()]
+            return [IsOrganizer()]
+        return [IsApprovedUser(), IsEventOwnerOrReadOnly()]
 
     def perform_create(self, serializer):
         data = dict(serializer.validated_data)
         categories = data.pop('categories', None)
-        event = create_event(organizer=self.request.user, categories=categories, **data)
+        try:
+            event = create_event(organizer=self.request.user, categories=categories, **data)
+        except DomainError as e:
+            raise serializers.ValidationError({'detail': str(e)})
         serializer.instance = event
 
     def perform_update(self, serializer):
@@ -60,7 +66,7 @@ class EventViewSet(viewsets.ModelViewSet):
         categories = data.pop('categories', None)
         try:
             event = update_event(event=serializer.instance, categories=categories, **data)
-        except InvalidTransition as e:
+        except DomainError as e:
             raise serializers.ValidationError({'detail': str(e)})
         serializer.instance = event
 
@@ -82,25 +88,44 @@ class EventViewSet(viewsets.ModelViewSet):
             )
         return super().destroy(request, *args, **kwargs)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsEventOwnerOrReadOnly])
+    @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def publish(self, request, pk=None):
+        
         event = self.get_object()
+
+        # check for the state of event
+        if event.status != Event.EventStatus.DRAFT:
+            return Response({'detail': 'Only draft events can be published'}, status = 400)
+
+        # check for valid number of tickets and existing ticket types
         total_quantity = event.ticket_types.aggregate(total=Sum('quantity'))['total'] or 0
+        
         if total_quantity == 0:
-            return Response({'detail': 'Add at least one ticket type before publishing.'}, status=400)
+            return Response({'detail': 'Add at least one ticket type before publishing.'}, status = 400)
         if total_quantity > event.capacity:
-            return Response({'detail': 'Ticket type quantities exceed event capacity.'}, status=400)
+            return Response({'detail': 'Ticket type quantities exceed event capacity.'}, status = 400)
+        
         event.status = Event.EventStatus.PUBLISHED
         event.save()
         return Response(EventDetailSerializer(event).data)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsEventOwnerOrReadOnly])
+    # on cancellation of event we cancel bookings and we keep everything no delete so we can trace the attendees
+    @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def cancel(self, request, pk=None):
         event = self.get_object()
+        if event.status != Event.EventStatus.PUBLISHED:
+            return Response(
+                {'detail': f"Only a published event can be cancelled"}, status=status.HTTP_400_BAD_REQUEST,
+            )
         event.status = Event.EventStatus.CANCELLED
-        event.save()
+        event.save(update_fields=['status'])
 
-        attendee_ids = event.bookings.values_list('attendee', flat=True).distinct()
+        cancel_event_bookings(event=event)
+
+        #  we want only one message per user even if he has more than one bookings
+        attendee_ids = event.bookings.order_by().values_list('attendee', flat=True).distinct()
+
+        # send message to every attendee
         for attendee_id in attendee_ids:
             conversation, _ = Conversation.objects.get_or_create(
                 attendee_id=attendee_id, 
@@ -117,7 +142,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(EventDetailSerializer(event).data)
 
     # add photos on publishing an event
-    @action(detail=True, methods=['post'], url_path='photos', permission_classes=[IsAuthenticated, IsEventOwnerOrReadOnly])
+    @action(detail=True, methods=['post'], url_path='photos', permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def add_photo(self, request, pk=None):
         event = self.get_object()
         serializer = EventPhotoSerializer(data=request.data, context={'event': event, 'request': request})
@@ -126,7 +151,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     # fucntion to delete photos on update
-    @action(detail=True, methods=['delete'], url_path=r'photos/(?P<photo_id>\d+)',permission_classes=[IsAuthenticated, IsEventOwnerOrReadOnly])
+    @action(detail=True, methods=['delete'], url_path=r'photos/(?P<photo_id>\d+)',permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def delete_photo(self, request, pk=None, photo_id=None):
         event = self.get_object()
         photo = get_object_or_404(EventPhoto, pk=photo_id, event=event)

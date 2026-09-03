@@ -3,11 +3,10 @@ from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.models import Message
-from core.permissions import IsMessageParticipant
+from core.permissions import IsMessageParticipant, IsApprovedUser
 from core.serializers import MessageSerializer
 from core.services.conv_mess import delete_message_for_sender, delete_message_for_receiver
 
@@ -15,7 +14,7 @@ from core.services.conv_mess import delete_message_for_sender, delete_message_fo
 class MessageViewSet(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'head', 'options','delete']
     serializer_class = MessageSerializer
-    permission_classes = [IsAuthenticated, IsMessageParticipant]
+    permission_classes = [IsApprovedUser, IsMessageParticipant]
     filterset_fields = ['conversation']
 
     def get_queryset(self):

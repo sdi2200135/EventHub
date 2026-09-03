@@ -6,7 +6,6 @@ from core.models import Booking
 from core.services.booking import (
     create_booking,
     confirm_booking,
-    cancel_booking,
     SoldOutError,
     EventNotActiveError,
     TicketTypeMismatchError,
@@ -76,5 +75,5 @@ class BookingSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data): #bookings are not updated directly.
         raise serializers.ValidationError(
-            {'detail':'Bookings cannot be updated directly. Use confirm or cancel actions.'}
+            {'detail':'Bookings cannot be updated or withdrawn once submitted.'}
         )

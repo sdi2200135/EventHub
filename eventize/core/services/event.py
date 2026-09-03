@@ -1,5 +1,6 @@
 # core/services/events.py
 from django.db import transaction
+from django.db.models import Sum
 from core.models import Event, TicketType
 from core.utils import generate_id
 
@@ -33,12 +34,23 @@ def create_event(*, organizer, categories=None, ticket_types=None, **data):
             TicketType.objects.create(event=event, **tt)
         return event
 
-
+@transaction.atomic
 def update_event(*, event, categories=None, **data):
-    if event.status == Event.EventStatus.CANCELLED:
-        raise InvalidTransition("Cancelled events cannot be edited.")
+        event = Event.objects.select_for_update().get(pk=event.pk)
 
-    with transaction.atomic():
+        if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
+            raise InvalidTransition("Cancelled or completed events cannot be edited.")
+
+        # check if the new capacity is bigger than the sum of the toal tickets 
+        new_capacity = data.get('capacity')
+        if new_capacity is not None and new_capacity != event.capacity:
+            total = event.ticket_types.aggregate(t=Sum('quantity'))['t'] or 0
+            if total > new_capacity:
+                raise CapacityExceeded(
+                    f"Capacity ({new_capacity}) is below the total ticket type "
+                    f"quantities ({total}). Reduce ticket quantities first."
+                )
+
         for field, value in data.items():
             setattr(event, field, value)
         event.save()

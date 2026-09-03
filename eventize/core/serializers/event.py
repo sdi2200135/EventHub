@@ -51,7 +51,7 @@ class EventWriteSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Category.objects.all(), required=True, allow_empty=False
     )
-
+    
     class Meta:
         model = Event
         fields = [

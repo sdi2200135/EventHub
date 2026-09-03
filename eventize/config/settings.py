@@ -129,7 +129,7 @@ STATIC_URL = 'static/'
 
 # User-uploaded files (event photos, etc.)
 # https://docs.djangoproject.com/en/5.2/topics/files/
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -150,6 +150,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ),
+    # here return the number of events which can be fitted into one page
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 12,
 }
