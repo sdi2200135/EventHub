@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.models import Booking
-from core.permissions import IsBookingOwnerOrEventOrganizer, IsParticipant, IsApprovedUser
+from core.permissions import IsBookingOwnerOrEventOrganizer, IsParticipant, IsApprovedUser, IsBookingOwner
 from core.serializers import BookingSerializer
 from core.services.booking import (
     confirm_booking,
@@ -31,7 +31,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         if self.action == 'create': #only approved users can make a reservation
             return [IsAuthenticated(), IsParticipant()]
         elif self.action == 'confirm': #only attendee can approve
-            return [IsAuthenticated(), IsBookingOwnerOrEventOrganizer()]
+            return [IsBookingOwner()]
         return super().get_permissions()
 
     def get_serializer_context(self): #it adds the request to the serializer's context

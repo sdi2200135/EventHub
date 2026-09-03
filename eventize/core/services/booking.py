@@ -37,7 +37,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
     # make sure only approved users can make bookings and no guests
     if not (user.is_authenticated and user.is_approved):
         raise PermissionError("Only approved users can make bookings.")
-
+    
     event = Event.objects.select_for_update().get(pk=event_id)
     if not event.is_active: #check event is active
         raise EventNotActiveError(
@@ -45,6 +45,9 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
             f"Status: {event.status}, Start: {event.start_datetime}"
         )
 
+    if event.organizer_id == user.id:
+        raise PermissionError("An organizer cannot book their own event.")
+    
     ticket_type = TicketType.objects.select_for_update().get(pk=ticket_type_id)
     if ticket_type.event_id != event.id: #check ticket type belongs to event
         raise TicketTypeMismatchError(
@@ -74,7 +77,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
 
 @transaction.atomic
 def confirm_booking(*, booking_id,event_id, user):
-    Event.objects.select_for_update().get(pk=event_id)
+    event = Event.objects.select_for_update().get(pk=event_id)
     booking=Booking.objects.select_for_update().get(pk=booking_id)
 
     if booking.attendee_id != user.id: #check permissions
@@ -87,8 +90,7 @@ def confirm_booking(*, booking_id,event_id, user):
         )
     
     # check for the active event status
-    event = Event.objects.select_for_update().get(pk=event_id)
-    if not event.is_active: #check event is active
+    if not event.is_active: 
         raise EventNotActiveError(
             f"Event '{event.title}' is not active."
             f"Status: {event.status}, Start: {event.start_datetime}"

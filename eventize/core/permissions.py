@@ -102,3 +102,8 @@ class IsMessageParticipant(BasePermission):
             and user.is_authenticated
             and user.id in (obj.sender_id, obj.receiver_id)
         )
+
+
+class IsBookingOwner(IsApprovedUser):
+   def has_object_permission(self, request, view, obj):
+        return bool(request.user and obj.attendee_id == request.user.id)

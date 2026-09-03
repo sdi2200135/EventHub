@@ -92,8 +92,8 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def publish(self, request, pk=None):
         with transaction.atomic():
-            event = self.get_object()
-
+        
+            event = Event.objects.select_for_update().get(pk=self.get_object().pk)
             # check for the state of event
             if event.status != Event.EventStatus.DRAFT:
                 return Response({'detail': 'Only draft events can be published'}, status = 400)
@@ -113,32 +113,33 @@ class EventViewSet(viewsets.ModelViewSet):
     # on cancellation of event we cancel bookings and we keep everything no delete so we can trace the attendees
     @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def cancel(self, request, pk=None):
-        event = self.get_object()
-        if event.status != Event.EventStatus.PUBLISHED:
-            return Response(
-                {'detail': f"Only a published event can be cancelled"}, status=status.HTTP_400_BAD_REQUEST,
-            )
-        event.status = Event.EventStatus.CANCELLED
-        event.save(update_fields=['status'])
+        with transaction.atomic():
+            event = Event.objects.select_for_update().get(pk=self.get_object().pk)
+            if event.status != Event.EventStatus.PUBLISHED:
+                return Response(
+                    {'detail': f"Only a published event can be cancelled"}, status=status.HTTP_400_BAD_REQUEST,
+                )
+            event.status = Event.EventStatus.CANCELLED
+            event.save(update_fields=['status'])
 
-        cancel_event_bookings(event=event)
+            cancel_event_bookings(event=event)
 
-        #  we want only one message per user even if he has more than one bookings
-        attendee_ids = event.bookings.order_by().values_list('attendee', flat=True).distinct()
+            #  we want only one message per user even if he has more than one bookings
+            attendee_ids = event.bookings.order_by().values_list('attendee', flat=True).distinct()
 
-        # send message to every attendee
-        for attendee_id in attendee_ids:
-            conversation, _ = Conversation.objects.get_or_create(
-                attendee_id=attendee_id, 
-                defaults={'organizer': event.organizer},
-                event=event,
-            )
-            Message.objects.create(
-                sender=event.organizer,
-                receiver_id=attendee_id,
-                conversation=conversation,
-                body=f'The event "{event.title}" scheduled for {event.start_datetime} has been cancelled.',
-            )
+            # send message to every attendee
+            for attendee_id in attendee_ids:
+                conversation, _ = Conversation.objects.get_or_create(
+                    attendee_id=attendee_id, 
+                    defaults={'organizer': event.organizer},
+                    event=event,
+                )
+                Message.objects.create(
+                    sender=event.organizer,
+                    receiver_id=attendee_id,
+                    conversation=conversation,
+                    body=f'The event "{event.title}" scheduled for {event.start_datetime} has been cancelled.',
+                )
 
         return Response(EventDetailSerializer(event).data)
 

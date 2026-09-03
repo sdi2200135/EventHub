@@ -27,11 +27,20 @@ class TicketTypeSerializer(serializers.ModelSerializer):
         # get event from context or from instance
         event = self.context.get('event')
         instance = self.instance
+        
         if not event and instance:
             event = instance.event
         if not event:   #cannot do validation without event
             return attrs
 
+        # check for an existing ticket name (duplicate)
+        name = attrs.get('name', getattr(instance, 'name', None))
+        if name and event:
+            duplicate = event.ticket_types.filter(name__iexact=name.strip())
+            if instance: duplicate = duplicate.exclude(pk=instance.pk)
+            if duplicate.exists():
+                raise serializers.ValidationError({'name': 'A ticket type with this name already exists for this event.'})
+                
         # get quantity from attrs or from instance
         quantity = attrs.get('quantity', getattr(instance, 'quantity', None))
         if quantity is None:
@@ -47,8 +56,14 @@ class TicketTypeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'quantity': f'Sum of ticket types cannot exceed event capacity. Available: {available}'
             })
+        
         return attrs
 
+    # remove white space from ticket's name
+    def validate_name(self, value): 
+        return value.strip()
+
+    
     def create(self, validated_data):
         # get event and request from context
         event = self.context.get('event')

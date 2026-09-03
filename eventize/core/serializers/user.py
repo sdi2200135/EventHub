@@ -37,6 +37,13 @@ class UserSerializer(serializers.ModelSerializer):
             )
         return attrs
 
+    # in order to update a race condtion canbe created if user edits his info and admin approve the user 
+    # so in order to solve that write only what the request included, ofc not the apporval status
+    def update(self, instance, validated_data):
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save(update_fields=list(validated_data.keys()))
+        return instance
 
 class UserAdminSerializer(serializers.ModelSerializer):
     """detailed user's info for admin"""
