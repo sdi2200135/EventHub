@@ -1,0 +1,11 @@
+/* src/pages/profile/AdminDashboard.css */
+/* src/pages/profile/OrganizerDashboard.css */
+/* src/pages/profile/ParticipantDashboard.css */
+
+/* Όλα τα dashboards χρησιμοποιούν τα κοινά styles από το ProfilePage.css */
+/* Αυτά τα αρχεία μπορείς να τα αφήσεις κενά ή να προσθέσεις εξειδικευμένα styles */
+
+/* Παράδειγμα για ParticipantDashboard.css */
+.participant-dashboard {
+  width: 100%;
+}

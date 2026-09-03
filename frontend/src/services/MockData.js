@@ -9,7 +9,9 @@ export const mockUsers = [
     first_name: 'Admin',
     last_name: 'User',
     role: 'ADMIN',
-    approval_status: 'APPROVED'
+    approval_status: 'APPROVED',
+    is_staff: true,
+    is_superuser: true
   },
   {
     id: 2,
@@ -19,7 +21,11 @@ export const mockUsers = [
     first_name: 'John',
     last_name: 'Organizer',
     role: 'ORGANIZER',
-    approval_status: 'APPROVED'
+    approval_status: 'APPROVED',
+    phone: '6969696969',
+    address: 'zografou',
+    city: 'athens',
+    afm: '555555555'
   },
   {
     id: 3,
@@ -29,7 +35,11 @@ export const mockUsers = [
     first_name: 'Jane',
     last_name: 'Participant',
     role: 'USER',
-    approval_status: 'APPROVED'
+    approval_status: 'APPROVED',
+    phone: '6988888888',
+    address: 'Kallithea 10',
+    city: 'Athens',
+    afm: '123456789'
   }
 ];
 
@@ -65,8 +75,6 @@ export const mockVenues = {
 };
 
 // Γέμισμα θέσεων για Theater και Cinema (20 σειρές x 15 θέσεις = 300)
-// VIP: σειρές A-E (5 σειρές x 15 = 75 θέσεις)
-// Regular: σειρές F-T (15 σειρές x 15 = 225 θέσεις)
 const rows = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T'];
 const seatsPerRow = 15;
 
@@ -90,11 +98,7 @@ rows.forEach(row => {
   }
 });
 
-// ============================================
-// SPORTS - Boxes με διαφορετικές κατηγορίες
-// VIP: Box 1, Box 3, Box 6, Box 8 (πάνω/κάτω γωνίες)
-// Regular: Box 2, Box 4, Box 5, Box 7 (πλάγια)
-// ============================================
+// Sports Boxes
 mockVenues['Sports'].boxes = {
   'Gate 1': { capacity: 6, available: 6, label: 'Gate 1', ticketType: 'Regular' },
   'Gate 2': { capacity: 4, available: 4, label: 'Gate 2', ticketType: 'VIP' },
@@ -107,13 +111,77 @@ mockVenues['Sports'].boxes = {
 };
 
 // ============================================
+// MOCK BOOKINGS
+// ============================================
+export const mockBookings = [
+  {
+    id: 1,
+    user_id: 3,
+    event_id: 1,
+    ticket_type_id: 1,
+    quantity: 2,
+    seats: '',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-20T14:30:00Z',
+    total_price: 36.00,
+    event_title: 'Concert',
+    event_date: '2026-07-25T20:00:00Z',
+    venue: 'Colour Festival Grounds',
+    city: 'OAKA'
+  },
+  {
+    id: 2,
+    user_id: 3,
+    event_id: 4,
+    ticket_type_id: 8,
+    quantity: 1,
+    seats: 'Gate 2:2',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-22T10:15:00Z',
+    total_price: 35.00,
+    event_title: 'Basketball Game',
+    event_date: '2026-07-27T19:00:00Z',
+    venue: 'OAKA Arena',
+    city: 'Μαρούσι'
+  },
+  {
+    id: 3,
+    user_id: 3,
+    event_id: 6,
+    ticket_type_id: 13,
+    quantity: 3,
+    seats: 'A12,A13,A14',
+    status: 'PENDING',
+    booking_date: '2026-07-23T16:45:00Z',
+    total_price: 60.00,
+    event_title: 'Theater Play: The Glass Menagerie',
+    event_date: '2026-08-05T20:30:00Z',
+    venue: 'OAKA Theater Hall',
+    city: 'OAKA'
+  },
+  {
+    id: 4,
+    user_id: 3,
+    event_id: 7,
+    ticket_type_id: 14,
+    quantity: 2,
+    seats: '',
+    status: 'CANCELLED',
+    booking_date: '2026-07-25T09:00:00Z',
+    total_price: 60.00,
+    event_title: 'Stand Up Comedy Night',
+    event_date: '2026-08-10T21:00:00Z',
+    venue: 'Comedy Club Athens',
+    city: 'Athens'
+  }
+];
+
+// ============================================
 // EVENTS
 // ============================================
 
 export const mockEvents = [
-  // ============================================
-  // EVENT 1: CONCERT (Music - ΔΕΝ έχει θέσεις) - AVAILABLE
-  // ============================================
+  // EVENT 1: CONCERT
   {
     id: 1,
     event_id: 'EV1001',
@@ -141,15 +209,15 @@ export const mockEvents = [
     ticket_types: [
       { id: 1, ticket_type_id: 'T1', name: 'Regular', price: 18.00, quantity: 250, available: 180 }
     ],
-    bookings: [],
+    bookings: [
+      { id: 1, user_id: 3, status: 'CONFIRMED', quantity: 2 }
+    ],
     photos: [
       { id: 1, image: 'https://picsum.photos/seed/concert/400/300', caption: 'Concert stage' }
     ]
   },
-
-  // ============================================
-  // EVENT 2: COLOUR FESTIVAL (Music - ΔΕΝ έχει θέσεις) - LIMITED
-  // ============================================
+  // ... (τα υπόλοιπα events με τις προσθήκες bookings)
+  // EVENT 2: COLOUR FESTIVAL
   {
     id: 2,
     event_id: 'EV1002',
@@ -166,7 +234,7 @@ export const mockEvents = [
     end_datetime: '2026-07-25T22:00:00Z',
     capacity: 500,
     status: 'PUBLISHED',
-    available_capacity: 8,  // LIMITED (8/500 = 1.6% < 20%)
+    available_capacity: 8,
     categories: ['Music'],
     organizer: {
       id: 2,
@@ -183,10 +251,7 @@ export const mockEvents = [
       { id: 2, image: 'https://picsum.photos/seed/festival/400/300', caption: 'Colour Festival' }
     ]
   },
-
-  // ============================================
-  // EVENT 3: MOVIE NIGHT (Cinema) - NOT AVAILABLE
-  // ============================================
+  // EVENT 3: MOVIE NIGHT
   {
     id: 3,
     event_id: 'EV1003',
@@ -203,7 +268,7 @@ export const mockEvents = [
     end_datetime: '2026-07-26T23:30:00Z',
     capacity: 300,
     status: 'PUBLISHED',
-    available_capacity: 0,  // NOT AVAILABLE
+    available_capacity: 0,
     categories: ['Cinema'],
     organizer: {
       id: 2,
@@ -220,10 +285,7 @@ export const mockEvents = [
       { id: 3, image: 'https://picsum.photos/seed/movie/400/300', caption: 'Movie Night' }
     ]
   },
-
-  // ============================================
-  // EVENT 4: BASKETBALL GAME (Sports) - LIMITED
-  // ============================================
+  // EVENT 4: BASKETBALL GAME
   {
     id: 4,
     event_id: 'EV1004',
@@ -231,16 +293,16 @@ export const mockEvents = [
     description: 'Exciting basketball match.',
     event_type: 'SPORTS',
     venue: 'OAKA Arena',
-    address: 'Λεωφ. Ολυμπιονίκου Σπύρου Λούη 1',  
-    city: 'Μαρούσι',                              
+    address: 'Λεωφ. Ολυμπιονίκου Σπύρου Λούη 1',
+    city: 'Μαρούσι',
     country: 'Greece',
-    latitude: 38.0379,    
-    longitude: 23.7799,   
+    latitude: 38.0379,
+    longitude: 23.7799,
     start_datetime: '2026-07-27T19:00:00Z',
     end_datetime: '2026-07-27T21:30:00Z',
     capacity: 46,
     status: 'PUBLISHED',
-    available_capacity: 9,  // LIMITED (9/46 = 19.5% < 20%)
+    available_capacity: 9,
     categories: ['Sports'],
     organizer: {
       id: 2,
@@ -257,17 +319,16 @@ export const mockEvents = [
       { id: 8, ticket_type_id: 'T8', name: 'VIP', price: 35.00, quantity: 20, available: 5 },
       { id: 9, ticket_type_id: 'T9', name: 'Regular', price: 15.00, quantity: 26, available: 4 }
     ],
-    bookings: [],
+    bookings: [
+      { id: 2, user_id: 3, status: 'CONFIRMED', quantity: 1 }
+    ],
     photos: [
       { id: 4, image: 'https://picsum.photos/seed/basketball/400/300', caption: 'Basketball Game' }
     ],
     homeTeam: 'Panathinaikos',
     awayTeam: 'Olympiacos'
   },
-
-  // ============================================
-  // EVENT 5: FOOTBALL GAME (Sports) - AVAILABLE
-  // ============================================
+  // EVENT 5: FOOTBALL GAME
   {
     id: 5,
     event_id: 'EV1005',
@@ -284,7 +345,7 @@ export const mockEvents = [
     end_datetime: '2026-07-28T22:30:00Z',
     capacity: 46,
     status: 'PUBLISHED',
-    available_capacity: 30,  // AVAILABLE (30/46 = 65% > 20%)
+    available_capacity: 30,
     categories: ['Sports'],
     organizer: {
       id: 2,
@@ -301,10 +362,7 @@ export const mockEvents = [
       { id: 5, image: 'https://picsum.photos/seed/football/400/300', caption: 'Football Game' }
     ]
   },
-
-  // ============================================
-  // EVENT 6: THEATER PLAY (Theater) - AVAILABLE
-  // ============================================
+  // EVENT 6: THEATER PLAY
   {
     id: 6,
     event_id: 'EV1006',
@@ -321,7 +379,7 @@ export const mockEvents = [
     end_datetime: '2026-08-05T23:00:00Z',
     capacity: 300,
     status: 'PUBLISHED',
-    available_capacity: 260,  // AVAILABLE (260/300 = 86% > 20%)
+    available_capacity: 260,
     categories: ['Theater'],
     organizer: {
       id: 2,
@@ -333,15 +391,14 @@ export const mockEvents = [
       { id: 12, ticket_type_id: 'T12', name: 'VIP', price: 45.00, quantity: 75, available: 70 },
       { id: 13, ticket_type_id: 'T13', name: 'Regular', price: 20.00, quantity: 225, available: 190 }
     ],
-    bookings: [],
+    bookings: [
+      { id: 3, user_id: 3, status: 'PENDING', quantity: 3 }
+    ],
     photos: [
       { id: 6, image: 'https://picsum.photos/seed/theater/400/300', caption: 'Theater stage' }
     ]
   },
-
-  // ============================================
-  // EVENT 7: STAND UP COMEDY (Stand Up Comedy) - AVAILABLE
-  // ============================================
+  // EVENT 7: STAND UP COMEDY
   {
     id: 7,
     event_id: 'EV1007',
@@ -358,7 +415,7 @@ export const mockEvents = [
     end_datetime: '2026-08-10T23:30:00Z',
     capacity: 150,
     status: 'PUBLISHED',
-    available_capacity: 80,  // AVAILABLE (80/150 = 53% > 20%)
+    available_capacity: 80,
     categories: ['Stand Up Comedy'],
     organizer: {
       id: 2,
@@ -370,7 +427,9 @@ export const mockEvents = [
       { id: 14, ticket_type_id: 'T14', name: 'VIP', price: 30.00, quantity: 50, available: 30 },
       { id: 15, ticket_type_id: 'T15', name: 'Regular', price: 15.00, quantity: 100, available: 50 }
     ],
-    bookings: [],
+    bookings: [
+      { id: 4, user_id: 3, status: 'CANCELLED', quantity: 2 }
+    ],
     photos: [
       { id: 7, image: 'https://picsum.photos/seed/comedy/400/300', caption: 'Comedy Club' }
     ]
