@@ -13,6 +13,8 @@ import EventsPage from './pages/EventsPage';
 import EventDetails from './pages/EventDetails';
 import BookingPage from './pages/BookingPage';
 import ProfilePage from './pages/ProfilePage';
+import EditProfile from './pages/EditProfile';
+import MessageView from './pages/MessageView';
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
               <Route path="/events/details/:id" element={<EventDetails />} />
               <Route path="/events/details/:id/booking" element={<BookingPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/profile/message/:id" element={<MessageView />} />
             </Routes>
           </main>
           <Footer />

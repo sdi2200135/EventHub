@@ -42,31 +42,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // src/context/AuthContext.jsx - login function
-const login = async (username, password) => {
-  try {
-    const response = await authService.login({ username, password });
-    const { access, refresh, user } = response.data;
-    
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-    
-    setUser(user);
-    setIsAuthenticated(true);
-    
-    // Ενημέρωση του last_login μέσω API call
+  const login = async (username, password) => {
     try {
-      await authService.updateLastLogin();
-    } catch (e) {
-      console.log('Could not update last_login:', e);
+      const response = await authService.login({ username, password });
+      const { access, refresh, user } = response.data;
+      
+      localStorage.setItem('access_token', access);
+      localStorage.setItem('refresh_token', refresh);
+      
+      setUser(user);
+      setIsAuthenticated(true);
+      
+      // Ενημέρωση του last_login μέσω API call
+      try {
+        await authService.updateLastLogin();
+      } catch (e) {
+        console.log('Could not update last_login:', e);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      const message = 
+        error.response?.data?.detail || 
+        error.message || 
+        'Invalid username or password';
+      return { success: false, error: message };
     }
-    
-    return { success: true };
-  } catch (error) {
-    const message = error.response?.data?.detail || error.message || 'Login failed';
-    return { success: false, error: message };
-  }
-};
+  };
 
   const register = async (userData) => {
     try {

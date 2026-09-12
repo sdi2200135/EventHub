@@ -453,3 +453,48 @@ export const mockCurrentUser = {
   role: 'USER',
   approval_status: 'APPROVED'
 };
+
+// src/services/mockData.js - ΠΡΟΣΘΗΚΗ
+
+// ============================================
+// MOCK MESSAGES
+// ============================================
+// src/services/mockData.js
+export const mockMessages = [
+  {
+    id: 1,
+    sender_id: 2,
+    sender_username: 'organizer',           // ← Χρειάζεται
+    sender_name: 'John Organizer',          // ← Χρειάζεται
+    recipient_id: 3,
+    subject: 'Your booking is confirmed',   // ← Χρειάζεται
+    body: 'Hi Jane, your booking for Concert has been confirmed. See you there!',  // ← Χρειάζεται
+    is_read: false,
+    created_at: '2026-07-20T15:00:00Z',     // ← Χρειάζεται
+    attachments: []                          // ← Προαιρετικό
+  },
+  {
+    id: 2,
+    sender_id: 1,
+    sender_username: 'admin',
+    sender_name: 'Admin User',
+    recipient_id: 3,
+    subject: 'Welcome to Eventize',
+    body: 'Welcome! Your account has been approved. Enjoy browsing events.',
+    is_read: false,
+    created_at: '2026-07-21T09:30:00Z',
+    attachments: []
+  },
+  {
+    id: 3,
+    sender_id: 2,
+    sender_username: 'organizer',
+    sender_name: 'John Organizer',
+    recipient_id: 3,
+    subject: 'Basketball Game update',
+    body: 'The Basketball Game time has been changed to 19:00. Please check your booking.',
+    is_read: true,
+    created_at: '2026-07-22T11:00:00Z',
+    attachments: []
+  }
+];
