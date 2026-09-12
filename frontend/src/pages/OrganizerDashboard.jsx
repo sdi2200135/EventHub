@@ -7,6 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import './Dashboard.css';
+import MyEvents from './MyEvents';
 
 const OrganizerDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -261,13 +262,7 @@ const OrganizerDashboard = ({ user }) => {
           />
         )}
         {activeTab === 'events' && (
-          <div className="placeholder-tab">
-            <h3>📅 My Events</h3>
-            <p>Η λίστα με τις εκδηλώσεις σας θα εμφανιστεί εδώ.</p>
-            <p className="placeholder-hint">
-              (Coming soon — Create Event, Edit, Cancel, Delete)
-            </p>
-          </div>
+          <MyEvents user={user} />
         )}
         {activeTab === 'reservations' && (
           <div className="placeholder-tab">

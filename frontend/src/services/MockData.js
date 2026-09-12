@@ -464,6 +464,112 @@ export const mockEvents = [
     photos: [
       { id: 7, image: 'https://picsum.photos/seed/comedy/400/300', caption: 'Comedy Club' }
     ]
+  },
+    // ============================================
+  // EVENT 8: DRAFT EVENT (για testing)
+  // ============================================
+  {
+    id: 8,
+    event_id: 'EV1008',
+    title: 'Summer Music Festival 2026',
+    description: 'A three-day summer music festival with top artists.',
+    event_type: 'FESTIVAL',
+    venue: 'Technopolis',
+    address: 'Peiraios 100',
+    city: 'Athens',
+    country: 'Greece',
+    latitude: 37.9780,
+    longitude: 23.7150,
+    start_datetime: '2026-09-15T18:00:00Z',
+    end_datetime: '2026-09-17T23:00:00Z',
+    capacity: 2000,
+    status: 'DRAFT',
+    available_capacity: 2000,
+    categories: ['Music'],
+    organizer: {
+      id: 2,
+      username: 'organizer',
+      first_name: 'John',
+      last_name: 'Organizer'
+    },
+    ticket_types: [
+      { id: 16, ticket_type_id: 'T16', name: 'Regular', price: 50.00, quantity: 1500, available: 1500 },
+      { id: 17, ticket_type_id: 'T17', name: 'VIP', price: 120.00, quantity: 500, available: 500 }
+    ],
+    bookings: [],
+    photos: [
+      { id: 8, image: 'https://picsum.photos/seed/summerfest/400/300', caption: 'Summer Festival' }
+    ]
+  },
+  // ============================================
+  // EVENT 9: COMPLETED EVENT (για testing)
+  // ============================================
+  {
+    id: 9,
+    event_id: 'EV1009',
+    title: 'Winter Jazz Night',
+    description: 'An intimate evening with jazz legends.',
+    event_type: 'CONCERT',
+    venue: 'Athens Concert Hall',
+    address: 'Vas. Sofias 20',
+    city: 'Athens',
+    country: 'Greece',
+    latitude: 37.9780,
+    longitude: 23.7480,
+    start_datetime: '2025-12-20T20:00:00Z',
+    end_datetime: '2025-12-20T23:00:00Z',
+    capacity: 500,
+    status: 'COMPLETED',
+    available_capacity: 120,
+    categories: ['Music'],
+    organizer: {
+      id: 2,
+      username: 'organizer',
+      first_name: 'John',
+      last_name: 'Organizer'
+    },
+    ticket_types: [
+      { id: 18, ticket_type_id: 'T18', name: 'Regular', price: 40.00, quantity: 500, available: 120 }
+    ],
+    bookings: [],
+    photos: [
+      { id: 9, image: 'https://picsum.photos/seed/jazz/400/300', caption: 'Jazz Night' }
+    ]
+  },
+  // ============================================
+  // EVENT 10: CANCELLED EVENT (για testing)
+  // ============================================
+  {
+    id: 10,
+    event_id: 'EV1010',
+    title: 'Tech Conference 2026',
+    description: 'Annual technology conference (cancelled due to weather).',
+    event_type: 'CONFERENCE',
+    venue: 'Megaro Mousikis',
+    address: 'Vas. Sofias 22',
+    city: 'Athens',
+    country: 'Greece',
+    latitude: 37.9780,
+    longitude: 23.7480,
+    start_datetime: '2026-10-10T09:00:00Z',
+    end_datetime: '2026-10-10T18:00:00Z',
+    capacity: 800,
+    status: 'CANCELLED',
+    available_capacity: 800,
+    categories: ['Music'],
+    organizer: {
+      id: 2,
+      username: 'organizer',
+      first_name: 'John',
+      last_name: 'Organizer'
+    },
+    ticket_types: [
+      { id: 19, ticket_type_id: 'T19', name: 'Regular', price: 30.00, quantity: 800, available: 800 }
+    ],
+    bookings: [],
+    photos: [
+      { id: 10, image: 'https://picsum.photos/seed/techconf/400/300', caption: 'Tech Conference' }
+    ]
   }
 ];
 

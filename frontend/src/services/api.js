@@ -180,6 +180,175 @@ export const eventService = {
       `${API_BASE}/events/${eventId}/available_seats/?ticket_type=${ticketTypeId}`
     );
     return response;
+  },
+    // ← ΝΕΟ: Events του συγκεκριμένου organizer
+  getOrganizerEvents: async (organizerId) => {
+    if (USE_MOCK) {
+      await delay();
+      const events = mockEvents.filter(e => e.organizer?.id === organizerId);
+      return { data: events };
+    }
+    const response = await axios.get(`${API_BASE}/events/?organizer=${organizerId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    if (response.data && response.data.results) {
+      return { data: response.data.results };
+    }
+    return response;
+  },
+
+  // ← ΝΕΟ: Δημιουργία event
+  createEvent: async (data) => {
+    if (USE_MOCK) {
+      await delay();
+      const newEvent = {
+        id: mockEvents.length + 1,
+        event_id: `EV${1000 + mockEvents.length + 1}`,
+        ...data,
+        status: data.status || 'DRAFT',
+        available_capacity: data.capacity,
+        bookings: [],
+        photos: data.photos || [],
+        ticket_types: (data.ticket_types || []).map((t, i) => ({
+          id: mockEvents.length * 100 + i + 1,
+          ticket_type_id: `T${mockEvents.length * 100 + i + 1}`,
+          ...t,
+          available: t.quantity
+        }))
+      };
+      mockEvents.push(newEvent);
+      return { data: newEvent };
+    }
+    const response = await axios.post(`${API_BASE}/events/`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
+  // ← ΝΕΟ: Ενημέρωση event
+  updateEvent: async (eventId, data) => {
+    if (USE_MOCK) {
+      await delay();
+      const event = mockEvents.find(e => e.id === Number(eventId));
+      if (!event) throw new Error('Event not found');
+      Object.assign(event, data);
+      return { data: event };
+    }
+    const response = await axios.patch(`${API_BASE}/events/${eventId}/`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
+  // ← ΝΕΟ: Διαγραφή event (μόνο DRAFT ή χωρίς bookings)
+  deleteEvent: async (eventId) => {
+    if (USE_MOCK) {
+      await delay();
+      const index = mockEvents.findIndex(e => e.id === Number(eventId));
+      if (index === -1) throw new Error('Event not found');
+      const event = mockEvents[index];
+      if (event.status === 'PUBLISHED' && event.bookings?.length > 0) {
+        throw new Error('Cannot delete a published event with bookings');
+      }
+      mockEvents.splice(index, 1);
+      return { data: { success: true } };
+    }
+    const response = await axios.delete(`${API_BASE}/events/${eventId}/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
+  // ← ΝΕΟ: Αλλαγή status (publish / cancel / complete)
+  updateEventStatus: async (eventId, status) => {
+    if (USE_MOCK) {
+      await delay();
+      const event = mockEvents.find(e => e.id === Number(eventId));
+      if (!event) throw new Error('Event not found');
+      event.status = status;
+      return { data: event };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/events/${eventId}/`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+    // ← ΝΕΟ: Ακύρωση event (status → CANCELLED)
+  cancelEvent: async (eventId, notify = false, notifySubject = '', notifyBody = '') => {
+    if (USE_MOCK) {
+      await delay();
+      const event = mockEvents.find(e => e.id === Number(eventId));
+      if (!event) throw new Error('Event not found');
+      event.status = 'CANCELLED';
+
+      // Bulk notification προς attendees
+      if (notify && event.bookings?.length > 0) {
+        const attendees = event.bookings
+          .filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING')
+          .map(b => b.user_id);
+        const uniqueAttendees = [...new Set(attendees)];
+
+        uniqueAttendees.forEach((userId, idx) => {
+          mockMessages.push({
+            id: mockMessages.length + 1 + idx,
+            sender_id: event.organizer?.id || 2,
+            sender_username: event.organizer?.username || 'organizer',
+            sender_name: `${event.organizer?.first_name || ''} ${event.organizer?.last_name || ''}`.trim() || 'Organizer',
+            recipient_id: userId,
+            recipient_username: '',
+            subject: notifySubject || `Event Cancelled: ${event.title}`,
+            body: notifyBody || `We regret to inform you that the event "${event.title}" has been cancelled.`,
+            is_read: false,
+            is_draft: false,
+            is_trash: false,
+            created_at: new Date().toISOString(),
+            attachments: []
+          });
+        });
+      }
+
+      return { data: event };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/events/${eventId}/`,
+      { status: 'CANCELLED' },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  // ← ΝΕΟ: Λίστα κρατήσεων για event (για τον organizer)
+  getEventBookings: async (eventId) => {
+    if (USE_MOCK) {
+      await delay();
+      const event = mockEvents.find(e => e.id === Number(eventId));
+      if (!event) return { data: [] };
+      return { data: event.bookings || [] };
+    }
+    const response = await axios.get(`${API_BASE}/events/${eventId}/bookings/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
   }
 };
 
