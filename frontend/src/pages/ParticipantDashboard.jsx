@@ -42,7 +42,7 @@ const ParticipantDashboard = ({ user }) => {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await messageService.getUnreadCount();
+      const response = await messageService.getUnreadCount(user?.id);
       setUnreadCount(response.data.count);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -89,10 +89,12 @@ const ParticipantDashboard = ({ user }) => {
 
   const handleSendReply = async () => {
     if (!replyText.trim() || !openedMessage) return;
-
     setSendingReply(true);
     try {
       await messageService.createMessage({
+        sender_id: user?.id,
+        sender_username: user?.username,
+        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim(),
         recipient: openedMessage.sender_username,
         recipient_username: openedMessage.sender_username,
         recipient_id: openedMessage.sender_id,
@@ -126,12 +128,27 @@ const ParticipantDashboard = ({ user }) => {
 
   const handleDeleteSelected = async () => {
     if (selectedMessages.length === 0) return;
-    if (!window.confirm(`Delete ${selectedMessages.length} message(s)?`)) return;
+
+    const isTrashFolder = activeFolder === 'trash';
+
+    const confirmMsg = isTrashFolder
+      ? `Permanently delete ${selectedMessages.length} message(s)? This cannot be undone.`
+      : `Move ${selectedMessages.length} message(s) to Trash?`;
+
+    if (!window.confirm(confirmMsg)) return;
 
     try {
-      await Promise.all(
-        selectedMessages.map(id => messageService.deleteMessage(id))
-      );
+      if (isTrashFolder) {
+        // Οριστική διαγραφή
+        await Promise.all(
+          selectedMessages.map(id => messageService.deleteMessage(id))
+        );
+      } else {
+        // Soft delete → Trash
+        await Promise.all(
+          selectedMessages.map(id => messageService.moveToTrash(id))
+        );
+      }
       setSelectedMessages([]);
       fetchMessages();
       fetchUnreadCount();
@@ -145,20 +162,29 @@ const ParticipantDashboard = ({ user }) => {
   };
 
   const getFilteredMessages = () => {
+    if (!user?.id) return [];
     let filtered = [...messages];
 
     switch (activeFolder) {
       case 'incoming':
-        filtered = filtered.filter(m => m.recipient_id === 3);
+        filtered = filtered.filter(m =>
+          m.recipient_id === user.id && !m.is_trash && !m.is_draft
+        );
         break;
       case 'sent':
-        filtered = filtered.filter(m => m.sender_id === 3);
+        filtered = filtered.filter(m =>
+          m.sender_id === user.id && !m.is_trash && !m.is_draft
+        );
         break;
       case 'drafts':
-        filtered = filtered.filter(m => m.is_draft === true);
+        filtered = filtered.filter(m =>
+          m.is_draft === true && m.sender_id === user.id
+        );
         break;
       case 'junk':
-        filtered = filtered.filter(m => m.is_junk === true);
+        filtered = filtered.filter(m =>
+          m.is_junk === true && m.recipient_id === user.id && !m.is_trash
+        );
         break;
       case 'trash':
         filtered = filtered.filter(m => m.is_trash === true);
@@ -232,6 +258,7 @@ const ParticipantDashboard = ({ user }) => {
             setReplyText={setReplyText}
             onSendReply={handleSendReply}
             sendingReply={sendingReply}
+            onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
           />
         )}
         {activeTab === 'bookings' && (
@@ -336,6 +363,7 @@ const MessagesLayout = ({
   setReplyText,
   onSendReply,
   sendingReply,
+  onOpenDraft,
 }) => {
   const folders = [
     { id: 'incoming', label: 'Inbox' },
@@ -454,7 +482,13 @@ const MessagesLayout = ({
 
                 <div
                   className="message-row-content"
-                  onClick={() => onOpenMessage(message.id)}
+                  onClick={() => {
+                    if (message.is_draft) {
+                      onOpenDraft(message.id);
+                    } else {
+                      onOpenMessage(message.id);
+                    }
+                  }}
                 >
                   <div className="message-row-top">
                     <span className="message-row-sender">

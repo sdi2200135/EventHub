@@ -318,11 +318,11 @@ export const bookingService = {
 // MESSAGE SERVICES
 // ============================================
 export const messageService = {
+  // Επιστρέφει ΟΛΑ τα μηνύματα (το filtering γίνεται στο component)
   getMyMessages: async () => {
     if (USE_MOCK) {
       await delay();
-      const userMessages = mockMessages.filter(m => m.recipient_id === 3);
-      return { data: userMessages };
+      return { data: mockMessages };
     }
     const response = await axios.get(`${API_BASE}/messages/`, {
       headers: {
@@ -335,10 +335,15 @@ export const messageService = {
     return response;
   },
 
-  getUnreadCount: async () => {
+  getUnreadCount: async (userId = null) => {
     if (USE_MOCK) {
       await delay(200);
-      const unread = mockMessages.filter(m => m.recipient_id === 3 && !m.is_read);
+      let unread = mockMessages.filter(m => !m.is_read);
+      if (userId !== null) {
+        unread = unread.filter(m =>
+          m.recipient_id === userId && !m.is_trash && !m.is_draft
+        );
+      }
       return { data: { count: unread.length } };
     }
     const response = await axios.get(`${API_BASE}/messages/unread_count/`, {
@@ -385,6 +390,7 @@ export const messageService = {
     return response;
   },
 
+  // Οριστική διαγραφή (μόνο από Trash)
   deleteMessage: async (messageId) => {
     if (USE_MOCK) {
       await delay();
@@ -402,24 +408,102 @@ export const messageService = {
     return response;
   },
 
+  // ← ΝΕΟ: Soft delete → Trash
+  moveToTrash: async (messageId) => {
+    if (USE_MOCK) {
+      await delay(200);
+      const message = mockMessages.find(m => m.id === Number(messageId));
+      if (message) {
+        message.is_trash = true;
+        message.is_draft = false;
+      }
+      return { data: { success: true } };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/messages/${messageId}/`,
+      { is_trash: true, is_draft: false },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  // ← ΝΕΟ: Restore από Trash
+  restoreFromTrash: async (messageId) => {
+    if (USE_MOCK) {
+      await delay(200);
+      const message = mockMessages.find(m => m.id === Number(messageId));
+      if (message) {
+        message.is_trash = false;
+      }
+      return { data: { success: true } };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/messages/${messageId}/`,
+      { is_trash: false },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  // ← ΕΝΗΜΕΡΩΜΕΝΟ: Υποστηρίζει draftId
   createMessage: async (data) => {
     if (USE_MOCK) {
       await delay();
+      // Αν έχουμε draftId, μετατρέπουμε draft → sent
+      if (data.draftId) {
+        const existing = mockMessages.find(m => m.id === Number(data.draftId));
+        if (existing) {
+          Object.assign(existing, {
+            recipient_id: data.recipient_id || null,
+            recipient_username: data.recipient_username || '',
+            subject: data.subject || '',
+            body: data.body || '',
+            is_draft: false,
+            is_trash: false,
+            is_read: false,
+            created_at: new Date().toISOString()
+          });
+          return { data: existing };
+        }
+      }
       const newMessage = {
         id: mockMessages.length + 1,
-        sender_id: 3,
-        sender_username: 'participant',
-        sender_name: 'Jane Participant',
+        sender_id: data.sender_id || 3,
+        sender_username: data.sender_username || 'user',
+        sender_name: data.sender_name || 'User',
         recipient_id: data.recipient_id || 2,
         recipient_username: data.recipient_username || data.recipient || '',
         subject: data.subject || '',
         body: data.body || '',
         is_read: false,
+        is_draft: false,
+        is_trash: false,
         created_at: new Date().toISOString(),
         attachments: []
       };
       mockMessages.push(newMessage);
       return { data: newMessage };
+    }
+    // Backend
+    if (data.draftId) {
+      const response = await axios.patch(
+        `${API_BASE}/messages/${data.draftId}/`,
+        { ...data, is_draft: false },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+      return response;
     }
     const response = await axios.post(`${API_BASE}/messages/`, data, {
       headers: {
@@ -429,11 +513,75 @@ export const messageService = {
     return response;
   },
 
-  getRecipients: async () => {
+  // ← ΝΕΟ: Αποθήκευση ως Draft
+  saveDraft: async (data) => {
+    if (USE_MOCK) {
+      await delay();
+      // Αν υπάρχει draftId, ενημέρωσε το υπάρχον
+      if (data.draftId) {
+        const existing = mockMessages.find(m => m.id === Number(data.draftId));
+        if (existing) {
+          Object.assign(existing, {
+            recipient_id: data.recipient_id || null,
+            recipient_username: data.recipient_username || '',
+            subject: data.subject || '',
+            body: data.body || '',
+            is_draft: true,
+            is_trash: false,
+            updated_at: new Date().toISOString()
+          });
+          return { data: existing };
+        }
+      }
+      // Δημιούργησε νέο draft
+      const newDraft = {
+        id: mockMessages.length + 1,
+        sender_id: data.sender_id || 3,
+        sender_username: data.sender_username || 'user',
+        sender_name: data.sender_name || 'User',
+        recipient_id: data.recipient_id || null,
+        recipient_username: data.recipient_username || '',
+        subject: data.subject || '',
+        body: data.body || '',
+        is_read: true,
+        is_draft: true,
+        is_trash: false,
+        created_at: new Date().toISOString(),
+        attachments: []
+      };
+      mockMessages.push(newDraft);
+      return { data: newDraft };
+    }
+    // Backend
+    if (data.draftId) {
+      const response = await axios.patch(
+        `${API_BASE}/messages/${data.draftId}/`,
+        { ...data, is_draft: true },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          }
+        }
+      );
+      return response;
+    }
+    const response = await axios.post(
+      `${API_BASE}/messages/`,
+      { ...data, is_draft: true },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  getRecipients: async (currentUserId = null) => {
     if (USE_MOCK) {
       await delay(200);
       const recipients = mockUsers
-        .filter(u => u.id !== 3)
+        .filter(u => u.id !== currentUserId)
         .map(u => ({
           id: u.id,
           username: u.username,

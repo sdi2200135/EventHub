@@ -882,3 +882,30 @@
     gap: 8px;
   }
 }
+
+/* ============================================
+   PLACEHOLDER TABS (Events / Reservations)
+   ============================================ */
+.placeholder-tab {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c7a89;
+}
+
+.placeholder-tab h3 {
+  font-size: 20px;
+  color: #a0a0b8;
+  margin: 0 0 12px 0;
+}
+
+.placeholder-tab p {
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.placeholder-tab .placeholder-hint {
+  font-size: 12px;
+  color: #4a4a5a;
+  font-style: italic;
+  margin-top: 12px;
+}

@@ -485,24 +485,25 @@ export const mockCurrentUser = {
   approval_status: 'APPROVED'
 };
 
-// src/services/mockData.js - ΠΡΟΣΘΗΚΗ
-
 // ============================================
 // MOCK MESSAGES
 // ============================================
-// src/services/mockData.js
 export const mockMessages = [
+  // ----- PARTICIPANT (recipient_id: 3) -----
   {
     id: 1,
     sender_id: 2,
-    sender_username: 'organizer',           // ← Χρειάζεται
-    sender_name: 'John Organizer',          // ← Χρειάζεται
+    sender_username: 'organizer',
+    sender_name: 'John Organizer',
     recipient_id: 3,
-    subject: 'Your booking is confirmed',   // ← Χρειάζεται
-    body: 'Hi Jane, your booking for Concert has been confirmed. See you there!',  // ← Χρειάζεται
+    recipient_username: 'participant',
+    subject: 'Your booking is confirmed',
+    body: 'Hi Jane, your booking for Concert has been confirmed. See you there!',
     is_read: false,
-    created_at: '2026-07-20T15:00:00Z',     // ← Χρειάζεται
-    attachments: []                          // ← Προαιρετικό
+    is_draft: false,
+    is_trash: false,
+    created_at: '2026-07-20T15:00:00Z',
+    attachments: []
   },
   {
     id: 2,
@@ -510,9 +511,12 @@ export const mockMessages = [
     sender_username: 'admin',
     sender_name: 'Admin User',
     recipient_id: 3,
+    recipient_username: 'participant',
     subject: 'Welcome to Eventize',
     body: 'Welcome! Your account has been approved. Enjoy browsing events.',
     is_read: false,
+    is_draft: false,
+    is_trash: false,
     created_at: '2026-07-21T09:30:00Z',
     attachments: []
   },
@@ -522,10 +526,94 @@ export const mockMessages = [
     sender_username: 'organizer',
     sender_name: 'John Organizer',
     recipient_id: 3,
+    recipient_username: 'participant',
     subject: 'Basketball Game update',
     body: 'The Basketball Game time has been changed to 19:00. Please check your booking.',
     is_read: true,
+    is_draft: false,
+    is_trash: false,
     created_at: '2026-07-22T11:00:00Z',
+    attachments: []
+  },
+
+  // ----- ORGANIZER (recipient_id: 2) -----
+  {
+    id: 4,
+    sender_id: 3,
+    sender_username: 'participant',
+    sender_name: 'Jane Participant',
+    recipient_id: 2,
+    recipient_username: 'organizer',
+    subject: 'Question about Concert',
+    body: 'Hello, I have a question about the Concert event on July 25. Will there be parking available?',
+    is_read: false,
+    is_draft: false,
+    is_trash: false,
+    created_at: '2026-07-23T10:00:00Z',
+    attachments: []
+  },
+  {
+    id: 5,
+    sender_id: 1,
+    sender_username: 'admin',
+    sender_name: 'Admin User',
+    recipient_id: 2,
+    recipient_username: 'organizer',
+    subject: 'Organizer account approved',
+    body: 'Your organizer account has been approved. You can now create events.',
+    is_read: false,
+    is_draft: false,
+    is_trash: false,
+    created_at: '2026-07-19T09:00:00Z',
+    attachments: []
+  },
+  {
+    id: 6,
+    sender_id: 3,
+    sender_username: 'participant',
+    sender_name: 'Jane Participant',
+    recipient_id: 2,
+    recipient_username: 'organizer',
+    subject: 'Cancellation request',
+    body: 'Hello, I would like to cancel my booking for the Basketball Game. Can you help?',
+    is_read: true,
+    is_draft: false,
+    is_trash: false,
+    created_at: '2026-07-24T14:30:00Z',
+    attachments: []
+  },
+
+  // ----- DRAFT (για testing) -----
+  {
+    id: 7,
+    sender_id: 3,
+    sender_username: 'participant',
+    sender_name: 'Jane Participant',
+    recipient_id: 2,
+    recipient_username: 'organizer',
+    subject: 'Draft: Question about event',
+    body: 'Hello, I wanted to ask about... (not finished)',
+    is_read: true,
+    is_draft: true,
+    is_trash: false,
+    created_at: '2026-07-25T08:00:00Z',
+    attachments: []
+  },
+
+  // ----- TRASH (για testing) -----
+  {
+    id: 8,
+    sender_id: 1,
+    sender_username: 'admin',
+    sender_name: 'Admin User',
+    recipient_id: 3,
+    recipient_username: 'participant',
+    subject: 'Old notification',
+    body: 'This is an old message that was moved to trash.',
+    is_read: true,
+    is_draft: false,
+    is_trash: true,
+    created_at: '2026-07-15T12:00:00Z',
     attachments: []
   }
 ];

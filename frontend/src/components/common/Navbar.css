@@ -376,3 +376,82 @@
     border-width: 1px;
   }
 }
+
+/* ============================================
+   UNREAD BADGE - Πάνω στο Profile avatar
+   ============================================ */
+.profile-avatar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e74c3c;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 10px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid #203855; /* ίδιο χρώμα με profile-btn background */
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.5);
+  animation: badgePulse 0.4s ease;
+  pointer-events: none;
+}
+
+/* Animation όταν εμφανίζεται/αλλάζει */
+@keyframes badgePulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Όταν το profile-btn είναι active/hover, το border του badge να ταιριάζει */
+.profile-btn.active .nav-badge,
+.profile-btn:hover .nav-badge {
+  border-color: #2a4a6f;
+}
+
+/* ============================================
+   RESPONSIVE - Badge σε μικρές οθόνες
+   ============================================ */
+@media (max-width: 768px) {
+  .nav-badge {
+    font-size: 9px;
+    min-width: 14px;
+    height: 14px;
+    padding: 1px 4px;
+    top: -3px;
+    right: -3px;
+    border-width: 1.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-badge {
+    font-size: 8px;
+    min-width: 13px;
+    height: 13px;
+    padding: 1px 3px;
+  }
+}

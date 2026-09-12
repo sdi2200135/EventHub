@@ -1,28 +1,34 @@
 // src/pages/profile/NewMessage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { messageService } from '../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
+import SaveIcon from '@mui/icons-material/Save';
 import './NewMessage.css';
 
 const NewMessage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
   const replyToId = searchParams.get('replyTo');
   const forwardId = searchParams.get('forward');
+  const draftIdParam = searchParams.get('draftId');
 
-  const [mode, setMode] = useState('new'); // 'new' | 'reply' | 'forward'
+  const [mode, setMode] = useState('new');
   const [recipient, setRecipient] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [loadingOriginal, setLoadingOriginal] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState(null); // 'sent' | 'draft' | null
   const [recipients, setRecipients] = useState([]);
+  const [draftId, setDraftId] = useState(null);
 
   // ============================================
   // 1. ΦΟΡΤΩΣΗ ΠΑΡΑΛΗΠΤΩΝ
@@ -30,14 +36,16 @@ const NewMessage = () => {
   useEffect(() => {
     const fetchRecipients = async () => {
       try {
-        const response = await messageService.getRecipients();
+        const response = await messageService.getRecipients(user?.id);
         setRecipients(response.data || []);
       } catch (err) {
         console.error('Error fetching recipients:', err);
       }
     };
-    fetchRecipients();
-  }, []);
+    if (user?.id) {
+      fetchRecipients();
+    }
+  }, [user?.id]);
 
   // ============================================
   // 2. REPLY MODE
@@ -56,7 +64,6 @@ const NewMessage = () => {
             ? original.subject
             : `Re: ${original.subject || ''}`
         );
-        // Body: κενό, αλλά με quote του αρχικού απο κάτω
         setBody(
           `\n\n--- Original message ---\nFrom: ${original.sender_name} (@${original.sender_username})\nDate: ${formatDate(original.created_at)}\n\n${original.body}`
         );
@@ -81,7 +88,7 @@ const NewMessage = () => {
       try {
         const response = await messageService.getMessage(forwardId);
         const original = response.data;
-        setRecipient(''); // κενό - ο χρήστης διαλέγει
+        setRecipient('');
         setSubject(
           original.subject?.startsWith('Fwd:')
             ? original.subject
@@ -99,6 +106,31 @@ const NewMessage = () => {
     };
     loadForward();
   }, [forwardId]);
+
+  // ============================================
+  // 4. DRAFT EDIT MODE
+  // ============================================
+  useEffect(() => {
+    const loadDraft = async () => {
+      if (!draftIdParam) return;
+      setMode('draft-edit');
+      setLoadingOriginal(true);
+      try {
+        const response = await messageService.getMessage(draftIdParam);
+        const draft = response.data;
+        setDraftId(draft.id);
+        setRecipient(draft.recipient_username || '');
+        setSubject(draft.subject || '');
+        setBody(draft.body || '');
+      } catch (err) {
+        console.error('Error loading draft:', err);
+        setError('Could not load the draft.');
+      } finally {
+        setLoadingOriginal(false);
+      }
+    };
+    loadDraft();
+  }, [draftIdParam]);
 
   // ============================================
   // HELPERS
@@ -120,12 +152,13 @@ const NewMessage = () => {
     switch (mode) {
       case 'reply': return 'Reply to Message';
       case 'forward': return 'Forward Message';
+      case 'draft-edit': return 'Edit Draft';
       default: return 'New Message';
     }
   };
 
   // ============================================
-  // SUBMIT
+  // SUBMIT (Send)
   // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -140,7 +173,6 @@ const NewMessage = () => {
       return;
     }
 
-    // Βρες το recipient_id από τη λίστα
     const foundRecipient = recipients.find(
       r => r.username.toLowerCase() === recipient.trim().toLowerCase()
     );
@@ -148,12 +180,16 @@ const NewMessage = () => {
     setLoading(true);
     try {
       await messageService.createMessage({
+        draftId: draftId, // αν είναι draft, μετέτρεψέ το
+        sender_id: user?.id,
+        sender_username: user?.username,
+        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username,
         recipient_username: recipient.trim(),
         recipient_id: foundRecipient?.id || null,
         subject: subject.trim() || '(no subject)',
         body: body.trim(),
       });
-      setSuccess(true);
+      setSuccess('sent');
       setTimeout(() => {
         navigate('/profile');
       }, 1500);
@@ -166,6 +202,40 @@ const NewMessage = () => {
       setError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ============================================
+  // SAVE AS DRAFT
+  // ============================================
+  const handleSaveDraft = async () => {
+    const foundRecipient = recipients.find(
+      r => r.username.toLowerCase() === recipient.trim().toLowerCase()
+    );
+
+    setSavingDraft(true);
+    setError('');
+    try {
+      const response = await messageService.saveDraft({
+        draftId: draftId,
+        sender_id: user?.id,
+        sender_username: user?.username,
+        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username,
+        recipient_username: recipient.trim(),
+        recipient_id: foundRecipient?.id || null,
+        subject: subject.trim(),
+        body: body.trim(),
+      });
+      setDraftId(response.data.id);
+      setSuccess('draft');
+      setTimeout(() => {
+        navigate('/profile');
+      }, 1200);
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      setError('Failed to save draft. Please try again.');
+    } finally {
+      setSavingDraft(false);
     }
   };
 
@@ -192,7 +262,6 @@ const NewMessage = () => {
   return (
     <div className="new-message-page">
       <div className="new-message-container">
-        {/* Header */}
         <div className="new-message-header">
           <button className="btn-back" onClick={handleCancel}>
             <ArrowBackIcon />
@@ -207,9 +276,15 @@ const NewMessage = () => {
           </button>
         </div>
 
-        {success && (
+        {success === 'sent' && (
           <div className="new-message-success">
             ✅ Message sent successfully! Redirecting...
+          </div>
+        )}
+
+        {success === 'draft' && (
+          <div className="new-message-success">
+            💾 Draft saved! Redirecting...
           </div>
         )}
 
@@ -220,7 +295,6 @@ const NewMessage = () => {
         )}
 
         <form className="new-message-form" onSubmit={handleSubmit}>
-          {/* Recipient */}
           <div className="form-row">
             <label htmlFor="recipient">To:</label>
             <input
@@ -231,7 +305,7 @@ const NewMessage = () => {
               onChange={(e) => setRecipient(e.target.value)}
               placeholder="Search username..."
               autoComplete="off"
-              disabled={loading || success}
+              disabled={loading || savingDraft || success}
             />
             <datalist id="recipients-list">
               {recipients.map(r => (
@@ -242,7 +316,6 @@ const NewMessage = () => {
             </datalist>
           </div>
 
-          {/* Subject */}
           <div className="form-row">
             <label htmlFor="subject">Subject:</label>
             <input
@@ -251,11 +324,10 @@ const NewMessage = () => {
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="(no subject)"
-              disabled={loading || success}
+              disabled={loading || savingDraft || success}
             />
           </div>
 
-          {/* Body */}
           <div className="form-row body-row">
             <label htmlFor="body">Message:</label>
             <textarea
@@ -264,24 +336,32 @@ const NewMessage = () => {
               onChange={(e) => setBody(e.target.value)}
               placeholder="Write your message..."
               rows={12}
-              disabled={loading || success}
+              disabled={loading || savingDraft || success}
             />
           </div>
 
-          {/* Actions */}
           <div className="new-message-actions">
             <button
               type="button"
               className="btn-cancel"
               onClick={handleCancel}
-              disabled={loading}
+              disabled={loading || savingDraft}
             >
               Cancel
             </button>
             <button
+              type="button"
+              className="btn-save-draft"
+              onClick={handleSaveDraft}
+              disabled={loading || savingDraft || success}
+            >
+              <SaveIcon />
+              {savingDraft ? 'Saving...' : 'Save as Draft'}
+            </button>
+            <button
               type="submit"
               className="btn-send"
-              disabled={loading || success || !body.trim() || !recipient.trim()}
+              disabled={loading || savingDraft || success || !body.trim() || !recipient.trim()}
             >
               <SendIcon />
               {loading ? 'Sending...' : 'Send'}
