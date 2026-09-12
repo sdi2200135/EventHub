@@ -173,6 +173,37 @@ export const mockBookings = [
     event_date: '2026-08-10T21:00:00Z',
     venue: 'Comedy Club Athens',
     city: 'Athens'
+  },
+  // ← ΝΕΕΣ ΚΡΑΤΗΣΕΙΣ
+  {
+    id: 5,
+    user_id: 3,
+    event_id: 2,
+    ticket_type_id: 5,
+    quantity: 4,
+    seats: '',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-24T18:00:00Z',
+    total_price: 100.00,
+    event_title: 'Colour Festival',
+    event_date: '2026-07-25T10:00:00Z',
+    venue: 'Colour Festival Grounds',
+    city: 'OAKA'
+  },
+  {
+    id: 6,
+    user_id: 3,
+    event_id: 5,
+    ticket_type_id: 10,
+    quantity: 2,
+    seats: 'Gate 3:2',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-26T12:00:00Z',
+    total_price: 80.00,
+    event_title: 'Football Game',
+    event_date: '2026-07-28T20:00:00Z',
+    venue: 'OAKA Stadium',
+    city: 'OAKA'
   }
 ];
 

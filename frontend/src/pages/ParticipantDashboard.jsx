@@ -5,7 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import { messageService } from '../services/api';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
+import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
 import './Dashboard.css';
+import MyBookings from './MyBookings';
 
 const ParticipantDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -18,6 +21,14 @@ const ParticipantDashboard = ({ user }) => {
   const [activeFolder, setActiveFolder] = useState('incoming');
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Επιλεγμένο μήνυμα για inline εμφάνιση
+  const [openedMessage, setOpenedMessage] = useState(null);
+  const [loadingOpened, setLoadingOpened] = useState(false);
+
+  // Reply state
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
   useEffect(() => {
     fetchUnreadCount();
@@ -50,9 +61,51 @@ const ParticipantDashboard = ({ user }) => {
     }
   };
 
-  // Άνοιγμα μηνύματος - Πλοήγηση στη σελίδα MessageView
-  const handleOpenMessage = (messageId) => {
-    navigate(`/profile/messages/${messageId}`);
+  const handleOpenMessage = async (messageId) => {
+    try {
+      setLoadingOpened(true);
+      const response = await messageService.getMessage(messageId);
+      setOpenedMessage(response.data);
+      setReplyText('');
+
+      if (!response.data.is_read) {
+        await messageService.markAsRead(messageId);
+        setMessages(prev =>
+          prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
+        );
+        fetchUnreadCount();
+      }
+    } catch (err) {
+      console.error('Error fetching message:', err);
+    } finally {
+      setLoadingOpened(false);
+    }
+  };
+
+  const handleCloseOpenedMessage = () => {
+    setOpenedMessage(null);
+    setReplyText('');
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !openedMessage) return;
+
+    setSendingReply(true);
+    try {
+      await messageService.createMessage({
+        recipient: openedMessage.sender_username,
+        recipient_username: openedMessage.sender_username,
+        recipient_id: openedMessage.sender_id,
+        subject: `Re: ${openedMessage.subject || ''}`,
+        body: replyText.trim(),
+      });
+      setReplyText('');
+    } catch (err) {
+      console.error('Error sending reply:', err);
+      alert('Failed to send reply. Please try again.');
+    } finally {
+      setSendingReply(false);
+    }
   };
 
   const handleSelectMessage = (messageId) => {
@@ -71,7 +124,26 @@ const ParticipantDashboard = ({ user }) => {
     }
   };
 
-  // Φιλτράρισμα μηνυμάτων ανά φάκελο και search
+  const handleDeleteSelected = async () => {
+    if (selectedMessages.length === 0) return;
+    if (!window.confirm(`Delete ${selectedMessages.length} message(s)?`)) return;
+
+    try {
+      await Promise.all(
+        selectedMessages.map(id => messageService.deleteMessage(id))
+      );
+      setSelectedMessages([]);
+      fetchMessages();
+      fetchUnreadCount();
+      if (openedMessage && selectedMessages.includes(openedMessage.id)) {
+        handleCloseOpenedMessage();
+      }
+    } catch (err) {
+      console.error('Error deleting messages:', err);
+      alert('Failed to delete messages.');
+    }
+  };
+
   const getFilteredMessages = () => {
     let filtered = [...messages];
 
@@ -127,6 +199,12 @@ const ParticipantDashboard = ({ user }) => {
             <span className="tab-badge">{unreadCount}</span>
           )}
         </button>
+        <button
+          className={`profile-tab ${activeTab === 'bookings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('bookings')}
+        >
+          My Bookings
+        </button>
       </div>
 
       <div className="profile-tab-content">
@@ -142,11 +220,22 @@ const ParticipantDashboard = ({ user }) => {
             selectedMessages={selectedMessages}
             onSelectMessage={handleSelectMessage}
             onSelectAll={handleSelectAll}
+            onDeleteSelected={handleDeleteSelected}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onNewMessage={() => navigate('/profile/messages/new')}
             onOpenMessage={handleOpenMessage}
+            openedMessage={openedMessage}
+            loadingOpened={loadingOpened}
+            onCloseOpened={handleCloseOpenedMessage}
+            replyText={replyText}
+            setReplyText={setReplyText}
+            onSendReply={handleSendReply}
+            sendingReply={sendingReply}
           />
+        )}
+        {activeTab === 'bookings' && (
+          <MyBookings />
         )}
       </div>
     </div>
@@ -225,7 +314,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
 };
 
 // ============================================
-// MESSAGES LAYOUT - ΜΕ SIDEBAR
+// MESSAGES LAYOUT - 3 ΣΤΗΛΕΣ
 // ============================================
 const MessagesLayout = ({
   messages,
@@ -235,37 +324,67 @@ const MessagesLayout = ({
   selectedMessages,
   onSelectMessage,
   onSelectAll,
+  onDeleteSelected,
   searchQuery,
   setSearchQuery,
   onNewMessage,
-  onOpenMessage
+  onOpenMessage,
+  openedMessage,
+  loadingOpened,
+  onCloseOpened,
+  replyText,
+  setReplyText,
+  onSendReply,
+  sendingReply,
 }) => {
   const folders = [
-    { id: 'incoming', label: 'Incoming' },
+    { id: 'incoming', label: 'Inbox' },
     { id: 'sent', label: 'Sent' },
     { id: 'drafts', label: 'Drafts' },
     { id: 'junk', label: 'Junk' },
     { id: 'trash', label: 'Trash' },
   ];
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getInitial = (name) => {
+    return name?.charAt(0)?.toUpperCase() || 'U';
+  };
+
+  const getAvatarColor = (id) => {
+    const colors = ['#4a90d9', '#2ecc71', '#9b59b6', '#f39c12', '#e74c3c', '#1abc9c'];
+    return colors[(id || 0) % colors.length];
+  };
+
   return (
-    <div className="messages-layout">
-      {/* Left Sidebar - Folders */}
+    <div className={`messages-layout ${openedMessage ? 'with-opened' : ''}`}>
+      {/* Στήλη 1: Folders */}
       <aside className="messages-sidebar">
         {folders.map(folder => (
           <button
             key={folder.id}
             className={`folder-btn ${activeFolder === folder.id ? 'active' : ''}`}
-            onClick={() => setActiveFolder(folder.id)}
+            onClick={() => {
+              setActiveFolder(folder.id);
+              onCloseOpened();
+            }}
           >
             {folder.label}
           </button>
         ))}
       </aside>
 
-      {/* Right Content */}
+      {/* Στήλη 2: Λίστα Μηνυμάτων */}
       <div className="messages-content">
-        {/* Toolbar */}
         <div className="messages-toolbar">
           <div className="toolbar-left">
             <label className="checkbox-wrapper">
@@ -281,21 +400,11 @@ const MessagesLayout = ({
             <button
               className="btn-delete"
               disabled={selectedMessages.length === 0}
+              onClick={onDeleteSelected}
             >
               Delete
             </button>
-            <div className="search-wrapper">
-              <SearchIcon className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="messages-search"
-              />
-            </div>
           </div>
-
           <div className="toolbar-right">
             <button className="btn-new-message" onClick={onNewMessage}>
               New Message
@@ -303,7 +412,17 @@ const MessagesLayout = ({
           </div>
         </div>
 
-        {/* Messages List */}
+        <div className="search-wrapper">
+          <SearchIcon className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="messages-search"
+          />
+        </div>
+
         {loading ? (
           <p className="messages-empty">Loading messages...</p>
         ) : messages.length === 0 ? (
@@ -313,31 +432,125 @@ const MessagesLayout = ({
             {messages.map(message => (
               <div
                 key={message.id}
-                className={`message-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${!message.is_read ? 'unread' : ''}`}
+                className={`message-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${!message.is_read ? 'unread' : ''} ${openedMessage?.id === message.id ? 'opened' : ''}`}
               >
-                <label className="checkbox-wrapper" onClick={(e) => e.stopPropagation()}>
+                <label
+                  className="checkbox-wrapper"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <input
                     type="checkbox"
                     checked={selectedMessages.includes(message.id)}
                     onChange={() => onSelectMessage(message.id)}
                   />
                 </label>
+
+                <div
+                  className="message-row-avatar"
+                  style={{ background: getAvatarColor(message.sender_id) }}
+                >
+                  {getInitial(message.sender_name)}
+                </div>
+
                 <div
                   className="message-row-content"
                   onClick={() => onOpenMessage(message.id)}
                 >
-                  <span className="message-row-title">
-                    {message.subject || '(no subject)'}
-                  </span>
-                  <span className="message-row-sender">
-                    {message.sender_name}
-                  </span>
+                  <div className="message-row-top">
+                    <span className="message-row-sender">
+                      {message.sender_name}
+                    </span>
+                    <span className="message-row-date">
+                      {formatDate(message.created_at)}
+                    </span>
+                  </div>
+                  <div className="message-row-bottom">
+                    <span className="message-row-title">
+                      {message.subject || '(no subject)'}
+                    </span>
+                  </div>
+                  <div className="message-row-preview">
+                    {message.body?.substring(0, 60)}
+                    {message.body?.length > 60 ? '...' : ''}
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Στήλη 3: Ανοιχτό Μήνυμα (Chat-style) */}
+      {openedMessage && (
+        <div className="message-detail-panel">
+          <div className="message-detail-header">
+            <div
+              className="message-detail-avatar"
+              style={{ background: getAvatarColor(openedMessage.sender_id) }}
+            >
+              {getInitial(openedMessage.sender_name)}
+            </div>
+            <div className="message-detail-info">
+              <div className="message-detail-name">
+                {openedMessage.sender_name}
+              </div>
+              <div className="message-detail-username">
+                @{openedMessage.sender_username}
+              </div>
+            </div>
+            <button
+              className="btn-close-detail"
+              onClick={onCloseOpened}
+              title="Close"
+            >
+              <CloseIcon />
+            </button>
+          </div>
+
+          <div className="message-detail-subject">
+            {openedMessage.subject || '(no subject)'}
+          </div>
+
+          <div className="message-detail-date">
+            {formatDate(openedMessage.created_at)}
+          </div>
+
+          {loadingOpened ? (
+            <div className="message-detail-loading">Loading...</div>
+          ) : (
+            <>
+              <div className="message-detail-body">
+                <div className="message-bubble incoming">
+                  <div className="message-bubble-text">
+                    {openedMessage.body}
+                  </div>
+                  <div className="message-bubble-time">
+                    {formatDate(openedMessage.created_at)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="message-reply-box">
+                <textarea
+                  className="message-reply-input"
+                  placeholder="Type your reply..."
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  rows={3}
+                />
+                <button
+                  className="btn-send-reply"
+                  onClick={onSendReply}
+                  disabled={!replyText.trim() || sendingReply}
+                >
+                  <SendIcon />
+                  {sendingReply ? 'Sending...' : 'Send'}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

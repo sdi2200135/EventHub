@@ -1,0 +1,296 @@
+// src/pages/profile/NewMessage.jsx
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { messageService } from '../services/api';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SendIcon from '@mui/icons-material/Send';
+import CloseIcon from '@mui/icons-material/Close';
+import './NewMessage.css';
+
+const NewMessage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const replyToId = searchParams.get('replyTo');
+  const forwardId = searchParams.get('forward');
+
+  const [mode, setMode] = useState('new'); // 'new' | 'reply' | 'forward'
+  const [recipient, setRecipient] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loadingOriginal, setLoadingOriginal] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [recipients, setRecipients] = useState([]);
+
+  // ============================================
+  // 1. ΦΟΡΤΩΣΗ ΠΑΡΑΛΗΠΤΩΝ
+  // ============================================
+  useEffect(() => {
+    const fetchRecipients = async () => {
+      try {
+        const response = await messageService.getRecipients();
+        setRecipients(response.data || []);
+      } catch (err) {
+        console.error('Error fetching recipients:', err);
+      }
+    };
+    fetchRecipients();
+  }, []);
+
+  // ============================================
+  // 2. REPLY MODE
+  // ============================================
+  useEffect(() => {
+    const loadReply = async () => {
+      if (!replyToId) return;
+      setMode('reply');
+      setLoadingOriginal(true);
+      try {
+        const response = await messageService.getMessage(replyToId);
+        const original = response.data;
+        setRecipient(original.sender_username || '');
+        setSubject(
+          original.subject?.startsWith('Re:')
+            ? original.subject
+            : `Re: ${original.subject || ''}`
+        );
+        // Body: κενό, αλλά με quote του αρχικού απο κάτω
+        setBody(
+          `\n\n--- Original message ---\nFrom: ${original.sender_name} (@${original.sender_username})\nDate: ${formatDate(original.created_at)}\n\n${original.body}`
+        );
+      } catch (err) {
+        console.error('Error loading reply target:', err);
+        setError('Could not load the original message.');
+      } finally {
+        setLoadingOriginal(false);
+      }
+    };
+    loadReply();
+  }, [replyToId]);
+
+  // ============================================
+  // 3. FORWARD MODE
+  // ============================================
+  useEffect(() => {
+    const loadForward = async () => {
+      if (!forwardId) return;
+      setMode('forward');
+      setLoadingOriginal(true);
+      try {
+        const response = await messageService.getMessage(forwardId);
+        const original = response.data;
+        setRecipient(''); // κενό - ο χρήστης διαλέγει
+        setSubject(
+          original.subject?.startsWith('Fwd:')
+            ? original.subject
+            : `Fwd: ${original.subject || ''}`
+        );
+        setBody(
+          `\n\n--- Forwarded message ---\nFrom: ${original.sender_name} (@${original.sender_username})\nDate: ${formatDate(original.created_at)}\nSubject: ${original.subject || '(no subject)'}\n\n${original.body}`
+        );
+      } catch (err) {
+        console.error('Error loading forward target:', err);
+        setError('Could not load the message to forward.');
+      } finally {
+        setLoadingOriginal(false);
+      }
+    };
+    loadForward();
+  }, [forwardId]);
+
+  // ============================================
+  // HELPERS
+  // ============================================
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTitle = () => {
+    switch (mode) {
+      case 'reply': return 'Reply to Message';
+      case 'forward': return 'Forward Message';
+      default: return 'New Message';
+    }
+  };
+
+  // ============================================
+  // SUBMIT
+  // ============================================
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!recipient.trim()) {
+      setError('Please choose a recipient.');
+      return;
+    }
+    if (!body.trim()) {
+      setError('Please write a message.');
+      return;
+    }
+
+    // Βρες το recipient_id από τη λίστα
+    const foundRecipient = recipients.find(
+      r => r.username.toLowerCase() === recipient.trim().toLowerCase()
+    );
+
+    setLoading(true);
+    try {
+      await messageService.createMessage({
+        recipient_username: recipient.trim(),
+        recipient_id: foundRecipient?.id || null,
+        subject: subject.trim() || '(no subject)',
+        body: body.trim(),
+      });
+      setSuccess(true);
+      setTimeout(() => {
+        navigate('/profile');
+      }, 1500);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      const msg =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        'Failed to send message. Please try again.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/profile');
+  };
+
+  // ============================================
+  // RENDER
+  // ============================================
+  if (loadingOriginal) {
+    return (
+      <div className="new-message-page">
+        <div className="new-message-container">
+          <div className="new-message-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading message...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="new-message-page">
+      <div className="new-message-container">
+        {/* Header */}
+        <div className="new-message-header">
+          <button className="btn-back" onClick={handleCancel}>
+            <ArrowBackIcon />
+          </button>
+          <h1>{getTitle()}</h1>
+          <button
+            className="btn-close"
+            onClick={handleCancel}
+            title="Close"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {success && (
+          <div className="new-message-success">
+            ✅ Message sent successfully! Redirecting...
+          </div>
+        )}
+
+        {error && (
+          <div className="new-message-error">
+            {error}
+          </div>
+        )}
+
+        <form className="new-message-form" onSubmit={handleSubmit}>
+          {/* Recipient */}
+          <div className="form-row">
+            <label htmlFor="recipient">To:</label>
+            <input
+              type="text"
+              id="recipient"
+              list="recipients-list"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              placeholder="Search username..."
+              autoComplete="off"
+              disabled={loading || success}
+            />
+            <datalist id="recipients-list">
+              {recipients.map(r => (
+                <option key={r.id} value={r.username}>
+                  {r.name}
+                </option>
+              ))}
+            </datalist>
+          </div>
+
+          {/* Subject */}
+          <div className="form-row">
+            <label htmlFor="subject">Subject:</label>
+            <input
+              type="text"
+              id="subject"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="(no subject)"
+              disabled={loading || success}
+            />
+          </div>
+
+          {/* Body */}
+          <div className="form-row body-row">
+            <label htmlFor="body">Message:</label>
+            <textarea
+              id="body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Write your message..."
+              rows={12}
+              disabled={loading || success}
+            />
+          </div>
+
+          {/* Actions */}
+          <div className="new-message-actions">
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-send"
+              disabled={loading || success || !body.trim() || !recipient.trim()}
+            >
+              <SendIcon />
+              {loading ? 'Sending...' : 'Send'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default NewMessage;

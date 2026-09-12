@@ -44,7 +44,6 @@ export const authService = {
   login: async (credentials) => {
     if (USE_MOCK) {
       await delay();
-      // Έλεγχος ΚΑΙ username ΚΑΙ password
       const user = mockUsers.find(
         u => u.username === credentials.username && u.password === credentials.password
       );
@@ -92,9 +91,7 @@ export const authService = {
   updateProfile: async (data) => {
     if (USE_MOCK) {
       await delay();
-      // Ενημέρωση του mockCurrentUser
       Object.assign(mockCurrentUser, data);
-      // Ενημέρωση και του mockUsers
       const userIndex = mockUsers.findIndex(u => u.id === mockCurrentUser.id);
       if (userIndex !== -1) {
         Object.assign(mockUsers[userIndex], data);
@@ -109,7 +106,6 @@ export const authService = {
     return response;
   },
 
-  // ΠΡΟΣΘΗΚΗ: Ενημέρωση last_login
   updateLastLogin: async () => {
     if (USE_MOCK) {
       await delay(100);
@@ -274,6 +270,22 @@ export const bookingService = {
     return response;
   },
 
+  // ← ΝΕΟ: Λήψη μίας κράτησης
+  getBooking: async (bookingId) => {
+    if (USE_MOCK) {
+      await delay();
+      const booking = mockBookings.find(b => b.id === Number(bookingId));
+      if (!booking) throw new Error('Booking not found');
+      return { data: booking };
+    }
+    const response = await axios.get(`${API_BASE}/bookings/${bookingId}/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
   cancelBooking: async (bookingId) => {
     if (USE_MOCK) {
       await delay();
@@ -305,8 +317,6 @@ export const bookingService = {
 // ============================================
 // MESSAGE SERVICES
 // ============================================
-// src/services/api.js - Αντικατέστησε το messageService με αυτό:
-
 export const messageService = {
   getMyMessages: async () => {
     if (USE_MOCK) {
@@ -358,7 +368,6 @@ export const messageService = {
     return response;
   },
 
-  // ← ΝΕΟ: Λήψη ενός μηνύματος
   getMessage: async (messageId) => {
     if (USE_MOCK) {
       await delay();
@@ -376,7 +385,6 @@ export const messageService = {
     return response;
   },
 
-  // ← ΝΕΟ: Διαγραφή μηνύματος
   deleteMessage: async (messageId) => {
     if (USE_MOCK) {
       await delay();
@@ -391,6 +399,56 @@ export const messageService = {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       }
     });
+    return response;
+  },
+
+  createMessage: async (data) => {
+    if (USE_MOCK) {
+      await delay();
+      const newMessage = {
+        id: mockMessages.length + 1,
+        sender_id: 3,
+        sender_username: 'participant',
+        sender_name: 'Jane Participant',
+        recipient_id: data.recipient_id || 2,
+        recipient_username: data.recipient_username || data.recipient || '',
+        subject: data.subject || '',
+        body: data.body || '',
+        is_read: false,
+        created_at: new Date().toISOString(),
+        attachments: []
+      };
+      mockMessages.push(newMessage);
+      return { data: newMessage };
+    }
+    const response = await axios.post(`${API_BASE}/messages/`, data, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
+  getRecipients: async () => {
+    if (USE_MOCK) {
+      await delay(200);
+      const recipients = mockUsers
+        .filter(u => u.id !== 3)
+        .map(u => ({
+          id: u.id,
+          username: u.username,
+          name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username
+        }));
+      return { data: recipients };
+    }
+    const response = await axios.get(`${API_BASE}/users/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    if (response.data && response.data.results) {
+      return { data: response.data.results };
+    }
     return response;
   }
 };

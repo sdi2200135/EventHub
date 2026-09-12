@@ -177,13 +177,19 @@
 }
 
 /* ============================================
-   MESSAGES TAB - LAYOUT ΜΕ SIDEBAR
+   MESSAGES TAB - 3 ΣΤΗΛΕΣ (Chat-style)
    ============================================ */
 .messages-layout {
   display: grid;
   grid-template-columns: 140px 1fr;
-  gap: 24px;
-  min-height: 400px;
+  gap: 20px;
+  min-height: 500px;
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Όταν υπάρχει ανοιχτό μήνυμα → 3 στήλες */
+.messages-layout.with-opened {
+  grid-template-columns: 140px 1fr 1fr;
 }
 
 /* Sidebar - Folders */
@@ -223,6 +229,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  min-width: 0;
 }
 
 /* Toolbar */
@@ -230,7 +237,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 4px 0;
 }
 
@@ -238,7 +245,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1;
 }
 
 .toolbar-right {
@@ -289,8 +295,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
-  max-width: 400px;
 }
 
 .search-wrapper .search-icon {
@@ -327,13 +331,14 @@
   background: #1a782e;
   color: #ffffff;
   border: none;
-  padding: 8px 20px;
+  padding: 8px 18px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .btn-new-message:hover {
@@ -342,11 +347,13 @@
   box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
 }
 
-/* Messages List - Simple rows */
+/* Messages List */
 .messages-list-simple {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 500px;
 }
 
 .message-row {
@@ -356,7 +363,7 @@
   background: #2A2A2A;
   border: 1px solid #333;
   border-radius: 8px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -376,20 +383,70 @@
   border-color: #4a7a9f;
 }
 
+.message-row.opened {
+  background: #203855;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 1px #4a90d9;
+}
+
+/* Avatar στη λίστα */
+.message-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
 .message-row-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-row-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex: 1;
-  gap: 16px;
-  min-width: 0;
+  gap: 8px;
+}
+
+.message-row-sender {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-row.unread .message-row-sender {
+  color: #ffffff;
+}
+
+.message-row-date {
+  font-size: 11px;
+  color: #6c7a89;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.message-row-bottom {
+  display: flex;
+  align-items: center;
 }
 
 .message-row-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #e0e0e0;
-  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -400,9 +457,11 @@
   color: #ffffff;
 }
 
-.message-row-sender {
-  font-size: 13px;
+.message-row-preview {
+  font-size: 12px;
   color: #6c7a89;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -410,13 +469,283 @@
 .messages-empty {
   text-align: center;
   color: #6c7a89;
-  font-size: 15px;
+  font-size: 14px;
   padding: 40px 0;
+}
+
+/* ============================================
+   MESSAGE DETAIL PANEL (3η στήλη - Chat style)
+   ============================================ */
+.message-detail-panel {
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: 650px;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Header του detail panel */
+.message-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.message-detail-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.message-detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-detail-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.message-detail-username {
+  font-size: 12px;
+  color: #6c7a89;
+}
+
+.btn-close-detail {
+  background: transparent;
+  border: none;
+  color: #6c7a89;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-close-detail:hover {
+  background: #2A2A2A;
+  color: #e74c3c;
+}
+
+.btn-close-detail svg {
+  font-size: 20px !important;
+}
+
+/* Subject */
+.message-detail-subject {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  padding-bottom: 4px;
+}
+
+.message-detail-date {
+  font-size: 12px;
+  color: #6c7a89;
+  margin-top: -8px;
+}
+
+/* Body - Chat bubble */
+.message-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 120px;
+}
+
+.message-bubble {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.message-bubble.incoming {
+  align-self: flex-start;
+}
+
+.message-bubble.outgoing {
+  align-self: flex-end;
+}
+
+.message-bubble-text {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e0e0e0;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.message-bubble.incoming .message-bubble-text {
+  background: #2A2A2A;
+  border-top-left-radius: 4px;
+}
+
+.message-bubble.outgoing .message-bubble-text {
+  background: #203855;
+  border-top-right-radius: 4px;
+}
+
+.message-bubble-time {
+  font-size: 10px;
+  color: #6c7a89;
+  padding: 0 4px;
+}
+
+.message-bubble.incoming .message-bubble-time {
+  align-self: flex-start;
+}
+
+.message-bubble.outgoing .message-bubble-time {
+  align-self: flex-end;
+}
+
+/* Loading */
+.message-detail-loading {
+  text-align: center;
+  color: #6c7a89;
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* Reply Box */
+.message-reply-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #2A2A2A;
+  margin-top: auto;
+}
+
+.message-reply-input {
+  width: 100%;
+  background: #2A2A2A;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s;
+}
+
+.message-reply-input:focus {
+  border-color: #203855;
+}
+
+.message-reply-input::placeholder {
+  color: #6c7a89;
+}
+
+.btn-send-reply {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #1a782e;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  align-self: flex-end;
+}
+
+.btn-send-reply:hover:not(:disabled) {
+  background: #22963a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
+}
+
+.btn-send-reply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-send-reply svg {
+  font-size: 16px !important;
 }
 
 /* ============================================
    RESPONSIVE
    ============================================ */
+@media (max-width: 1100px) {
+  .messages-layout.with-opened {
+    grid-template-columns: 120px 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Σε tablet: folders οριζόντια, detail panel κάτω */
+  .messages-layout,
+  .messages-layout.with-opened {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .messages-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2A2A2A;
+  }
+
+  .folder-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .message-detail-panel {
+    max-height: none;
+  }
+}
+
 @media (max-width: 768px) {
   .profile-content {
     grid-template-columns: 1fr;
@@ -457,26 +786,6 @@
 
   .btn-edit-profile {
     padding: 6px 16px;
-    font-size: 13px;
-  }
-
-  /* Messages responsive */
-  .messages-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .messages-sidebar {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #2A2A2A;
-  }
-
-  .folder-btn {
-    white-space: nowrap;
-    padding: 6px 12px;
     font-size: 13px;
   }
 
@@ -536,10 +845,15 @@
     padding: 1px 5px;
   }
 
-  /* Messages responsive */
   .message-row {
-    padding: 12px;
+    padding: 10px;
     gap: 8px;
+  }
+
+  .message-row-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
   }
 
   .message-row-title {
@@ -553,5 +867,18 @@
   .btn-new-message {
     padding: 8px 16px;
     font-size: 13px;
+  }
+
+  .message-bubble {
+    max-width: 95%;
+  }
+
+  .messages-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
