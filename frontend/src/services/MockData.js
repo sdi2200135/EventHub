@@ -40,6 +40,34 @@ export const mockUsers = [
     address: 'Kallithea 10',
     city: 'Athens',
     afm: '123456789'
+  },
+    {
+    id: 4,
+    username: 'organizer2',
+    password: 'qwe123',
+    email: 'organizer2@example.com',
+    first_name: 'Maria',
+    last_name: 'Events',
+    role: 'ORGANIZER',
+    approval_status: 'APPROVED',
+    phone: '6977777777',
+    address: 'Syntagma 5',
+    city: 'Athens',
+    afm: '666666666'
+  },
+  {
+    id: 5,
+    username: 'participant2',
+    password: 'qwe123',
+    email: 'participant2@example.com',
+    first_name: 'Bob',
+    last_name: 'Smith',
+    role: 'USER',
+    approval_status: 'APPROVED',
+    phone: '6955555555',
+    address: 'Patision 100',
+    city: 'Athens',
+    afm: '999999999'
   }
 ];
 
@@ -204,6 +232,53 @@ export const mockBookings = [
     event_date: '2026-07-28T20:00:00Z',
     venue: 'OAKA Stadium',
     city: 'OAKA'
+  },
+    // ← ΝΕΑ: participant (3) έχει κάνει booking σε event του organizer2 (4)
+  {
+    id: 7,
+    user_id: 3,
+    event_id: 11,
+    ticket_type_id: 20,
+    quantity: 2,
+    seats: '',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-28T10:00:00Z',
+    total_price: 60.00,
+    event_title: 'Rock Concert',
+    event_date: '2026-08-20T21:00:00Z',
+    venue: 'Rock Stage Athens',
+    city: 'Athens'
+  },
+  // ← ΝΕΑ: participant2 (5) έχει κάνει booking σε event του organizer (2)
+  {
+    id: 8,
+    user_id: 5,
+    event_id: 1,
+    ticket_type_id: 1,
+    quantity: 1,
+    seats: '',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-27T15:00:00Z',
+    total_price: 18.00,
+    event_title: 'Concert',
+    event_date: '2026-07-25T20:00:00Z',
+    venue: 'Colour Festival Grounds',
+    city: 'OAKA'
+  },
+  {
+    id: 9,
+    user_id: 5,
+    event_id: 4,
+    ticket_type_id: 8,
+    quantity: 2,
+    seats: 'Gate 1:2',
+    status: 'CONFIRMED',
+    booking_date: '2026-07-28T11:00:00Z',
+    total_price: 70.00,
+    event_title: 'Basketball Game',
+    event_date: '2026-07-27T19:00:00Z',
+    venue: 'OAKA Arena',
+    city: 'Μαρούσι'
   }
 ];
 
@@ -241,7 +316,8 @@ export const mockEvents = [
       { id: 1, ticket_type_id: 'T1', name: 'Regular', price: 18.00, quantity: 250, available: 180 }
     ],
     bookings: [
-      { id: 1, user_id: 3, status: 'CONFIRMED', quantity: 2 }
+      { id: 1, user_id: 3, status: 'CONFIRMED', quantity: 2 },
+      { id: 8, user_id: 5, status: 'CONFIRMED', quantity: 1 }
     ],
     photos: [
       { id: 1, image: 'https://picsum.photos/seed/concert/400/300', caption: 'Concert stage' }
@@ -351,7 +427,8 @@ export const mockEvents = [
       { id: 9, ticket_type_id: 'T9', name: 'Regular', price: 15.00, quantity: 26, available: 4 }
     ],
     bookings: [
-      { id: 2, user_id: 3, status: 'CONFIRMED', quantity: 1 }
+      { id: 2, user_id: 3, status: 'CONFIRMED', quantity: 1 },
+      { id: 9, user_id: 5, status: 'CONFIRMED', quantity: 2 }
     ],
     photos: [
       { id: 4, image: 'https://picsum.photos/seed/basketball/400/300', caption: 'Basketball Game' }
@@ -569,6 +646,78 @@ export const mockEvents = [
     bookings: [],
     photos: [
       { id: 10, image: 'https://picsum.photos/seed/techconf/400/300', caption: 'Tech Conference' }
+    ]
+  },
+    // ============================================
+  // EVENT 11: ROCK CONCERT (organizer2)
+  // ============================================
+  {
+    id: 11,
+    event_id: 'EV1011',
+    title: 'Rock Concert',
+    description: 'Heavy rock night with international bands.',
+    event_type: 'CONCERT',
+    venue: 'Rock Stage Athens',
+    address: 'Pireos 50',
+    city: 'Athens',
+    country: 'Greece',
+    latitude: 37.9780,
+    longitude: 23.7150,
+    start_datetime: '2026-08-20T21:00:00Z',
+    end_datetime: '2026-08-20T23:59:00Z',
+    capacity: 200,
+    status: 'PUBLISHED',
+    available_capacity: 150,
+    categories: ['Music'],
+    organizer: {
+      id: 4,
+      username: 'organizer2',
+      first_name: 'Maria',
+      last_name: 'Events'
+    },
+    ticket_types: [
+      { id: 20, ticket_type_id: 'T20', name: 'Regular', price: 30.00, quantity: 200, available: 150 }
+    ],
+    bookings: [
+      { id: 7, user_id: 3, status: 'CONFIRMED', quantity: 2 }
+    ],
+    photos: [
+      { id: 11, image: 'https://picsum.photos/seed/rock/400/300', caption: 'Rock Concert' }
+    ]
+  },
+  // ============================================
+  // EVENT 12: MODERN ART EXHIBITION (organizer2)
+  // ============================================
+  {
+    id: 12,
+    event_id: 'EV1012',
+    title: 'Modern Art Exhibition',
+    description: 'Contemporary art exhibition with local artists.',
+    event_type: 'EXHIBITION',
+    venue: 'National Gallery',
+    address: 'Vas. Konstantinou 50',
+    city: 'Athens',
+    country: 'Greece',
+    latitude: 37.9780,
+    longitude: 23.7480,
+    start_datetime: '2026-09-01T10:00:00Z',
+    end_datetime: '2026-09-30T20:00:00Z',
+    capacity: 500,
+    status: 'PUBLISHED',
+    available_capacity: 500,
+    categories: ['Music'],
+    organizer: {
+      id: 4,
+      username: 'organizer2',
+      first_name: 'Maria',
+      last_name: 'Events'
+    },
+    ticket_types: [
+      { id: 21, ticket_type_id: 'T21', name: 'Regular', price: 10.00, quantity: 500, available: 500 }
+    ],
+    bookings: [],
+    photos: [
+      { id: 12, image: 'https://picsum.photos/seed/art/400/300', caption: 'Art Exhibition' }
     ]
   }
 ];

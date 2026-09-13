@@ -342,3 +342,47 @@
     justify-content: center;
   }
 }
+
+/* ============================================
+   WARNING BANNER - NO RECIPIENTS
+   ============================================ */
+.new-message-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(243, 156, 18, 0.08);
+  border: 1px solid rgba(243, 156, 18, 0.4);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  animation: warningFadeIn 0.3s ease;
+}
+
+@keyframes warningFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.new-message-warning .warning-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.new-message-warning strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f39c12;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.new-message-warning p {
+  font-size: 13px;
+  color: #a0a0b8;
+  margin: 0;
+  line-height: 1.5;
+}

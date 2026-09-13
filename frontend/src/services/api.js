@@ -879,20 +879,62 @@ export const messageService = {
     );
     return response;
   },
-
-  getRecipients: async (currentUserId = null) => {
+    getRecipients: async (currentUserId = null) => {
     if (USE_MOCK) {
       await delay(200);
+
+      if (!currentUserId) return { data: [] };
+
+      const currentUser = mockUsers.find(u => u.id === currentUserId);
+      if (!currentUser) return { data: [] };
+
+      const isOrganizer = currentUser.role === 'ORGANIZER';
+      const allowedUserIds = new Set();
+
+      if (isOrganizer) {
+        // ---- ORGANIZER: βρες participants που έχουν κάνει booking σε δικά του events ----
+        const myEventIds = mockEvents
+          .filter(e => e.organizer?.id === currentUserId)
+          .map(e => e.id);
+
+        const relevantBookings = mockBookings.filter(b =>
+          myEventIds.includes(b.event_id) && b.status !== 'CANCELLED'
+        );
+
+        relevantBookings.forEach(b => allowedUserIds.add(b.user_id));
+      } else {
+        // ---- PARTICIPANT: βρες organizers των events στα οποία έχει κάνει booking ----
+        const myBookings = mockBookings.filter(b =>
+          b.user_id === currentUserId && b.status !== 'CANCELLED'
+        );
+
+        myBookings.forEach(b => {
+          const event = mockEvents.find(e => e.id === b.event_id);
+          if (event?.organizer?.id) {
+            allowedUserIds.add(event.organizer.id);
+          }
+        });
+      }
+
+      // Φτιάξε τη λίστα recipients (εξαίρεσε τον εαυτό του + μόνο APPROVED users)
       const recipients = mockUsers
-        .filter(u => u.id !== currentUserId)
+        .filter(u =>
+          allowedUserIds.has(u.id) &&
+          u.id !== currentUserId &&
+          u.approval_status === 'APPROVED'
+        )
         .map(u => ({
           id: u.id,
           username: u.username,
-          name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username
+          name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username,
+          role: u.role === 'ORGANIZER' ? 'Organizer' : 'Participant',
         }));
+
       return { data: recipients };
     }
-    const response = await axios.get(`${API_BASE}/users/`, {
+
+    // Backend: το endpoint /api/messages/recipients/ θα φιλτράρει server-side
+    const response = await axios.get(`${API_BASE}/messages/recipients/`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       }
@@ -900,6 +942,51 @@ export const messageService = {
     if (response.data && response.data.results) {
       return { data: response.data.results };
     }
+    return response;
+  },
+    // ← ΝΕΟ: Mark as Junk
+  markAsJunk: async (messageId) => {
+    if (USE_MOCK) {
+      await delay(200);
+      const message = mockMessages.find(m => m.id === Number(messageId));
+      if (message) {
+        message.is_junk = true;
+        message.is_read = true;
+        message.is_trash = false;
+      }
+      return { data: { success: true } };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/messages/${messageId}/`,
+      { is_junk: true, is_read: true, is_trash: false },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  // ← ΝΕΟ: Unmark Junk (Restore στο Inbox)
+  unmarkJunk: async (messageId) => {
+    if (USE_MOCK) {
+      await delay(200);
+      const message = mockMessages.find(m => m.id === Number(messageId));
+      if (message) {
+        message.is_junk = false;
+      }
+      return { data: { success: true } };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/messages/${messageId}/`,
+      { is_junk: false },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
     return response;
   }
 };

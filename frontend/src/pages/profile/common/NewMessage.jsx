@@ -160,7 +160,7 @@ const NewMessage = () => {
   // ============================================
   // SUBMIT (Send)
   // ============================================
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -177,13 +177,24 @@ const NewMessage = () => {
       r => r.username.toLowerCase() === recipient.trim().toLowerCase()
     );
 
+    // ---- ΑΥΣΤΗΡΟ VALIDATION ----
+    // Σε mode 'new' ή 'forward', ο recipient πρέπει να είναι στη λίστα.
+    // Στο 'reply' επιτρέπεται πάντα (απαντάς σε όποιον σου έστειλε).
+    // Στο 'draft-edit' αν ο recipient δεν είναι valid, το επιτρέπουμε (κρατάει historical draft).
+    if ((mode === 'new' || mode === 'forward') && !foundRecipient) {
+      setError('You can only message users you have an active booking with.');
+      return;
+    }
+
     setLoading(true);
     try {
       await messageService.createMessage({
-        draftId: draftId, // αν είναι draft, μετέτρεψέ το
+        draftId: draftId,
         sender_id: user?.id,
         sender_username: user?.username,
-        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username,
+        sender_name:
+          `${user?.first_name || ''} ${user?.last_name || ''}`.trim() ||
+          user?.username,
         recipient_username: recipient.trim(),
         recipient_id: foundRecipient?.id || null,
         subject: subject.trim() || '(no subject)',
@@ -288,14 +299,28 @@ const NewMessage = () => {
           </div>
         )}
 
-        {error && (
+                {error && (
           <div className="new-message-error">
             {error}
           </div>
         )}
 
+        {/* ← ΝΕΟ: Warning όταν δεν υπάρχουν recipients */}
+        {recipients.length === 0 && mode === 'new' && !loadingOriginal && (
+          <div className="new-message-warning">
+            <span className="warning-icon">⚠️</span>
+            <div>
+              <strong>No recipients available</strong>
+              <p>
+                You can only send messages to users you have an active booking with.
+                Book an event first to start a conversation.
+              </p>
+            </div>
+          </div>
+        )}
+
         <form className="new-message-form" onSubmit={handleSubmit}>
-          <div className="form-row">
+                    <div className="form-row">
             <label htmlFor="recipient">To:</label>
             <input
               type="text"
@@ -303,14 +328,23 @@ const NewMessage = () => {
               list="recipients-list"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
-              placeholder="Search username..."
+              placeholder={
+                recipients.length === 0 && mode === 'new'
+                  ? 'No available recipients'
+                  : 'Type or select a username...'
+              }
               autoComplete="off"
-              disabled={loading || savingDraft || success}
+              disabled={
+                loading ||
+                savingDraft ||
+                success ||
+                (recipients.length === 0 && mode === 'new')
+              }
             />
             <datalist id="recipients-list">
               {recipients.map(r => (
                 <option key={r.id} value={r.username}>
-                  {r.name}
+                  {r.name} ({r.role})
                 </option>
               ))}
             </datalist>
@@ -340,7 +374,7 @@ const NewMessage = () => {
             />
           </div>
 
-          <div className="new-message-actions">
+                    <div className="new-message-actions">
             <button
               type="button"
               className="btn-cancel"
@@ -353,7 +387,12 @@ const NewMessage = () => {
               type="button"
               className="btn-save-draft"
               onClick={handleSaveDraft}
-              disabled={loading || savingDraft || success}
+              disabled={
+                loading ||
+                savingDraft ||
+                success ||
+                (recipients.length === 0 && mode === 'new')
+              }
             >
               <SaveIcon />
               {savingDraft ? 'Saving...' : 'Save as Draft'}
@@ -361,7 +400,14 @@ const NewMessage = () => {
             <button
               type="submit"
               className="btn-send"
-              disabled={loading || savingDraft || success || !body.trim() || !recipient.trim()}
+              disabled={
+                loading ||
+                savingDraft ||
+                success ||
+                !body.trim() ||
+                !recipient.trim() ||
+                (recipients.length === 0 && mode === 'new')
+              }
             >
               <SendIcon />
               {loading ? 'Sending...' : 'Send'}
