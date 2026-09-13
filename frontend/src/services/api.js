@@ -409,6 +409,22 @@ export const eventService = {
       }
     });
     return response;
+  },
+  // Μέσα στο eventService, μετά το getOrganizerEvents:
+  getAllEvents: async () => {
+    if (USE_MOCK) {
+      await delay();
+      return { data: mockEvents };
+    }
+    const response = await axios.get(`${API_BASE}/events/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    if (response.data && response.data.results) {
+      return { data: response.data.results };
+    }
+    return response;
   }
 };
 
@@ -884,6 +900,95 @@ export const messageService = {
     if (response.data && response.data.results) {
       return { data: response.data.results };
     }
+    return response;
+  }
+};
+
+// ============================================
+// USER SERVICES (Admin only)
+// ============================================
+export const userService = {
+  getAllUsers: async () => {
+    if (USE_MOCK) {
+      await delay();
+      return { data: mockUsers };
+    }
+    const response = await axios.get(`${API_BASE}/users/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    if (response.data && response.data.results) {
+      return { data: response.data.results };
+    }
+    return response;
+  },
+
+  getUser: async (userId) => {
+    if (USE_MOCK) {
+      await delay();
+      const user = mockUsers.find(u => u.id === Number(userId));
+      if (!user) throw new Error('User not found');
+      return { data: user };
+    }
+    const response = await axios.get(`${API_BASE}/users/${userId}/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
+    return response;
+  },
+
+  approveUser: async (userId) => {
+    if (USE_MOCK) {
+      await delay();
+      const user = mockUsers.find(u => u.id === Number(userId));
+      if (user) user.approval_status = 'APPROVED';
+      return { data: user };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/users/${userId}/`,
+      { approval_status: 'APPROVED' },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  rejectUser: async (userId) => {
+    if (USE_MOCK) {
+      await delay();
+      const user = mockUsers.find(u => u.id === Number(userId));
+      if (user) user.approval_status = 'REJECTED';
+      return { data: user };
+    }
+    const response = await axios.patch(
+      `${API_BASE}/users/${userId}/`,
+      { approval_status: 'REJECTED' },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  deleteUser: async (userId) => {
+    if (USE_MOCK) {
+      await delay();
+      const index = mockUsers.findIndex(u => u.id === Number(userId));
+      if (index !== -1) mockUsers.splice(index, 1);
+      return { data: { success: true } };
+    }
+    const response = await axios.delete(`${API_BASE}/users/${userId}/`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+      }
+    });
     return response;
   }
 };
