@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from '@mui/icons-material/Cancel';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import './AdminEvents.css';
 
 const AdminEvents = () => {
@@ -18,7 +17,15 @@ const AdminEvents = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   // ============================================
-  // ΦΟΡΤΩΣΗ ΟΛΩΝ ΤΩΝ EVENTS (όχι μόνο του organizer)
+  // CANCEL MODAL STATE
+  // ============================================
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelNotify, setCancelNotify] = useState(true);
+  const [cancelSubject, setCancelSubject] = useState('');
+  const [cancelBody, setCancelBody] = useState('');
+
+  // ============================================
+  // ΦΟΡΤΩΣΗ ΟΛΩΝ ΤΩΝ EVENTS
   // ============================================
   useEffect(() => {
     fetchEvents();
@@ -121,6 +128,49 @@ const AdminEvents = () => {
   };
 
   // ============================================
+  // CANCEL MODAL HANDLERS
+  // ============================================
+  const openCancelModal = () => {
+    if (!selectedEvent) return;
+    setCancelSubject(`Event Cancelled: ${selectedEvent.title}`);
+    setCancelBody(
+      `We regret to inform you that the event "${selectedEvent.title}" scheduled for ${formatDate(selectedEvent.start_datetime)} has been cancelled.\n\nWe apologize for any inconvenience.`
+    );
+    setCancelNotify(true);
+    setShowCancelModal(true);
+  };
+
+  const closeCancelModal = () => {
+    if (actionLoading) return;
+    setShowCancelModal(false);
+  };
+
+  const confirmCancel = async () => {
+    if (!selectedEvent) return;
+    setActionLoading(true);
+    try {
+      await eventService.cancelEvent(
+        selectedEvent.id,
+        cancelNotify,
+        cancelSubject,
+        cancelBody
+      );
+      setEvents(prev =>
+        prev.map(e =>
+          e.id === selectedEvent.id ? { ...e, status: 'CANCELLED' } : e
+        )
+      );
+      setSelectedEvent(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
+      setShowCancelModal(false);
+    } catch (err) {
+      console.error('Error cancelling event:', err);
+      alert('Failed to cancel event. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // ============================================
   // HELPERS
   // ============================================
   const getStatusLabel = (status) => {
@@ -143,11 +193,28 @@ const AdminEvents = () => {
     });
   };
 
+  const formatDateTimeLong = (dateString) => {
+    if (!dateString) return '—';
+    const d = new Date(dateString);
+    return d.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   const getOrganizerName = (ev) => {
     if (!ev.organizer) return '—';
     const f = ev.organizer.first_name || '';
     const l = ev.organizer.last_name || '';
     return (f + ' ' + l).trim() || ev.organizer.username || '—';
+  };
+
+  const getActiveBookingsCount = (ev) => {
+    return ev.bookings?.filter(b => b.status !== 'CANCELLED').length || 0;
   };
 
   const canDelete = (ev) => ev.status === 'DRAFT' || !ev.bookings?.length;
@@ -250,7 +317,7 @@ const AdminEvents = () => {
       {/* ============================================
           EVENT DETAILS MODAL
           ============================================ */}
-      {selectedEvent && (
+      {selectedEvent && !showCancelModal && (
         <div className="ae-modal-overlay" onClick={closeModal}>
           <div className="ae-modal" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
@@ -322,7 +389,7 @@ const AdminEvents = () => {
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Bookings:</span>
                   <span className="ae-modal-value">
-                    {selectedEvent.bookings?.filter(b => b.status !== 'CANCELLED').length || 0} active
+                    {getActiveBookingsCount(selectedEvent)} active
                   </span>
                 </div>
               </div>
@@ -341,7 +408,7 @@ const AdminEvents = () => {
               {canCancel(selectedEvent) && (
                 <button
                   className="btn-modal-cancel"
-                  onClick={() => handleCancel(selectedEvent.id)}
+                  onClick={openCancelModal}
                   disabled={actionLoading}
                 >
                   <CancelIcon /> Cancel Event
@@ -357,6 +424,106 @@ const AdminEvents = () => {
                   <DeleteIcon /> Delete
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================
+          CANCEL EVENT MODAL (Bulk Notification)
+          ============================================ */}
+      {showCancelModal && selectedEvent && (
+        <div className="ae-modal-overlay" onClick={closeCancelModal}>
+          <div className="ae-modal ae-cancel-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ae-modal-header">
+              <div className="ae-modal-header-info">
+                <h3>Cancel Event</h3>
+              </div>
+              <button
+                className="btn-close-modal"
+                onClick={closeCancelModal}
+                disabled={actionLoading}
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="ae-modal-body">
+              <p className="ae-cancel-warning">
+                ⚠️ Are you sure you want to cancel <strong>"{selectedEvent.title}"</strong>?
+              </p>
+              <p className="ae-cancel-subtext">
+                The event status will change to <strong>CANCELLED</strong>. No new
+                bookings will be allowed. Existing bookings will remain for historical
+                purposes.
+              </p>
+
+              {getActiveBookingsCount(selectedEvent) > 0 && (
+                <>
+                  <div className="ae-cancel-checkbox-row">
+                    <label className="ae-cancel-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={cancelNotify}
+                        onChange={(e) => setCancelNotify(e.target.checked)}
+                        disabled={actionLoading}
+                      />
+                      <span>
+                        Send notification to all attendees (
+                        {getActiveBookingsCount(selectedEvent)})
+                      </span>
+                    </label>
+                  </div>
+
+                  {cancelNotify && (
+                    <div className="ae-cancel-notify-fields">
+                      <div className="ae-cancel-field">
+                        <label>Subject:</label>
+                        <input
+                          type="text"
+                          value={cancelSubject}
+                          onChange={(e) => setCancelSubject(e.target.value)}
+                          disabled={actionLoading}
+                          placeholder="Event Cancelled"
+                        />
+                      </div>
+                      <div className="ae-cancel-field">
+                        <label>Message:</label>
+                        <textarea
+                          value={cancelBody}
+                          onChange={(e) => setCancelBody(e.target.value)}
+                          rows={5}
+                          disabled={actionLoading}
+                          placeholder="Write a message to attendees..."
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {getActiveBookingsCount(selectedEvent) === 0 && (
+                <p className="ae-cancel-no-attendees">
+                  No attendees to notify (no active bookings).
+                </p>
+              )}
+            </div>
+
+            <div className="ae-modal-footer">
+              <button
+                className="btn-modal-exit"
+                onClick={closeCancelModal}
+                disabled={actionLoading}
+              >
+                Keep Event
+              </button>
+              <button
+                className="btn-modal-confirm-cancel"
+                onClick={confirmCancel}
+                disabled={actionLoading}
+              >
+                {actionLoading ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
             </div>
           </div>
         </div>
