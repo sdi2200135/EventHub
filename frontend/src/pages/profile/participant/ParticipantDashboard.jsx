@@ -1,16 +1,15 @@
-// src/pages/profile/OrganizerDashboard.jsx
+// src/pages/profile/ParticipantDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { messageService } from '../services/api';
+import { messageService } from '../../../services/api';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-import './Dashboard.css';
-import MyEvents from './MyEvents';
-import Reservations from './Reservations';
+import '../common/Dashboard.css';
+import MyBookings from './MyBookings';
 
-const OrganizerDashboard = ({ user }) => {
+const ParticipantDashboard = ({ user }) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('personal');
   const [unreadCount, setUnreadCount] = useState(0);
@@ -62,6 +61,7 @@ const OrganizerDashboard = ({ user }) => {
       const response = await messageService.getMessage(messageId);
       setOpenedMessage(response.data);
       setReplyText('');
+
       if (!response.data.is_read) {
         await messageService.markAsRead(messageId);
         setMessages(prev =>
@@ -122,10 +122,12 @@ const OrganizerDashboard = ({ user }) => {
 
   const handleDeleteSelected = async () => {
     if (selectedMessages.length === 0) return;
+
     const isTrashFolder = activeFolder === 'trash';
     const confirmMsg = isTrashFolder
       ? `Permanently delete ${selectedMessages.length} message(s)? This cannot be undone.`
       : `Move ${selectedMessages.length} message(s) to Trash?`;
+
     if (!window.confirm(confirmMsg)) return;
 
     try {
@@ -197,7 +199,7 @@ const OrganizerDashboard = ({ user }) => {
   const filteredMessages = getFilteredMessages();
 
   return (
-    <div className="organizer-dashboard">
+    <div className="participant-dashboard">
       <div className="profile-tabs">
         <button
           className={`profile-tab ${activeTab === 'personal' ? 'active' : ''}`}
@@ -215,16 +217,10 @@ const OrganizerDashboard = ({ user }) => {
           )}
         </button>
         <button
-          className={`profile-tab ${activeTab === 'events' ? 'active' : ''}`}
-          onClick={() => setActiveTab('events')}
+          className={`profile-tab ${activeTab === 'bookings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('bookings')}
         >
-          Events
-        </button>
-        <button
-          className={`profile-tab ${activeTab === 'reservations' ? 'active' : ''}`}
-          onClick={() => setActiveTab('reservations')}
-        >
-          Reservations
+          My Bookings
         </button>
       </div>
 
@@ -256,11 +252,8 @@ const OrganizerDashboard = ({ user }) => {
             onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
           />
         )}
-        {activeTab === 'events' && (
-          <MyEvents user={user} />
-        )}
-        {activeTab === 'reservations' && (
-          <Reservations user={user} />
+        {activeTab === 'bookings' && (
+          <MyBookings />
         )}
       </div>
     </div>
@@ -393,6 +386,7 @@ const MessagesLayout = ({
 
   return (
     <div className={`messages-layout ${openedMessage ? 'with-opened' : ''}`}>
+      {/* Στήλη 1: Folders */}
       <aside className="messages-sidebar">
         {folders.map(folder => (
           <button
@@ -408,6 +402,7 @@ const MessagesLayout = ({
         ))}
       </aside>
 
+      {/* Στήλη 2: Λίστα Μηνυμάτων */}
       <div className="messages-content">
         {/* ============================================
             TOOLBAR - Όλα σε μία σειρά
@@ -511,6 +506,7 @@ const MessagesLayout = ({
         )}
       </div>
 
+      {/* Στήλη 3: Ανοιχτό Μήνυμα (Chat-style) */}
       {openedMessage && (
         <div className="message-detail-panel">
           <div className="message-detail-header">
@@ -585,4 +581,4 @@ const MessagesLayout = ({
   );
 };
 
-export default OrganizerDashboard;
+export default ParticipantDashboard;

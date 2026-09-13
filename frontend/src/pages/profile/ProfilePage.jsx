@@ -1,13 +1,13 @@
 // src/pages/ProfilePage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 // Import των επιμέρους σελίδων ανά ρόλο
-import AdminDashboard from './AdminDashboard';
-import OrganizerDashboard from './OrganizerDashboard';
-import ParticipantDashboard from './ParticipantDashboard';
+import AdminDashboard from '../profile/admin/AdminDashboard';
+import OrganizerDashboard from '../profile/organizer/OrganizerDashboard';
+import ParticipantDashboard from '../profile/participant/ParticipantDashboard';
 
 import './ProfilePage.css';
 

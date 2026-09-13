@@ -1,15 +1,14 @@
 // src/pages/EventDetails.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { eventService } from '../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { eventService } from '../../services/api';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import './EventDetails.css';
-import BookTicket from '../pages/BookTicket';
-
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
+import './EventDetails.css';
+import BookTicket from '../../components/BookTicket';
 
 // Διόρθωση για τα εικονίδια του Leaflet (χρειάζεται για να δουλέψει με React)
 import icon from 'leaflet/dist/images/marker-icon.png';

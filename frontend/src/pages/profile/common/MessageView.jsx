@@ -1,7 +1,7 @@
 // src/pages/profile/MessageView.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { messageService } from '../services/api';
+import { messageService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReplyIcon from '@mui/icons-material/Reply';
 import ForwardIcon from '@mui/icons-material/Forward';

@@ -1,8 +1,8 @@
 // src/pages/profile/EditEvent.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { eventService } from '../services/api';
+import { useAuth } from '../../../context/AuthContext';
+import { eventService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';

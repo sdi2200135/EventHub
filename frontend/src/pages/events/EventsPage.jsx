@@ -1,8 +1,8 @@
 // src/pages/EventsPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { eventService, categoryService } from '../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { eventService, categoryService } from '../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DatePicker from 'react-datepicker';

@@ -1,7 +1,7 @@
 // src/pages/profile/MyBookings.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { bookingService } from '../services/api';
+import { bookingService } from '../../../services/api';
 import EventIcon from '@mui/icons-material/Event';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';

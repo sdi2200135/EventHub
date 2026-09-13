@@ -1,7 +1,7 @@
 // src/pages/profile/ReservationsDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { eventService, bookingService } from '../services/api';
+import { eventService, bookingService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import './ReservationsDetails.css';

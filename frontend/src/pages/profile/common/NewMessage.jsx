@@ -1,8 +1,8 @@
 // src/pages/profile/NewMessage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { messageService } from '../services/api';
+import { useAuth } from '../../../context/AuthContext';
+import { messageService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';

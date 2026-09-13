@@ -1,6 +1,6 @@
 // src/pages/profile/AdminDashboard.jsx
 import React from 'react';
-import './Dashboard.css';
+import '../common/Dashboard.css';
 
 const AdminDashboard = ({ user }) => {
   return (

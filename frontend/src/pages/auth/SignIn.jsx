@@ -1,7 +1,7 @@
 // src/pages/SignIn.jsx
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'; // ← ΠΡΟΣΘΗΚΗ useSearchParams
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'; 
+import { useAuth } from '../../context/AuthContext';
 import './SignIn.css';
 
 const SignIn = () => {

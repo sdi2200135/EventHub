@@ -1,8 +1,8 @@
 // src/pages/profile/EventDetailsOrganizer.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { eventService, messageService } from '../services/api';
+import { useAuth } from '../../../context/AuthContext';
+import { eventService, messageService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Cancel';

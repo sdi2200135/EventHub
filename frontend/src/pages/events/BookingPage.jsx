@@ -1,8 +1,8 @@
 // src/pages/BookingPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { eventService, bookingService } from '../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { eventService, bookingService } from '../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import './BookingPage.css';

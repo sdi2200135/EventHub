@@ -6,20 +6,20 @@ import { Navbar, Footer } from './components/common';
 import './App.css';
 
 import HomePage from './pages/HomePage';
-import SignIn from './pages/SignIn';
-import ForgotPwd from './pages/ForgotPwd';
-import SignUp from './pages/SignUp';
-import EventsPage from './pages/EventsPage';
-import EventDetails from './pages/EventDetails';
-import BookingPage from './pages/BookingPage';
-import ProfilePage from './pages/ProfilePage';
-import EditProfile from './pages/EditProfile';
-import MessageView from './pages/MessageView';
-import NewMessage from './pages/NewMessage';
-import CreateEvent from './pages/CreateEvent';
-import EventDetailsOrganizer from './pages/EventDetailsOrganizer';
-import EditEvent from './pages/EditEvent';
-import ReservationsDetails from './pages/ReservationsDetails';
+import SignIn from './pages/auth/SignIn';
+import ForgotPwd from './pages/auth/ForgotPwd';
+import SignUp from './pages/auth/SignUp';
+import EventsPage from './pages/events/EventsPage';
+import EventDetails from './pages/events/EventDetails';
+import BookingPage from './pages/events/BookingPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import EditProfile from './pages/profile/EditProfile';
+import MessageView from './pages/profile/common/MessageView';
+import NewMessage from './pages/profile/common/NewMessage';
+import CreateEvent from './pages/profile/organizer/CreateEvent';
+import EventDetailsOrganizer from './pages/profile/organizer/EventDetailsOrganizer';
+import EditEvent from './pages/profile/organizer/EditEvent';
+import ReservationsDetails from './pages/profile/organizer/ReservationsDetails';
 
 function App() {
   return (

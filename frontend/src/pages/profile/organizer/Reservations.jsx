@@ -1,7 +1,7 @@
 // src/pages/profile/Reservations.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { eventService } from '../services/api';
+import { eventService } from '../../../services/api';
 import './Reservations.css';
 
 const Reservations = ({ user }) => {
