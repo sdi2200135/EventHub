@@ -1,7 +1,6 @@
 // src/pages/profile/ParticipantDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { messageService } from '../services/api';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -17,16 +16,11 @@ const ParticipantDashboard = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
-  // Message folders & state
   const [activeFolder, setActiveFolder] = useState('incoming');
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Επιλεγμένο μήνυμα για inline εμφάνιση
   const [openedMessage, setOpenedMessage] = useState(null);
   const [loadingOpened, setLoadingOpened] = useState(false);
-
-  // Reply state
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
 
@@ -130,7 +124,6 @@ const ParticipantDashboard = ({ user }) => {
     if (selectedMessages.length === 0) return;
 
     const isTrashFolder = activeFolder === 'trash';
-
     const confirmMsg = isTrashFolder
       ? `Permanently delete ${selectedMessages.length} message(s)? This cannot be undone.`
       : `Move ${selectedMessages.length} message(s) to Trash?`;
@@ -139,12 +132,10 @@ const ParticipantDashboard = ({ user }) => {
 
     try {
       if (isTrashFolder) {
-        // Οριστική διαγραφή
         await Promise.all(
           selectedMessages.map(id => messageService.deleteMessage(id))
         );
       } else {
-        // Soft delete → Trash
         await Promise.all(
           selectedMessages.map(id => messageService.moveToTrash(id))
         );
@@ -413,42 +404,43 @@ const MessagesLayout = ({
 
       {/* Στήλη 2: Λίστα Μηνυμάτων */}
       <div className="messages-content">
+        {/* ============================================
+            TOOLBAR - Όλα σε μία σειρά
+            ============================================ */}
         <div className="messages-toolbar">
-          <div className="toolbar-left">
-            <label className="checkbox-wrapper">
-              <input
-                type="checkbox"
-                checked={
-                  messages.length > 0 &&
-                  selectedMessages.length === messages.length
-                }
-                onChange={onSelectAll}
-              />
-            </label>
-            <button
-              className="btn-delete"
-              disabled={selectedMessages.length === 0}
-              onClick={onDeleteSelected}
-            >
-              Delete
-            </button>
-          </div>
-          <div className="toolbar-right">
-            <button className="btn-new-message" onClick={onNewMessage}>
-              New Message
-            </button>
-          </div>
-        </div>
+          <label className="checkbox-wrapper">
+            <input
+              type="checkbox"
+              checked={
+                messages.length > 0 &&
+                selectedMessages.length === messages.length
+              }
+              onChange={onSelectAll}
+            />
+          </label>
 
-        <div className="search-wrapper">
-          <SearchIcon className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="messages-search"
-          />
+          <button
+            className="btn-delete"
+            disabled={selectedMessages.length === 0}
+            onClick={onDeleteSelected}
+          >
+            Delete
+          </button>
+
+          <div className="search-wrapper">
+            <SearchIcon className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="messages-search"
+            />
+          </div>
+
+          <button className="btn-new-message" onClick={onNewMessage}>
+            New Message
+          </button>
         </div>
 
         {loading ? (

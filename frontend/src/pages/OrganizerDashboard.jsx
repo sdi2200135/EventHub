@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import './Dashboard.css';
 import MyEvents from './MyEvents';
+import Reservations from './Reservations';
 
 const OrganizerDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -16,7 +17,6 @@ const OrganizerDashboard = ({ user }) => {
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
-  // Message folders & state
   const [activeFolder, setActiveFolder] = useState('incoming');
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,23 +122,18 @@ const OrganizerDashboard = ({ user }) => {
 
   const handleDeleteSelected = async () => {
     if (selectedMessages.length === 0) return;
-
     const isTrashFolder = activeFolder === 'trash';
-
     const confirmMsg = isTrashFolder
       ? `Permanently delete ${selectedMessages.length} message(s)? This cannot be undone.`
       : `Move ${selectedMessages.length} message(s) to Trash?`;
-
     if (!window.confirm(confirmMsg)) return;
 
     try {
       if (isTrashFolder) {
-        // Οριστική διαγραφή
         await Promise.all(
           selectedMessages.map(id => messageService.deleteMessage(id))
         );
       } else {
-        // Soft delete → Trash
         await Promise.all(
           selectedMessages.map(id => messageService.moveToTrash(id))
         );
@@ -265,13 +260,7 @@ const OrganizerDashboard = ({ user }) => {
           <MyEvents user={user} />
         )}
         {activeTab === 'reservations' && (
-          <div className="placeholder-tab">
-            <h3>📋 Reservations</h3>
-            <p>Οι κρατήσεις για τις εκδηλώσεις σας θα εμφανιστούν εδώ.</p>
-            <p className="placeholder-hint">
-              (Coming soon — Λίστα κρατήσεων ανά event)
-            </p>
-          </div>
+          <Reservations user={user} />
         )}
       </div>
     </div>
@@ -350,7 +339,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
 };
 
 // ============================================
-// MESSAGES LAYOUT - 3 ΣΤΗΛΕΣ (Chat-style)
+// MESSAGES LAYOUT - 3 ΣΤΗΛΕΣ
 // ============================================
 const MessagesLayout = ({
   messages,
@@ -420,42 +409,43 @@ const MessagesLayout = ({
       </aside>
 
       <div className="messages-content">
+        {/* ============================================
+            TOOLBAR - Όλα σε μία σειρά
+            ============================================ */}
         <div className="messages-toolbar">
-          <div className="toolbar-left">
-            <label className="checkbox-wrapper">
-              <input
-                type="checkbox"
-                checked={
-                  messages.length > 0 &&
-                  selectedMessages.length === messages.length
-                }
-                onChange={onSelectAll}
-              />
-            </label>
-            <button
-              className="btn-delete"
-              disabled={selectedMessages.length === 0}
-              onClick={onDeleteSelected}
-            >
-              Delete
-            </button>
-          </div>
-          <div className="toolbar-right">
-            <button className="btn-new-message" onClick={onNewMessage}>
-              New Message
-            </button>
-          </div>
-        </div>
+          <label className="checkbox-wrapper">
+            <input
+              type="checkbox"
+              checked={
+                messages.length > 0 &&
+                selectedMessages.length === messages.length
+              }
+              onChange={onSelectAll}
+            />
+          </label>
 
-        <div className="search-wrapper">
-          <SearchIcon className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="messages-search"
-          />
+          <button
+            className="btn-delete"
+            disabled={selectedMessages.length === 0}
+            onClick={onDeleteSelected}
+          >
+            Delete
+          </button>
+
+          <div className="search-wrapper">
+            <SearchIcon className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="messages-search"
+            />
+          </div>
+
+          <button className="btn-new-message" onClick={onNewMessage}>
+            New Message
+          </button>
         </div>
 
         {loading ? (

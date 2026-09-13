@@ -335,13 +335,73 @@ export const eventService = {
     return response;
   },
 
-  // ← ΝΕΟ: Λίστα κρατήσεων για event (για τον organizer)
+    // ← ΕΜΠΛΟΥΤΙΣΜΕΝΟ: Επιστρέφει enriched bookings με ticket type + user info + total_price
   getEventBookings: async (eventId) => {
     if (USE_MOCK) {
       await delay();
       const event = mockEvents.find(e => e.id === Number(eventId));
       if (!event) return { data: [] };
-      return { data: event.bookings || [] };
+
+      const enriched = (event.bookings || []).map((b, idx) => {
+        // ---- Ticket Type ----
+        let ticketTypeId = 'T1';
+        let ticketTypeName = 'Regular';
+        let ticketPrice = 0;
+
+        if (event.ticket_types && event.ticket_types.length > 0) {
+          // Αν το booking έχει ticket_type_id, ψάξε το σωστό
+          let tt = null;
+          if (b.ticket_type_id) {
+            tt = event.ticket_types.find(
+              t => t.id === b.ticket_type_id || t.ticket_type_id === b.ticket_type_id
+            );
+          }
+          // Αλλιώς round-robin
+          if (!tt) tt = event.ticket_types[idx % event.ticket_types.length];
+
+          ticketTypeId = tt.ticket_type_id || `T${idx + 1}`;
+          ticketTypeName = tt.name || ticketTypeId;
+          ticketPrice = Number(tt.price) || 0;
+        }
+
+        // ---- Total Price ----
+        // 1. Αν το booking έχει total_price, χρησιμοποίησέ το
+        // 2. Αλλιώς ψάξε στο standalone mockBookings
+        // 3. Αλλιώς υπολόγισε price × quantity
+        let totalPrice = b.total_price;
+        if (totalPrice == null) {
+          const standalone = mockBookings.find(mb => mb.id === b.id);
+          if (standalone?.total_price != null) {
+            totalPrice = standalone.total_price;
+          } else {
+            totalPrice = ticketPrice * (b.quantity || 0);
+          }
+        }
+
+        // ---- Booking Date ----
+        const bookingDate = b.booking_date
+          || mockBookings.find(mb => mb.id === b.id)?.booking_date
+          || event.start_datetime;
+
+        // ---- User info ----
+        const user = mockUsers.find(u => u.id === b.user_id);
+        const userName = user
+          ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username
+          : `User ${b.user_id}`;
+
+        return {
+          ...b,
+          ticket_type_id: ticketTypeId,
+          ticket_type_name: ticketTypeName,
+          ticket_price: ticketPrice,
+          total_price: totalPrice,
+          booking_date: bookingDate,
+          user_name: userName,
+          user_username: user?.username || `user${b.user_id}`,
+        };
+      });
+
+      return { data: enriched };
     }
     const response = await axios.get(`${API_BASE}/events/${eventId}/bookings/`, {
       headers: {
@@ -479,6 +539,64 @@ export const bookingService = {
         Authorization: `Bearer ${localStorage.getItem('access_token')}`
       }
     });
+    return response;
+  },
+    // ← ΝΕΟ: Approve booking (PENDING → CONFIRMED)
+  approveBooking: async (bookingId) => {
+    if (USE_MOCK) {
+      await delay(300);
+      // Ψάξε σε όλα τα events
+      for (const event of mockEvents) {
+        const booking = event.bookings?.find(b => b.id === Number(bookingId));
+        if (booking) {
+          booking.status = 'CONFIRMED';
+          return { data: booking };
+        }
+      }
+      throw new Error('Booking not found');
+    }
+    const response = await axios.patch(
+      `${API_BASE}/bookings/${bookingId}/`,
+      { status: 'CONFIRMED' },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
+    return response;
+  },
+
+  // ← ΝΕΟ: Reject booking (PENDING → CANCELLED + επιστροφή tickets)
+  rejectBooking: async (bookingId) => {
+    if (USE_MOCK) {
+      await delay(300);
+      for (const event of mockEvents) {
+        const booking = event.bookings?.find(b => b.id === Number(bookingId));
+        if (booking) {
+          booking.status = 'CANCELLED';
+          // Επιστροφή διαθεσιμότητας
+          event.available_capacity = (event.available_capacity || 0) + (booking.quantity || 0);
+          if (event.ticket_types && booking.ticket_type_id) {
+            const tt = event.ticket_types.find(
+              t => t.id === booking.ticket_type_id || t.ticket_type_id === booking.ticket_type_id
+            );
+            if (tt) tt.available = (tt.available || 0) + (booking.quantity || 0);
+          }
+          return { data: booking };
+        }
+      }
+      throw new Error('Booking not found');
+    }
+    const response = await axios.patch(
+      `${API_BASE}/bookings/${bookingId}/`,
+      { status: 'CANCELLED' },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        }
+      }
+    );
     return response;
   }
 };
