@@ -1,6 +1,6 @@
 // src/pages/HomePage.jsx
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';  // ← Πρόσθεσε useNavigate
+import { Link, useNavigate } from 'react-router-dom';  
 import { useAuth } from '../context/AuthContext';
 import { eventService, categoryService } from '../services/api';
 import DatePicker from 'react-datepicker';

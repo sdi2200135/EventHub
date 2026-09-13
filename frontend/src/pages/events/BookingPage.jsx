@@ -1,4 +1,4 @@
-// src/pages/BookingPage.jsx
+// src/pages/events/BookingPage.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';

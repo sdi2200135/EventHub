@@ -1,4 +1,4 @@
-// src/components/BookTicket.jsx - ΔΙΟΡΘΩΣΗ ΓΙΑ THEATRE/CINEMA
+// src/components/BookTicket.jsx 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';

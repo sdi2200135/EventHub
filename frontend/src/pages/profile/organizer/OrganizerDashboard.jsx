@@ -1,4 +1,4 @@
-// src/pages/profile/OrganizerDashboard.jsx
+// src/pages/profile/organizer/OrganizerDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { messageService } from '../../../services/api';

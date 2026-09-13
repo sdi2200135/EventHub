@@ -1,4 +1,4 @@
-// src/pages/profile/CreateEvent.jsx
+// src/pages/profile/organizer/CreateEvent.jsx
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';

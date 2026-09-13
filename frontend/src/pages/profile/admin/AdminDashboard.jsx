@@ -1,4 +1,4 @@
-// src/pages/profile/AdminDashboard.jsx
+// src/pages/profile/admin/AdminDashboard.jsx
 import React from 'react';
 import '../common/Dashboard.css';
 

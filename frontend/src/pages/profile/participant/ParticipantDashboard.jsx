@@ -1,4 +1,4 @@
-// src/pages/profile/ParticipantDashboard.jsx
+// src/pages/profile/participant/ParticipantDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { messageService } from '../../../services/api';

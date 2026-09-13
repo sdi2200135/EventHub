@@ -1,4 +1,4 @@
-// src/pages/profile/EditEvent.jsx
+// src/pages/profile/organizer/EditEvent.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';

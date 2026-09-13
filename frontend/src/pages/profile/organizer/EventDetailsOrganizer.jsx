@@ -1,4 +1,4 @@
-// src/pages/profile/EventDetailsOrganizer.jsx
+// src/pages/profile/organizer/EventDetailsOrganizer.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';

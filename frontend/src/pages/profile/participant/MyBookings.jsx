@@ -1,4 +1,4 @@
-// src/pages/profile/MyBookings.jsx
+// src/pages/profile/participant/MyBookings.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingService } from '../../../services/api';

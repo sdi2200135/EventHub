@@ -1,4 +1,4 @@
-// src/pages/ForgotPwd.jsx
+// src/pages/auth/ForgotPwd.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './ForgotPwd.css';

@@ -1,4 +1,4 @@
-// src/pages/profile/MessageView.jsx
+// src/pages/profile/common/MessageView.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { messageService } from '../../../services/api';
