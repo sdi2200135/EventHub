@@ -6,6 +6,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
+import ReportIcon from '@mui/icons-material/Report';
+import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import '../common/Dashboard.css';
 import MyBookings from './MyBookings';
 
@@ -152,6 +155,63 @@ const ParticipantDashboard = ({ user }) => {
     }
   };
 
+  // ============================================
+  // MARK AS JUNK
+  // ============================================
+  const handleMarkAsJunk = async (messageId) => {
+    try {
+      await messageService.markAsJunk(messageId);
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === messageId
+            ? { ...m, is_junk: true, is_read: true }
+            : m
+        )
+      );
+      handleCloseOpenedMessage();
+      fetchUnreadCount();
+    } catch (err) {
+      console.error('Error marking as junk:', err);
+      alert('Failed to mark message as junk.');
+    }
+  };
+
+  // ============================================
+  // UNMARK JUNK (Restore στο Inbox)
+  // ============================================
+  const handleUnmarkJunk = async (messageId) => {
+    try {
+      await messageService.unmarkJunk(messageId);
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === messageId ? { ...m, is_junk: false } : m
+        )
+      );
+      handleCloseOpenedMessage();
+    } catch (err) {
+      console.error('Error unmarking junk:', err);
+      alert('Failed to restore message.');
+    }
+  };
+
+  // ============================================
+  // RESTORE FROM TRASH
+  // ============================================
+  const handleRestoreFromTrash = async (messageId) => {
+    try {
+      await messageService.restoreFromTrash(messageId);
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === messageId ? { ...m, is_trash: false } : m
+        )
+      );
+      handleCloseOpenedMessage();
+    } catch (err) {
+      console.error('Error restoring from trash:', err);
+      alert('Failed to restore message.');
+    }
+  };
+
   const getFilteredMessages = () => {
     if (!user?.id) return [];
     let filtered = [...messages];
@@ -250,6 +310,9 @@ const ParticipantDashboard = ({ user }) => {
             onSendReply={handleSendReply}
             sendingReply={sendingReply}
             onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
+            onMarkAsJunk={handleMarkAsJunk}
+            onUnmarkJunk={handleUnmarkJunk}
+            onRestoreFromTrash={handleRestoreFromTrash}
           />
         )}
         {activeTab === 'bookings' && (
@@ -355,6 +418,9 @@ const MessagesLayout = ({
   onSendReply,
   sendingReply,
   onOpenDraft,
+  onMarkAsJunk,
+  onUnmarkJunk,
+  onRestoreFromTrash,
 }) => {
   const folders = [
     { id: 'incoming', label: 'Inbox' },
@@ -524,6 +590,40 @@ const MessagesLayout = ({
                 @{openedMessage.sender_username}
               </div>
             </div>
+
+            {/* ============================================
+                ACTION BUTTONS (Junk / Unjunk / Restore)
+                ============================================ */}
+            {activeFolder === 'incoming' && !openedMessage.is_junk && (
+              <button
+                className="btn-message-action junk"
+                onClick={() => onMarkAsJunk(openedMessage.id)}
+                title="Mark as Junk"
+              >
+                <ReportIcon />
+              </button>
+            )}
+
+            {activeFolder === 'junk' && (
+              <button
+                className="btn-message-action unjunk"
+                onClick={() => onUnmarkJunk(openedMessage.id)}
+                title="Not Junk"
+              >
+                <MoveToInboxIcon />
+              </button>
+            )}
+
+            {activeFolder === 'trash' && (
+              <button
+                className="btn-message-action restore"
+                onClick={() => onRestoreFromTrash(openedMessage.id)}
+                title="Restore"
+              >
+                <RestoreFromTrashIcon />
+              </button>
+            )}
+
             <button
               className="btn-close-detail"
               onClick={onCloseOpened}

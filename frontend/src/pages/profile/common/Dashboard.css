@@ -909,3 +909,60 @@
   font-style: italic;
   margin-top: 12px;
 }
+
+/* ============================================
+   MESSAGE ACTION BUTTONS (Junk / Restore)
+   ============================================ */
+.btn-message-action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-message-action svg {
+  font-size: 20px !important;
+}
+
+/* Junk - κίτρινο */
+.btn-message-action.junk {
+  color: #a0a0b8;
+}
+
+.btn-message-action.junk:hover {
+  background: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+/* Unjunk - πράσινο */
+.btn-message-action.unjunk {
+  color: #a0a0b8;
+}
+
+.btn-message-action.unjunk:hover {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+/* Restore - μπλε */
+.btn-message-action.restore {
+  color: #a0a0b8;
+}
+
+.btn-message-action.restore:hover {
+  background: rgba(74, 144, 217, 0.15);
+  color: #4a90d9;
+}
+
+/* Responsive - τα action buttons σε mobile */
+@media (max-width: 480px) {
+  .btn-message-action svg {
+    font-size: 18px !important;
+  }
+}
