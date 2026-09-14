@@ -56,6 +56,17 @@ export const authService = {
       if (user.approval_status === 'REJECTED') {
         throw new Error('Your account registration was rejected.');
       }
+
+      // ============================================
+      // SYNC mockCurrentUser ΜΕ ΤΟΝ ΣΥΝΔΕΔΕΜΕΝΟ ΧΡΗΣΤΗ
+      // ============================================
+      // Χωρίς αυτό, το getProfile() (που καλείται στο page load
+      // μέσω του AuthContext.loadUser) επιστρέφει πάντα τον
+      // hardcoded participant, με αποτέλεσμα ο organizer/admin
+      // να χάνει τον ρόλο του μετά από refresh ή απευθείας URL.
+      Object.keys(mockCurrentUser).forEach(key => delete mockCurrentUser[key]);
+      Object.assign(mockCurrentUser, user);
+
       return {
         data: {
           access: 'mock_access_token',

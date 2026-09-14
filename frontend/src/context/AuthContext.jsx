@@ -2,6 +2,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services/api';
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -28,6 +30,28 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = async () => {
     try {
+      // ============================================
+      // MOCK MODE: Διάβασε τον user από localStorage
+      // ============================================
+      // Χωρίς αυτό, το getProfile() επιστρέφει πάντα τον
+      // hardcoded participant του MockData, με αποτέλεσμα ο
+      // organizer/admin να χάνει τον ρόλο του μετά από refresh.
+      if (USE_MOCK) {
+        const savedUser = localStorage.getItem('mock_user');
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            setUser(parsed);
+            setIsAuthenticated(true);
+            setLoading(false);
+            return;
+          } catch (e) {
+            console.error('Error parsing mock_user:', e);
+            // Πέφτει στο getProfile() ως fallback
+          }
+        }
+      }
+
       const response = await authService.getProfile();
       setUser(response.data);
       setIsAuthenticated(true);
@@ -35,6 +59,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Error loading user:', error);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('mock_user');
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -46,25 +71,32 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.login({ username, password });
       const { access, refresh, user } = response.data;
-      
+
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
-      
+
+      // ============================================
+      // MOCK MODE: Αποθήκευσε τον user στο localStorage
+      // ============================================
+      if (USE_MOCK) {
+        localStorage.setItem('mock_user', JSON.stringify(user));
+      }
+
       setUser(user);
       setIsAuthenticated(true);
-      
+
       // Ενημέρωση του last_login μέσω API call
       try {
         await authService.updateLastLogin();
       } catch (e) {
         console.log('Could not update last_login:', e);
       }
-      
+
       return { success: true };
     } catch (error) {
-      const message = 
-        error.response?.data?.detail || 
-        error.message || 
+      const message =
+        error.response?.data?.detail ||
+        error.message ||
         'Invalid username or password';
       return { success: false, error: message };
     }
@@ -88,6 +120,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('mock_user');
     setUser(null);
     setIsAuthenticated(false);
   };

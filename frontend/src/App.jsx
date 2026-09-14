@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar, Footer } from './components/common';
+import RequireRole from './components/RequireRole';
 import './App.css';
 
 import HomePage from './pages/HomePage';
@@ -29,21 +30,95 @@ function App() {
           <Navbar />
           <main className="main-content">
             <Routes>
+              {/* ============================================
+                  PUBLIC ROUTES (χωρίς authentication)
+                  ============================================ */}
               <Route path="/" element={<HomePage />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signin/forgot-password" element={<ForgotPwd />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/events" element={<EventsPage />} />
               <Route path="/events/details/:id" element={<EventDetails />} />
-              <Route path="/events/details/:id/booking" element={<BookingPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/profile/edit" element={<EditProfile />} />
-              <Route path="/profile/messages/new" element={<NewMessage />} />
-              <Route path="/profile/messages/:id" element={<MessageView />} />
-              <Route path="/profile/events/new" element={<CreateEvent />} />
-              <Route path="/profile/events/edit/:id" element={<EditEvent />} />
-              <Route path="/profile/events/:id" element={<EventDetailsOrganizer />} />
-              <Route path="/profile/reservations/:id" element={<ReservationsDetails />} />
+
+              {/* ============================================
+                  AUTHENTICATED ROUTES (οποιοσδήποτε συνδεδεμένος)
+                  ============================================ */}
+              <Route
+                path="/events/details/:id/booking"
+                element={
+                  <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                    <BookingPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                    <ProfilePage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/edit"
+                element={
+                  <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                    <EditProfile />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/messages/new"
+                element={
+                  <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                    <NewMessage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/messages/:id"
+                element={
+                  <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                    <MessageView />
+                  </RequireRole>
+                }
+              />
+
+              {/* ============================================
+                  ORGANIZER-ONLY ROUTES
+                  ============================================ */}
+              <Route
+                path="/profile/events/new"
+                element={
+                  <RequireRole roles={['ORGANIZER']}>
+                    <CreateEvent />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/events/edit/:id"
+                element={
+                  <RequireRole roles={['ORGANIZER']}>
+                    <EditEvent />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/events/:id"
+                element={
+                  <RequireRole roles={['ORGANIZER']}>
+                    <EventDetailsOrganizer />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/profile/reservations/:id"
+                element={
+                  <RequireRole roles={['ORGANIZER']}>
+                    <ReservationsDetails />
+                  </RequireRole>
+                }
+              />
             </Routes>
           </main>
           <Footer />
