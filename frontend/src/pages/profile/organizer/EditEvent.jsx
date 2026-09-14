@@ -100,12 +100,19 @@ const EditEvent = () => {
         });
 
         // Step 2
-        const types = (ev.ticket_types || []).map((t, i) => ({
-          id: t.ticket_type_id || `T${i + 1}`,
-          name: t.name || 'Regular',
-          price: t.price ?? 0,
-          quantity: t.quantity ?? t.available ?? 0,
-        }));
+        const types = (ev.ticket_types || []).map((t, i) => {
+          const quantity = t.quantity ?? t.available ?? 0;
+          const available = t.available ?? quantity;
+          return {
+            id: t.ticket_type_id || `T${i + 1}`,
+            name: t.name || 'Regular',
+            price: t.price ?? 0,
+            quantity: quantity,
+            originalQuantity: quantity,      // ← ΝΕΟ
+            originalAvailable: available,    // ← ΝΕΟ
+          };
+        });
+
         setTicketTypes(
           types.length > 0
             ? types
@@ -277,6 +284,14 @@ const EditEvent = () => {
   const validateStep2 = () => {
     if (ticketTypes.length === 0) return 'Add at least one ticket type';
     for (const t of ticketTypes) {
+      // ΝΕΟΣ ΕΛΕΓΧΟΣ: το νέο quantity δεν μπορεί να είναι μικρότερο από τις κρατήσεις
+      const originalQuantity = t.originalQuantity ?? t.quantity;
+      const originalAvailable = t.originalAvailable ?? t.quantity;
+      const booked = originalQuantity - originalAvailable;
+
+      if (Number(t.quantity) < booked) {
+        return `Cannot set "${t.name}" quantity to ${t.quantity}. ${booked} tickets are already booked.`;
+      }
       if (!t.name?.trim()) return 'All ticket types need a name';
       if (!t.price || Number(t.price) <= 0) return 'Ticket price must be > 0';
       if (!t.quantity || Number(t.quantity) <= 0) return 'Ticket quantity must be > 0';
@@ -383,13 +398,23 @@ const EditEvent = () => {
           first_name: user?.first_name,
           last_name: user?.last_name
         },
-        ticket_types: ticketTypes.map((t) => ({
-          ticket_type_id: t.id,
-          name: t.name,
-          price: Number(t.price),
-          quantity: Number(t.quantity),
-          available: Number(t.quantity)
-        })),
+        ticket_types: ticketTypes.map((t) => {
+          const originalQuantity = t.originalQuantity ?? t.quantity;
+          const originalAvailable = t.originalAvailable ?? t.quantity;
+          const booked = originalQuantity - originalAvailable;
+          const newQuantity = Number(t.quantity);
+
+          // available_new = quantity_new - booked
+          const newAvailable = Math.max(0, newQuantity - booked);
+
+          return {
+            ticket_type_id: t.id,
+            name: t.name,
+            price: Number(t.price),
+            quantity: newQuantity,
+            available: newAvailable,
+          };
+        }),
         photos: photoPayload,
       };
 
@@ -723,7 +748,12 @@ const EditEvent = () => {
                 <label>Available:</label>
                 <input
                   type="number"
-                  value={ticket.quantity}
+                  value={(() => {
+                    const originalQuantity = ticket.originalQuantity ?? ticket.quantity;
+                    const originalAvailable = ticket.originalAvailable ?? ticket.quantity;
+                    const booked = originalQuantity - originalAvailable;
+                    return Math.max(0, Number(ticket.quantity) - booked);
+                  })()}
                   disabled
                   className="input-disabled"
                 />
