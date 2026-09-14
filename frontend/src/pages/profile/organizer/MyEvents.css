@@ -404,3 +404,27 @@
     font-size: 11px;
   }
 }
+
+/* ============================================
+   NON-DELETABLE EVENT ITEMS
+   ============================================ */
+.event-item.not-deletable {
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.event-item.not-deletable .checkbox-wrapper {
+  cursor: not-allowed;
+}
+
+.event-item.not-deletable .checkbox-wrapper input[type="checkbox"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Όταν το event είναι selected αλλά μετά γίνει non-deletable,
+   να μην φαίνεται επιλεγμένο */
+.event-item.not-deletable.selected {
+  background: inherit;
+  border-color: inherit;
+}

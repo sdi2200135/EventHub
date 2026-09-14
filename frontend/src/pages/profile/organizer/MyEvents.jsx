@@ -78,6 +78,16 @@ const MyEvents = ({ user }) => {
     CANCELLED: events.filter(e => e.status === 'CANCELLED').length,
   };
 
+  // Η διαγραφή επιτρέπεται μόνο πριν τη δημοσίευση
+  // ή το αργότερο πριν την υποβολή της πρώτης κράτησης.
+  const canDelete = (event) => {
+    const hasBookings = (event.bookings?.length || 0) > 0;
+    return event.status === 'DRAFT' || !hasBookings;
+  };
+
+  // Events του τρέχοντος φίλτρου που μπορούν να διαγραφούν
+  const deletableEvents = filteredEvents.filter(canDelete);
+
   // ============================================
   // SELECTION
   // ============================================
@@ -90,10 +100,11 @@ const MyEvents = ({ user }) => {
   };
 
   const handleSelectAll = () => {
-    if (selectedEvents.length === filteredEvents.length) {
+    // Επιλέγουμε ΜΟΝΟ τα events που επιτρέπεται να διαγραφούν
+    if (selectedEvents.length === deletableEvents.length && deletableEvents.length > 0) {
       setSelectedEvents([]);
     } else {
-      setSelectedEvents(filteredEvents.map(e => e.id));
+      setSelectedEvents(deletableEvents.map(e => e.id));
     }
   };
 
@@ -102,11 +113,34 @@ const MyEvents = ({ user }) => {
   // ============================================
   const handleDeleteSelected = async () => {
     if (selectedEvents.length === 0) return;
-    if (!window.confirm(`Delete ${selectedEvents.length} event(s)? This cannot be undone.`)) return;
+
+    // Φιλτράρουμε ξανά για ασφάλεια (ο χρήστης μπορεί να άλλαξε filter ενδιάμεσα)
+    const eventsToDelete = selectedEvents.filter(id => {
+      const ev = events.find(e => e.id === id);
+        return ev && canDelete(ev);
+      });
+
+    const skipped = selectedEvents.length - eventsToDelete.length;
+
+    if (eventsToDelete.length === 0) {
+      alert(
+        'None of the selected events can be deleted.\n\n' +
+        'Events can only be deleted if they are in DRAFT status or have no bookings yet.'
+      );
+      return;
+    }
+
+    const confirmMsg = skipped > 0
+      ? `${eventsToDelete.length} event(s) will be deleted.\n` +
+        `${skipped} event(s) will be skipped (published with bookings).\n\n` +
+        `Continue? This cannot be undone.`
+      : `Delete ${eventsToDelete.length} event(s)? This cannot be undone.`;
+
+    if (!window.confirm(confirmMsg)) return;
 
     try {
       await Promise.all(
-        selectedEvents.map(id => eventService.deleteEvent(id))
+        eventsToDelete.map(id => eventService.deleteEvent(id))
       );
       setSelectedEvents([]);
       fetchEvents();
@@ -185,10 +219,16 @@ const MyEvents = ({ user }) => {
               <input
                 type="checkbox"
                 checked={
-                  filteredEvents.length > 0 &&
-                  selectedEvents.length === filteredEvents.length
+                  deletableEvents.length > 0 &&
+                  selectedEvents.length === deletableEvents.length
                 }
                 onChange={handleSelectAll}
+                disabled={deletableEvents.length === 0}
+                title={
+                  deletableEvents.length === 0
+                    ? 'No deletable events in this view'
+                    : 'Select all deletable events'
+                }
               />
             </label>
             <button
@@ -229,32 +269,44 @@ const MyEvents = ({ user }) => {
           </div>
         ) : (
           <div className="my-events-list">
-            {filteredEvents.map(event => (
-              <div
-                key={event.id}
-                className={`event-item status-${event.status.toLowerCase()} ${selectedEvents.includes(event.id) ? 'selected' : ''}`}
-                onClick={() => navigate(`/profile/events/${event.id}`)}
-              >
-                <label
-                  className="checkbox-wrapper"
-                  onClick={(e) => e.stopPropagation()}
+            {filteredEvents.map(event => {
+              const deletable = canDelete(event);
+
+              return (
+                <div
+                  key={event.id}
+                  className={`event-item status-${event.status.toLowerCase()} ${
+                    selectedEvents.includes(event.id) ? 'selected' : ''
+                  } ${!deletable ? 'not-deletable' : ''}`}
+                  onClick={() => navigate(`/profile/events/${event.id}`)}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedEvents.includes(event.id)}
-                    onChange={() => handleSelectEvent(event.id)}
-                  />
-                </label>
+                  <label
+                    className="checkbox-wrapper"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedEvents.includes(event.id)}
+                      onChange={() => handleSelectEvent(event.id)}
+                      disabled={!deletable}
+                      title={
+                        !deletable
+                          ? 'Cannot delete: published event with bookings'
+                          : 'Select for deletion'
+                      }
+                    />
+                  </label>
 
-                <div className="event-item-content">
-                  <span className="event-item-title">{event.title}</span>
+                  <div className="event-item-content">
+                    <span className="event-item-title">{event.title}</span>
+                  </div>
+
+                  <span className={`event-status status-${event.status.toLowerCase()}`}>
+                    {getStatusLabel(event.status)}
+                  </span>
                 </div>
-
-                <span className={`event-status status-${event.status.toLowerCase()}`}>
-                  {getStatusLabel(event.status)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
