@@ -998,7 +998,13 @@ const EditEvent = () => {
                 </div>
                 <div className="preview-ticket-field">
                   <span className="preview-label">Available:</span>
-                  <span className="preview-value">{t.quantity}</span>
+                  <span className="preview-value">
+                    {(() => {
+                      const oq = t.originalQuantity ?? t.quantity;
+                      const oa = t.originalAvailable ?? t.quantity;
+                      return Math.max(0, Number(t.quantity) - (oq - oa));
+                    })()}
+                  </span>
                 </div>
               </div>
             ))}
