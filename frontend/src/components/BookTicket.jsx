@@ -38,6 +38,18 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
   if (!isOpen || !event) return null;
 
   // ============================================
+  // GUARD: Έλεγχος κατάστασης event
+  // ============================================
+  const isEventBookable =
+    event.status === 'PUBLISHED' &&
+    (event.available_capacity ?? 0) > 0;
+
+  // Αν το event δεν είναι bookable, δεν ανοίγουμε καθόλου το modal
+  if (!isEventBookable) {
+    return null;
+  }
+
+  // ============================================
   // ΕΥΡΕΣΗ VENUE
   // ============================================
   const getVenueForEvent = () => {
@@ -78,6 +90,12 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
   // HANDLE BOOKING - ΔΙΟΡΘΩΣΗ
   // ============================================
   const handleBooking = () => {
+    // Guard: αν το event άλλαξε κατάσταση, μην προχωρήσεις
+    if (!isEventBookable) {
+      alert('This event is no longer available for booking.');
+      onClose();
+      return;
+    }
     let seatsParam = '';
     let finalQuantity = quantity; // Default: από το state quantity (για Music/Stand Up)
     
@@ -624,7 +642,8 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
         <button 
           className="modal-book-btn"
           onClick={handleBooking}
-          disabled={!selectedTicket || !isSelectionComplete()}
+          disabled={!selectedTicket || !isSelectionComplete() || !isEventBookable}
+          title={!isEventBookable ? 'This event is no longer available for booking' : ''}
         >
           Payment
           <ArrowRightAltIcon className="arrow-icon" />

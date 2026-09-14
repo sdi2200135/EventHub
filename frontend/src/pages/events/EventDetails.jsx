@@ -114,6 +114,30 @@ const EventDetails = () => {
     }
   };
 
+  // ============================================
+  // BOOKING ELIGIBILITY
+  // ============================================
+  const canBook = (ev) => {
+    if (!ev) return false;
+    if (ev.status !== 'PUBLISHED') return false;
+    if ((ev.available_capacity ?? 0) <= 0) return false;
+    const hasAvailableTicket = (ev.ticket_types || []).some(t => (t.available ?? 0) > 0);
+    return hasAvailableTicket;
+  };
+
+  const getBookingBlockReason = (ev) => {
+    if (!ev) return '';
+    switch (ev.status) {
+      case 'DRAFT': return 'This event is not yet published.';
+      case 'COMPLETED': return 'This event has already taken place.';
+      case 'CANCELLED': return 'This event has been cancelled.';
+      case 'PUBLISHED':
+        if ((ev.available_capacity ?? 0) <= 0) return 'This event is sold out.';
+        return 'No tickets available.';
+      default: return 'Bookings are not available.';
+    }
+  };
+
   // Έλεγχος αν το event είναι αθλητικό
   const isSportsEvent = () => {
     return event?.categories?.some(cat => 
@@ -181,7 +205,14 @@ const EventDetails = () => {
 
         {/* ΔΕΞΙΑ ΣΤΗΛΗ: Τίτλος + Tabs + Περιεχόμενο */}
         <div className="event-right-column">
-          <h1 className="event-title">{event.title}</h1>
+          <h1 className="event-title">
+            {event.title}
+            {event.status !== 'PUBLISHED' && (
+              <span className={`event-status-badge status-${event.status.toLowerCase()}`}>
+                {event.status}
+              </span>
+            )}
+          </h1>
 
           {/* Tabs */}
           <div className="event-tabs">
@@ -276,27 +307,44 @@ const EventDetails = () => {
               <div className="tab-panel tickets-panel">
                 <div className="tickets-list">
                   {event.ticket_types && event.ticket_types.length > 0 ? (
-                    <div className="ticket-item-single">
-                      <div className="ticket-date">
-                        {formatDate(event.start_datetime)}
+                    <>
+                      <div className="ticket-item-single">
+                        <div className="ticket-date">
+                          {formatDate(event.start_datetime)}
+                        </div>
+                        <div className="ticket-info-single">
+                          <h4>{event.title}</h4>
+                          <p className="ticket-available-total">
+                            {event.ticket_types.reduce((sum, t) => sum + t.available, 0)} available
+                          </p>
+                        </div>
+                        <div className="ticket-action">
+                          {canBook(event) ? (
+                            <button 
+                              className="btn-ticket available"
+                              onClick={() => openModal(null)}
+                            >
+                              Tickets →
+                            </button>
+                          ) : (
+                            <button 
+                              className="btn-ticket disabled"
+                              disabled
+                              title={getBookingBlockReason(event)}
+                            >
+                              Not available
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="ticket-info-single">
-                        <h4>{event.title}</h4>
-                        <p className="ticket-available-total">
-                          {event.ticket_types.reduce((sum, t) => sum + t.available, 0)} available
+
+                      {/* Μήνυμα αιτιολόγησης όταν δεν επιτρέπεται κράτηση */}
+                      {!canBook(event) && (
+                        <p className="booking-block-reason">
+                          {getBookingBlockReason(event)}
                         </p>
-                      </div>
-                      <div className="ticket-action">
-                        {event.ticket_types.some(t => t.available > 0) && (
-                          <button 
-                            className="btn-ticket available"
-                            onClick={() => openModal(null)}
-                          >
-                            Tickets →
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                      )}
+                    </>
                   ) : (
                     <p className="no-tickets">No tickets available for this event.</p>
                   )}

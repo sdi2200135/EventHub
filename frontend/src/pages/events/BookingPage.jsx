@@ -83,16 +83,35 @@ const BookingPage = () => {
       try {
         setLoading(true);
         const response = await eventService.getEvent(bookingData.eventId);
-        setEvent(response.data);
+        const ev = response.data;
 
-        const foundTicket = response.data.ticket_types?.find(
+        // Έλεγχος κατάστασης
+        if (ev.status !== 'PUBLISHED') {
+          setError(
+            ev.status === 'CANCELLED'
+              ? 'This event has been cancelled. Bookings are no longer accepted.'
+              : ev.status === 'COMPLETED'
+              ? 'This event has already taken place.'
+              : 'This event is not available for booking.'
+          );
+          setEvent(ev);
+          setLoading(false);
+          return;
+        }
+
+        if ((ev.available_capacity ?? 0) <= 0) {
+          setError('This event is sold out. No more tickets are available.');
+          setEvent(ev);
+          setLoading(false);
+          return;
+        }
+
+        setEvent(ev);
+
+        const foundTicket = ev.ticket_types?.find(
           t => t.id === parseInt(bookingData.ticketId)
         );
         setTicket(foundTicket);
-
-        console.log('Booking Data:', bookingData);
-        console.log('Found Ticket:', foundTicket);
-
         setError(null);
       } catch (err) {
         console.error('Error fetching event:', err);
@@ -141,6 +160,17 @@ const BookingPage = () => {
   const handleSubmitBooking = async () => {
     if (!isAuthenticated) {
       navigate('/signin');
+      return;
+    }
+
+    // Guard: τελευταίος έλεγχος πριν το POST
+    if (!event || event.status !== 'PUBLISHED') {
+      setError('This event is no longer available for booking.');
+      return;
+    }
+
+    if ((event.available_capacity ?? 0) <= 0) {
+      setError('This event is sold out.');
       return;
     }
 

@@ -720,3 +720,42 @@
     font-size: 12px;
   }
 }
+
+.event-status-badge {
+  display: inline-block;
+  margin-left: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+.event-status-badge.status-cancelled {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+.event-status-badge.status-completed {
+  background: rgba(74, 144, 217, 0.15);
+  color: #4a90d9;
+}
+.event-status-badge.status-draft {
+  background: rgba(160, 160, 184, 0.15);
+  color: #a0a0b8;
+}
+
+.booking-block-reason {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(231, 76, 60, 0.08);
+  border-left: 3px solid #e74c3c;
+  border-radius: 6px;
+  color: #e0a0a0;
+  font-size: 13px;
+}
+
+.btn-ticket.disabled {
+  background: #2A2A2A;
+  color: #6c7a89;
+  cursor: not-allowed;
+}
