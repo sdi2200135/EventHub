@@ -642,7 +642,6 @@
     white-space: nowrap;
   }
 
-  /* Organizer Details Grid - Responsive */
   .organizer-details-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -657,7 +656,6 @@
     font-size: 13px;
   }
 
-  /* Ticket responsive */
   .ticket-item,
   .ticket-item-single {
     grid-template-columns: 1fr;
@@ -721,6 +719,9 @@
   }
 }
 
+/* ============================================
+   EVENT STATUS BADGE
+   ============================================ */
 .event-status-badge {
   display: inline-block;
   margin-left: 12px;
@@ -731,19 +732,25 @@
   vertical-align: middle;
   text-transform: uppercase;
 }
+
 .event-status-badge.status-cancelled {
   background: rgba(231, 76, 60, 0.15);
   color: #e74c3c;
 }
+
 .event-status-badge.status-completed {
   background: rgba(74, 144, 217, 0.15);
   color: #4a90d9;
 }
+
 .event-status-badge.status-draft {
   background: rgba(160, 160, 184, 0.15);
   color: #a0a0b8;
 }
 
+/* ============================================
+   BOOKING BLOCK REASON
+   ============================================ */
 .booking-block-reason {
   margin-top: 12px;
   padding: 10px 14px;
@@ -754,8 +761,26 @@
   font-size: 13px;
 }
 
+/* ============================================
+   DISABLED TICKET BUTTON
+   ============================================ */
 .btn-ticket.disabled {
   background: #2A2A2A;
   color: #6c7a89;
   cursor: not-allowed;
+}
+
+/* Override του :hover για disabled state —
+   αλλιώς το .ticket-item-single .btn-ticket:hover
+   αλλάζει το χρώμα ακόμα και σε disabled κουμπί. */
+.btn-ticket.disabled:hover,
+.ticket-item-single .btn-ticket.disabled:hover {
+  background: #2A2A2A;
+  color: #6c7a89;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.btn-ticket.disabled:hover .arrow-icon-small {
+  transform: none;
 }

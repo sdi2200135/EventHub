@@ -154,6 +154,12 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
     return config?.color || '#6c7a89';
   };
 
+  const hexToRgb = (hex) => {
+    if (!hex) return '108, 122, 137'; // fallback
+    const h = hex.replace('#', '');
+    return `${parseInt(h.slice(0, 2), 16)}, ${parseInt(h.slice(2, 4), 16)}, ${parseInt(h.slice(4, 6), 16)}`;
+  };
+
   const getTicketDescription = (name) => {
     const config = Object.values(ticketTypesConfig).find(
       (config, index) => Object.keys(ticketTypesConfig)[index] === name
@@ -421,7 +427,9 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
                   onClick={() => setSelectedTicket(t.id)}
                   style={{
                     borderColor: selectedTicket === t.id ? getTicketColor(t.name) : '#2A2A2A',
-                    background: selectedTicket === t.id ? `rgba(${getTicketColor(t.name)}, 0.1)` : 'transparent'
+                    background: selectedTicket === t.id
+                      ? `rgba(${hexToRgb(getTicketColor(t.name))}, 0.1)`
+                      : 'transparent'
                   }}
                 >
                   <span className="ticket-type-name">{t.name}</span>
