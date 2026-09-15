@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = sessionStorage.getItem('access_token');
     if (token) {
       loadUser();
     } else {
@@ -31,13 +31,13 @@ export const AuthProvider = ({ children }) => {
   const loadUser = async () => {
     try {
       // ============================================
-      // MOCK MODE: Διάβασε τον user από localStorage
+      // MOCK MODE: Διάβασε τον user από sessionStorage
       // ============================================
       // Χωρίς αυτό, το getProfile() επιστρέφει πάντα τον
       // hardcoded participant του MockData, με αποτέλεσμα ο
       // organizer/admin να χάνει τον ρόλο του μετά από refresh.
       if (USE_MOCK) {
-        const savedUser = localStorage.getItem('mock_user');
+        const savedUser = sessionStorage.getItem('mock_user');
         if (savedUser) {
           try {
             const parsed = JSON.parse(savedUser);
@@ -57,9 +57,9 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Error loading user:', error);
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('mock_user');
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('mock_user');
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -72,14 +72,14 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login({ username, password });
       const { access, refresh, user } = response.data;
 
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('refresh_token', refresh);
+      sessionStorage.setItem('access_token', access);
+      sessionStorage.setItem('refresh_token', refresh);
 
       // ============================================
-      // MOCK MODE: Αποθήκευσε τον user στο localStorage
+      // MOCK MODE: Αποθήκευσε τον user στο sessionStorage
       // ============================================
       if (USE_MOCK) {
-        localStorage.setItem('mock_user', JSON.stringify(user));
+        sessionStorage.setItem('mock_user', JSON.stringify(user));
       }
 
       setUser(user);
@@ -118,9 +118,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('mock_user');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
+    sessionStorage.removeItem('mock_user');
     setUser(null);
     setIsAuthenticated(false);
   };

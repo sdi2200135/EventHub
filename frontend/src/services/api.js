@@ -119,7 +119,7 @@ export const authService = {
     }
     const response = await axios.get(`${API_BASE}/auth/me/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -137,7 +137,7 @@ export const authService = {
     }
     const response = await axios.patch(`${API_BASE}/auth/me/`, data, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -156,7 +156,7 @@ export const authService = {
       {},
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -233,7 +233,7 @@ export const eventService = {
     }
     const response = await axios.get(`${API_BASE}/events/?organizer=${organizerId}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     if (response.data && response.data.results) {
@@ -269,7 +269,7 @@ export const eventService = {
     }
     const response = await axios.post(`${API_BASE}/events/`, data, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -286,7 +286,7 @@ export const eventService = {
     }
     const response = await axios.patch(`${API_BASE}/events/${eventId}/`, data, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -307,7 +307,7 @@ export const eventService = {
     }
     const response = await axios.delete(`${API_BASE}/events/${eventId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -327,7 +327,7 @@ export const eventService = {
       { status },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -374,7 +374,7 @@ export const eventService = {
       { status: 'CANCELLED' },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -451,7 +451,7 @@ export const eventService = {
     }
     const response = await axios.get(`${API_BASE}/events/${eventId}/bookings/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -464,7 +464,7 @@ export const eventService = {
     }
     const response = await axios.get(`${API_BASE}/events/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     if (response.data && response.data.results) {
@@ -544,7 +544,7 @@ export const bookingService = {
     }
     const response = await axios.post(`${API_BASE}/bookings/`, data, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -558,7 +558,7 @@ export const bookingService = {
     }
     const response = await axios.get(`${API_BASE}/bookings/me/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -574,7 +574,7 @@ export const bookingService = {
     }
     const response = await axios.get(`${API_BASE}/bookings/${bookingId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -601,7 +601,7 @@ export const bookingService = {
     }
     const response = await axios.delete(`${API_BASE}/bookings/${bookingId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -625,7 +625,7 @@ export const bookingService = {
       { status: 'CONFIRMED' },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -658,7 +658,7 @@ export const bookingService = {
       { status: 'CANCELLED' },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -678,7 +678,7 @@ export const messageService = {
     }
     const response = await axios.get(`${API_BASE}/messages/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     if (response.data && response.data.results) {
@@ -700,7 +700,7 @@ export const messageService = {
     }
     const response = await axios.get(`${API_BASE}/messages/unread_count/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -718,7 +718,7 @@ export const messageService = {
       { is_read: true },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -736,7 +736,7 @@ export const messageService = {
     }
     const response = await axios.get(`${API_BASE}/messages/${messageId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -754,7 +754,7 @@ export const messageService = {
     }
     const response = await axios.delete(`${API_BASE}/messages/${messageId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -776,7 +776,7 @@ export const messageService = {
       { is_trash: true, is_draft: false },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -798,7 +798,7 @@ export const messageService = {
       { is_trash: false },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -851,7 +851,7 @@ export const messageService = {
         { ...data, is_draft: false },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
           }
         }
       );
@@ -859,7 +859,7 @@ export const messageService = {
     }
     const response = await axios.post(`${API_BASE}/messages/`, data, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -911,7 +911,7 @@ export const messageService = {
         { ...data, is_draft: true },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`
+            Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
           }
         }
       );
@@ -922,7 +922,7 @@ export const messageService = {
       { ...data, is_draft: true },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -985,7 +985,7 @@ export const messageService = {
     // Backend: το endpoint /api/messages/recipients/ θα φιλτράρει server-side
     const response = await axios.get(`${API_BASE}/messages/recipients/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     if (response.data && response.data.results) {
@@ -1010,7 +1010,7 @@ export const messageService = {
       { is_junk: true, is_read: true, is_trash: false },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -1032,7 +1032,7 @@ export const messageService = {
       { is_junk: false },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -1051,7 +1051,7 @@ export const userService = {
     }
     const response = await axios.get(`${API_BASE}/users/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     if (response.data && response.data.results) {
@@ -1069,7 +1069,7 @@ export const userService = {
     }
     const response = await axios.get(`${API_BASE}/users/${userId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
@@ -1087,7 +1087,7 @@ export const userService = {
       { approval_status: 'APPROVED' },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -1106,7 +1106,7 @@ export const userService = {
       { approval_status: 'REJECTED' },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`
+          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
         }
       }
     );
@@ -1122,7 +1122,7 @@ export const userService = {
     }
     const response = await axios.delete(`${API_BASE}/users/${userId}/`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
       }
     });
     return response;
