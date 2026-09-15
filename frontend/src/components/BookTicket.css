@@ -130,18 +130,9 @@
   transition: all 0.2s ease;
 }
 
-.modal-ticket-item:hover:not(.sold-out) {
-  border-color: #203855;
-}
-
 .modal-ticket-item.selected {
   border-color: #a29bfe;
   background: #1a1a2e;
-}
-
-.modal-ticket-item.sold-out {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 /* Radio Button */
@@ -187,10 +178,6 @@
   gap: 0.5rem;
 }
 
-.ticket-icon {
-  font-size: 1.1rem;
-}
-
 .ticket-description {
   font-size: 0.75rem;
   color: #6c7a89;
@@ -213,10 +200,6 @@
   font-size: 0.75rem;
   color: #6c7a89;
   font-weight: 500;
-}
-
-.ticket-available.sold-out-text {
-  color: #981818;
 }
 
 /* ============================================
@@ -423,73 +406,6 @@
   grid-template-rows: auto auto auto;
   gap: 0.4rem;
   max-width: 450px;
-}
-
-/* Box 1: Πάνω-αριστερά */
-.boxes-grid.has-8 .box-item[data-box="Gate 1"] {
-  grid-column: 1 / 2;
-  grid-row: 1 / 2;
-}
-
-/* Box 2: Πάνω-κέντρο */
-.boxes-grid.has-8 .box-item[data-box="Gate 2"] {
-  grid-column: 2 / 3;
-  grid-row: 1 / 2;
-}
-
-/* Box 3: Πάνω-δεξιά */
-.boxes-grid.has-8 .box-item[data-box="Gate 3"] {
-  grid-column: 3 / 4;
-  grid-row: 1 / 2;
-}
-
-/* Box 4: Μέση-αριστερά */
-.boxes-grid.has-8 .box-item[data-box="Gate 4"] {
-  grid-column: 1 / 2;
-  grid-row: 2 / 3;
-}
-
-/* Field: Μέση-κέντρο */
-.boxes-grid.has-8 .field-indicator {
-  grid-column: 2 / 3;
-  grid-row: 2 / 3;
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6c7a89;
-  padding: 0.8rem 0.5rem;
-  background: #1a1a2e;
-  border-radius: 0.25rem;
-  border: 1px solid #2A2A2A;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  min-height: 60px;
-}
-
-/* Box 5: Μέση-δεξιά */
-.boxes-grid.has-8 .box-item[data-box="Gate 5"] {
-  grid-column: 3 / 4;
-  grid-row: 2 / 3;
-}
-
-/* Box 6: Κάτω-αριστερά */
-.boxes-grid.has-8 .box-item[data-box="Gate 6"] {
-  grid-column: 1 / 2;
-  grid-row: 3 / 4;
-}
-
-/* Box 7: Κάτω-κέντρο */
-.boxes-grid.has-8 .box-item[data-box="Gate 7"] {
-  grid-column: 2 / 3;
-  grid-row: 3 / 4;
-}
-
-/* Box 8: Κάτω-δεξιά */
-.boxes-grid.has-8 .box-item[data-box="Gate 8"] {
-  grid-column: 3 / 4;
-  grid-row: 3 / 4;
 }
 
 /* Για λιγότερα από 8 boxes - απλή διάταξη */
@@ -800,18 +716,6 @@
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  .boxes-grid.has-8 .box-item:nth-child(1),
-  .boxes-grid.has-8 .box-item:nth-child(2),
-  .boxes-grid.has-8 .box-item:nth-child(3),
-  .boxes-grid.has-8 .box-item:nth-child(4),
-  .boxes-grid.has-8 .box-item:nth-child(5),
-  .boxes-grid.has-8 .box-item:nth-child(6),
-  .boxes-grid.has-8 .box-item:nth-child(7),
-  .boxes-grid.has-8 .box-item:nth-child(8) {
-    grid-column: span 1 !important;
-    grid-row: auto !important;
-  }
-
   .box-map .field-indicator {
     max-width: 100%;
   }
@@ -991,22 +895,6 @@
 .seat-btn.not-selectable:hover {
   border-color: #2a2a3e;
   transform: none;
-}
-
-.box-item.not-selectable {
-  background: #1a1a2e;
-  border-color: #2a2a3e;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.box-item.not-selectable:hover {
-  border-color: #2a2a3e;
-  transform: none;
-}
-
-.box-item.not-selectable .box-available {
-  color: #4a4a5e;
 }
 
 /* ============================================
