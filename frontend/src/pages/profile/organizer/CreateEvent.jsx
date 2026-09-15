@@ -251,7 +251,7 @@ const CreateEvent = () => {
     }
 
     if (currentStep === 1) {
-      navigate('/profile');
+      navigate('/profile?tab=events');
     } else {
       setCurrentStep(prev => Math.max(prev - 1, 1));
     }
@@ -321,7 +321,7 @@ const CreateEvent = () => {
       };
 
       await eventService.createEvent(payload);
-      navigate('/profile');
+      navigate('/profile?tab=events');
     } catch (err) {
       console.error('Error creating event:', err);
       setError(err.response?.data?.detail || err.message || 'Failed to create event');
@@ -1006,7 +1006,7 @@ const CreateEvent = () => {
               <button
                 type="button"
                 className="btn-cancel-preview"
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/profile?tab=events')}
                 disabled={submitting}
               >
                 Cancel

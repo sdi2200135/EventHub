@@ -202,7 +202,7 @@ const NewMessage = () => {
       });
       setSuccess('sent');
       setTimeout(() => {
-        navigate('/profile');
+        navigate('/profile?tab=messages');
       }, 1500);
     } catch (err) {
       console.error('Error sending message:', err);
@@ -240,7 +240,7 @@ const NewMessage = () => {
       setDraftId(response.data.id);
       setSuccess('draft');
       setTimeout(() => {
-        navigate('/profile');
+        navigate('/profile?tab=messages');
       }, 1200);
     } catch (err) {
       console.error('Error saving draft:', err);
@@ -251,7 +251,7 @@ const NewMessage = () => {
   };
 
   const handleCancel = () => {
-    navigate('/profile');
+    navigate('/profile?tab=messages');
   };
 
   // ============================================

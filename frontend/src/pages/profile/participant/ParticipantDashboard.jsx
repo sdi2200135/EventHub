@@ -1,6 +1,6 @@
 // src/pages/profile/participant/ParticipantDashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { messageService } from '../../../services/api';
 import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
@@ -14,7 +14,20 @@ import MyBookings from './MyBookings';
 
 const ParticipantDashboard = ({ user }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const getInitialTab = () => {
+    const tab = searchParams.get('tab');
+    const valid = ['personal', 'messages', 'bookings'];
+    return valid.includes(tab) ? tab : 'personal';
+  };
+
+  const [activeTab, setActiveTabState] = useState(getInitialTab);
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    setSearchParams({ tab });
+  };
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);

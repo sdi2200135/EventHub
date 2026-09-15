@@ -139,7 +139,7 @@ const ReservationsDetails = () => {
       <div className="rd-error">
         <h2>Event not found</h2>
         <p>{error || 'The event you are looking for does not exist.'}</p>
-        <Link to="/profile" className="btn-back-link">Back to Profile</Link>
+        <Link to="/profile?tab=reservations" className="btn-back-link">Back to Profile</Link>
       </div>
     );
   }
@@ -152,7 +152,7 @@ const ReservationsDetails = () => {
       <div className="rd-container">
         {/* Header */}
         <div className="rd-header">
-          <button className="btn-back" onClick={() => navigate('/profile')}>
+          <button className="btn-back" onClick={() => navigate('/profile?tab=reservations')}>
             <ArrowBackIcon />
           </button>
           <h1 className="rd-page-title">Event Details</h1>

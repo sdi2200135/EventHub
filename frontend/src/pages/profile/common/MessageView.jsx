@@ -55,7 +55,7 @@ const MessageView = () => {
   };
 
   const handleBack = () => {
-    navigate('/profile');
+    navigate('/profile?tab=messages');
   };
 
   const handleReply = () => {
@@ -70,7 +70,7 @@ const MessageView = () => {
     if (window.confirm('Are you sure you want to delete this message?')) {
       try {
         await messageService.deleteMessage(message.id);
-        navigate('/profile');
+        navigate('/profile?tab=messages');
       } catch (err) {
         console.error('Error deleting message:', err);
         alert('Failed to delete message. Please try again.');
@@ -92,7 +92,7 @@ const MessageView = () => {
       <div className="message-view-error">
         <h2>Message not found</h2>
         <p>The message you are looking for does not exist.</p>
-        <Link to="/profile" className="btn-back">
+        <Link to="/profile?tab=messages" className="btn-back">
           <ArrowBackIcon /> Back to Profile
         </Link>
       </div>

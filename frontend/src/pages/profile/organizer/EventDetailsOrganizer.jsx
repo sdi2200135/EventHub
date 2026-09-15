@@ -158,7 +158,7 @@ const EventDetailsOrganizer = () => {
       <div className="ed-organizer-error">
         <h2>Event not found</h2>
         <p>{error || 'The event you are looking for does not exist.'}</p>
-        <Link to="/profile" className="btn-back-link">Back to Profile</Link>
+        <Link to="/profile?tab=events" className="btn-back-link">Back to Profile</Link>
       </div>
     );
   }
@@ -174,7 +174,7 @@ const EventDetailsOrganizer = () => {
         <div className="ed-organizer-header">
           <button
             className="btn-back"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/profile?tab=events')}
           >
             <ArrowBackIcon />
           </button>
@@ -260,7 +260,7 @@ const EventDetailsOrganizer = () => {
               )}
               <button
                 className="btn-view-reservations"
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/profile?tab=reservations')}
               >
                 View in Reservations Tab
               </button>
