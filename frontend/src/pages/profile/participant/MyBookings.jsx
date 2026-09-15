@@ -40,7 +40,6 @@ const MyBookings = () => {
     setCancellingId(bookingId);
     try {
       await bookingService.cancelBooking(bookingId);
-      // Update local state
       setBookings(prev =>
         prev.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b)
       );
@@ -90,7 +89,6 @@ const MyBookings = () => {
 
   const filteredBookings = getFilteredBookings();
 
-  // Counts ανά status
   const counts = {
     all: bookings.length,
     CONFIRMED: bookings.filter(b => b.status === 'CONFIRMED').length,
@@ -112,7 +110,7 @@ const MyBookings = () => {
     return (
       <div className="my-bookings-error">
         <p>{error}</p>
-        <button className="btn-retry" onClick={fetchBookings}>
+        <button className="my-bookings-btn-retry" onClick={fetchBookings}>
           Try Again
         </button>
       </div>
@@ -124,30 +122,30 @@ const MyBookings = () => {
       {/* ============================================
           FILTERS
           ============================================ */}
-      <div className="bookings-filters">
+      <div className="my-bookings-filters">
         <button
-          className={`filter-chip ${filter === 'all' ? 'active' : ''}`}
+          className={`my-bookings-filter-chip ${filter === 'all' ? 'active' : ''}`}
           onClick={() => setFilter('all')}
         >
-          All <span className="chip-count">{counts.all}</span>
+          All <span className="my-bookings-chip-count">{counts.all}</span>
         </button>
         <button
-          className={`filter-chip ${filter === 'CONFIRMED' ? 'active' : ''}`}
+          className={`my-bookings-filter-chip ${filter === 'CONFIRMED' ? 'active' : ''}`}
           onClick={() => setFilter('CONFIRMED')}
         >
-          Confirmed <span className="chip-count">{counts.CONFIRMED}</span>
+          Confirmed <span className="my-bookings-chip-count">{counts.CONFIRMED}</span>
         </button>
         <button
-          className={`filter-chip ${filter === 'PENDING' ? 'active' : ''}`}
+          className={`my-bookings-filter-chip ${filter === 'PENDING' ? 'active' : ''}`}
           onClick={() => setFilter('PENDING')}
         >
-          Pending <span className="chip-count">{counts.PENDING}</span>
+          Pending <span className="my-bookings-chip-count">{counts.PENDING}</span>
         </button>
         <button
-          className={`filter-chip ${filter === 'CANCELLED' ? 'active' : ''}`}
+          className={`my-bookings-filter-chip ${filter === 'CANCELLED' ? 'active' : ''}`}
           onClick={() => setFilter('CANCELLED')}
         >
-          Cancelled <span className="chip-count">{counts.CANCELLED}</span>
+          Cancelled <span className="my-bookings-chip-count">{counts.CANCELLED}</span>
         </button>
       </div>
 
@@ -155,8 +153,8 @@ const MyBookings = () => {
           EMPTY STATE
           ============================================ */}
       {filteredBookings.length === 0 ? (
-        <div className="bookings-empty">
-          <ConfirmationNumberIcon className="empty-icon" />
+        <div className="my-bookings-empty">
+          <ConfirmationNumberIcon className="my-bookings-empty-icon" />
           <h3>No bookings found</h3>
           <p>
             {filter === 'all'
@@ -164,7 +162,7 @@ const MyBookings = () => {
               : `You don't have any ${filter.toLowerCase()} bookings.`}
           </p>
           {filter === 'all' && (
-            <Link to="/events" className="btn-browse-events">
+            <Link to="/events" className="my-bookings-btn-browse">
               Browse Events
             </Link>
           )}
@@ -173,70 +171,70 @@ const MyBookings = () => {
         /* ============================================
            BOOKINGS LIST
            ============================================ */
-        <div className="bookings-list">
+        <div className="my-bookings-list">
           {filteredBookings.map(booking => (
             <div
               key={booking.id}
-              className={`booking-card status-${booking.status.toLowerCase()}`}
+              className={`my-bookings-card status-${booking.status.toLowerCase()}`}
             >
               {/* Left: Icon */}
-              <div className="booking-card-icon">
+              <div className="my-bookings-card-icon">
                 <ConfirmationNumberIcon />
               </div>
 
               {/* Middle: Details */}
-              <div className="booking-card-body">
-                <div className="booking-card-header">
-                  <h3 className="booking-event-title">
+              <div className="my-bookings-card-body">
+                <div className="my-bookings-card-header">
+                  <h3 className="my-bookings-event-title">
                     {booking.event_title}
                   </h3>
-                  <span className={`booking-status status-${booking.status.toLowerCase()}`}>
+                  <span className={`my-bookings-status status-${booking.status.toLowerCase()}`}>
                     {getStatusLabel(booking.status)}
                   </span>
                 </div>
 
-                <div className="booking-meta">
-                  <div className="booking-meta-item">
-                    <CalendarMonthIcon className="meta-icon" />
+                <div className="my-bookings-meta">
+                  <div className="my-bookings-meta-item">
+                    <CalendarMonthIcon className="my-bookings-meta-icon" />
                     <span>{formatDate(booking.event_date)}</span>
                   </div>
-                  <div className="booking-meta-item">
-                    <LocationOnIcon className="meta-icon" />
+                  <div className="my-bookings-meta-item">
+                    <LocationOnIcon className="my-bookings-meta-icon" />
                     <span>{booking.venue}, {booking.city}</span>
                   </div>
                 </div>
 
-                <div className="booking-details-row">
-                  <div className="booking-detail">
-                    <span className="detail-label">Tickets:</span>
-                    <span className="detail-value">{booking.quantity}</span>
+                <div className="my-bookings-details-row">
+                  <div className="my-bookings-detail">
+                    <span className="my-bookings-detail-label">Tickets:</span>
+                    <span className="my-bookings-detail-value">{booking.quantity}</span>
                   </div>
-                  <div className="booking-detail">
-                    <span className="detail-label">Total:</span>
-                    <span className="detail-value total">
+                  <div className="my-bookings-detail">
+                    <span className="my-bookings-detail-label">Total:</span>
+                    <span className="my-bookings-detail-value total">
                       ${booking.total_price?.toFixed(2) || '0.00'}
                     </span>
                   </div>
-                  <div className="booking-detail">
-                    <span className="detail-label">Booked:</span>
-                    <span className="detail-value">
+                  <div className="my-bookings-detail">
+                    <span className="my-bookings-detail-label">Booked:</span>
+                    <span className="my-bookings-detail-value">
                       {formatShortDate(booking.booking_date)}
                     </span>
                   </div>
                   {booking.seats && (
-                    <div className="booking-detail">
-                      <span className="detail-label">Seats:</span>
-                      <span className="detail-value">{booking.seats}</span>
+                    <div className="my-bookings-detail">
+                      <span className="my-bookings-detail-label">Seats:</span>
+                      <span className="my-bookings-detail-value">{booking.seats}</span>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Right: Actions */}
-              <div className="booking-card-actions">
+              <div className="my-bookings-card-actions">
                 <Link
                   to={`/events/details/${booking.event_id}`}
-                  className="btn-view-event"
+                  className="my-bookings-btn-view"
                 >
                   <EventIcon />
                   View Event
@@ -244,7 +242,7 @@ const MyBookings = () => {
 
                 {booking.status === 'CONFIRMED' && (
                   <button
-                    className="btn-cancel-booking"
+                    className="my-bookings-btn-cancel"
                     onClick={() => handleCancelBooking(booking.id)}
                     disabled={cancellingId === booking.id}
                     title="Cancel booking"
