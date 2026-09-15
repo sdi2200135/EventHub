@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'; 
 import { useAuth } from '../../context/AuthContext';
-import './SignIn.css';
+import './auth.css';
 
 const SignIn = () => {
   const [username, setUsername] = useState('');
@@ -11,9 +11,8 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams(); // ← ΠΡΟΣΘΗΚΗ
+  const [searchParams] = useSearchParams();
 
-  // Παίρνουμε το redirect URL από τα query params
   const redirectUrl = searchParams.get('redirect') || '/';
 
   const handleSubmit = async (e) => {
@@ -24,7 +23,6 @@ const SignIn = () => {
     try {
       const result = await login(username, password);
       if (result.success) {
-        // Μετά το login, πάμε στο redirect URL
         navigate(redirectUrl);
       } else {
         setError(result.error || 'Invalid username or password');
@@ -49,7 +47,7 @@ const SignIn = () => {
         )}
 
         <form className="login-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="username">Username:</label>
             <input
               type="text"
@@ -62,7 +60,7 @@ const SignIn = () => {
             />
           </div>
 
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="password">Password:</label>
             <input
               type="password"

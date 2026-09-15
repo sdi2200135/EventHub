@@ -1,7 +1,7 @@
 // src/pages/auth/ForgotPwd.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './ForgotPwd.css';
+import './auth.css';
 
 const ForgotPwd = () => {
   const [email, setEmail] = useState('');
@@ -17,12 +17,7 @@ const ForgotPwd = () => {
     setLoading(true);
 
     try {
-      // Προσομοίωση αποστολής email
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Εδώ θα μπει η πραγματική λογική με το backend
-      // π.χ. await authService.forgotPassword(email);
-      
       setSuccess(true);
       setEmail('');
     } catch (err) {
@@ -35,29 +30,25 @@ const ForgotPwd = () => {
   return (
     <div className="forgot-container">
       <div className="forgot-card">
-        {/* Title */}
         <h1 className="forgot-title">Password Recovery</h1>
         <p className="forgot-subtitle">
           Enter your email and instructions for resetting <br /> your password will be sent.
         </p>
 
-        {/* Success Message */}
         {success && (
           <div className="forgot-success">
             ✅ Password reset instructions have been sent to your email.
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="forgot-error">
             {error}
           </div>
         )}
 
-        {/* Form */}
         <form className="forgot-form" onSubmit={handleSubmit}>
-          <div className="form-group">
+          <div className="auth-form-group">
             <label htmlFor="email">Email:</label>
             <input
               type="email"
@@ -79,7 +70,6 @@ const ForgotPwd = () => {
           </button>
         </form>
 
-        {/* Footer Links */}
         <div className="forgot-footer">
           <p>
             Did you remember your password?{' '}
