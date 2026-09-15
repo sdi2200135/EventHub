@@ -1,11 +1,9 @@
 // src/pages/events/EventDetails.jsx
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useParams, Link } from 'react-router-dom';
 import { eventService } from '../../services/api';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import './EventDetails.css';
 import BookTicket from '../../components/BookTicket';
@@ -26,9 +24,6 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const EventDetails = () => {
   const { id } = useParams();
-  const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -64,21 +59,21 @@ const EventDetails = () => {
     if (activeTab === 'description' && event && event.latitude && event.longitude && mapContainerRef.current) {
       const lat = parseFloat(event.latitude);
       const lng = parseFloat(event.longitude);
-      
+
       if (!isNaN(lat) && !isNaN(lng)) {
         setTimeout(() => {
           if (mapContainerRef.current && !mapRef.current) {
             mapRef.current = L.map(mapContainerRef.current).setView([lat, lng], 14);
-            
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
               attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
               maxZoom: 19
             }).addTo(mapRef.current);
-            
+
             L.marker([lat, lng]).addTo(mapRef.current)
               .bindPopup(`📍 ${event.venue || 'Event Location'}`)
               .openPopup();
-            
+
             setTimeout(() => {
               if (mapRef.current) {
                 mapRef.current.invalidateSize();
@@ -88,7 +83,7 @@ const EventDetails = () => {
         }, 100);
       }
     }
-    
+
     return () => {
       if (mapRef.current) {
         mapRef.current.remove();
@@ -105,15 +100,6 @@ const EventDetails = () => {
       day: 'numeric',
       year: 'numeric'
     });
-  };
-
-  const getAvailabilityLabel = (status) => {
-    switch(status) {
-      case 'available': return 'Available';
-      case 'limited': return 'Limited';
-      case 'unavailable': return 'Not available';
-      default: return 'Available';
-    }
   };
 
   // ============================================
@@ -138,13 +124,6 @@ const EventDetails = () => {
         return 'No tickets available.';
       default: return 'Bookings are not available.';
     }
-  };
-
-  // Έλεγχος αν το event είναι αθλητικό
-  const isSportsEvent = () => {
-    return event?.categories?.some(cat => 
-      ['Sports', 'Basketball Game', 'Football Game', 'Basketball', 'Football'].includes(cat)
-    );
   };
 
   // Άνοιγμα modal
@@ -239,7 +218,7 @@ const EventDetails = () => {
                       ))}
                     </div>
 
-                    {/* Counter (προαιρετικό) */}
+                    {/* Counter */}
                     <div className="carousel-counter">
                       {currentPhotoIndex + 1} / {photos.length}
                     </div>
@@ -250,7 +229,7 @@ const EventDetails = () => {
               <div className="event-image-placeholder">🎉</div>
             )}
           </div>
-          
+
           <div className="event-meta-info">
             <div className="meta-item">
               <span className="meta-label">Where</span>
@@ -278,19 +257,19 @@ const EventDetails = () => {
 
           {/* Tabs */}
           <div className="event-tabs">
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'description' ? 'active' : ''}`}
               onClick={() => setActiveTab('description')}
             >
               Description
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'organizer' ? 'active' : ''}`}
               onClick={() => setActiveTab('organizer')}
             >
               Organizer
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'tickets' ? 'active' : ''}`}
               onClick={() => setActiveTab('tickets')}
             >
@@ -306,7 +285,7 @@ const EventDetails = () => {
                 <div className="event-description">
                   <p>{event.description || 'No description available.'}</p>
                 </div>
-                
+
                 {/* Map */}
                 <div className="event-map-container">
                   <div className="map-container" ref={mapContainerRef}></div>
@@ -382,14 +361,14 @@ const EventDetails = () => {
                         </div>
                         <div className="ticket-action">
                           {canBook(event) ? (
-                            <button 
+                            <button
                               className="btn-ticket available"
                               onClick={() => openModal(null)}
                             >
                               Tickets →
                             </button>
                           ) : (
-                            <button 
+                            <button
                               className="btn-ticket disabled"
                               disabled
                               title={getBookingBlockReason(event)}
@@ -418,7 +397,7 @@ const EventDetails = () => {
       </div>
 
       {/* Booking Modal */}
-      <BookTicket 
+      <BookTicket
         event={event}
         ticket={event.ticket_types?.find(t => t.id === selectedTicket)}
         isOpen={isModalOpen}

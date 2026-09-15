@@ -36,7 +36,6 @@
   max-width: 100%;
 }
 
-.events-search-bar select,
 .events-search-bar input {
   flex: 1;
   min-width: 120px;
@@ -51,14 +50,8 @@
   transition: border-color 0.2s;
 }
 
-.events-search-bar select:focus,
 .events-search-bar input:focus {
   border-color: #a29bfe;
-}
-
-.events-search-bar select option {
-  background: #1E1E1E;
-  color: #e0e0e0;
 }
 
 .events-search-bar .search-input {
@@ -82,41 +75,6 @@
 
 .events-search-bar .btn-search:hover {
   background: #2a4a6a;
-}
-
-/* ============================================
-   DATEPICKER - ΣΤΥΛ ΓΙΑ ΤΟ SEARCH BAR
-   ============================================ */
-.events-search-bar .react-datepicker-wrapper {
-  flex: 1;
-  min-width: 120px;
-}
-
-.events-search-bar .react-datepicker-wrapper .react-datepicker__input-container {
-  display: block;
-  width: 100%;
-}
-
-.events-search-bar .react-datepicker-wrapper .react-datepicker__input-container input {
-  width: 100%;
-  padding: 0.6rem 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  color: #e0e0e0;
-  background: #1E1E1E;
-  outline: none;
-  border: 1px solid transparent;
-  transition: border-color 0.2s;
-  height: 3rem;
-}
-
-.events-search-bar .react-datepicker-wrapper .react-datepicker__input-container input:focus {
-  border-color: #a29bfe;
-}
-
-.events-search-bar .react-datepicker-wrapper .react-datepicker__input-container input::placeholder {
-  color: #6c7a89;
 }
 
 /* ============================================
@@ -150,7 +108,7 @@
 }
 
 /* ============================================
-   CLEAR ALL - ΚΟΚΚΙΝΟ BOX ΜΕ ΑΣΠΡΟ ΠΛΑΙΣΙΟ
+   CLEAR ALL
    ============================================ */
 .clear-all {
   background: #981818;
@@ -207,7 +165,7 @@
 }
 
 /* ============================================
-   EVENTS GRID - ΟΠΩΣ Η HOME PAGE
+   EVENTS GRID
    ============================================ */
 .events-grid {
   display: grid;
@@ -240,7 +198,7 @@
 }
 
 /* ============================================
-   EVENT CARD - ΟΠΩΣ Η HOME PAGE
+   EVENT CARD
    ============================================ */
 .event-card-link {
   text-decoration: none;
@@ -268,9 +226,6 @@
   border-color: #203855;
 }
 
-/* ============================================
-   EVENT IMAGE
-   ============================================ */
 .event-card .event-image {
   height: 160px;
   overflow: hidden;
@@ -298,9 +253,6 @@
   color: #6c7a89;
 }
 
-/* ============================================
-   EVENT BODY - ΚΕΝΤΡΑΡΙΣΜΕΝΑ
-   ============================================ */
 .event-card .event-body {
   padding: 0.75rem 1rem 1rem;
   display: flex;
@@ -310,7 +262,6 @@
   flex: 1;
 }
 
-/* ========== ΤΙΤΛΟΣ ========== */
 .event-card .event-body .event-title {
   font-size: 0.95rem;
   font-weight: 700;
@@ -325,7 +276,6 @@
   line-height: 1.3;
 }
 
-/* ========== ΠΛΗΡΟΦΟΡΙΕΣ ========== */
 .event-card .event-body .event-info {
   font-size: 0.75rem;
   margin-bottom: 0.15rem;
@@ -343,7 +293,6 @@
   color: #B0B0B0;
 }
 
-/* ========== AVAILABILITY - ΩΣ ΓΡΑΜΜΗ ΠΛΗΡΟΦΟΡΙΑΣ ========== */
 .event-card .event-body .event-availability {
   display: flex;
   justify-content: center;
@@ -364,14 +313,8 @@
 }
 
 /* ============================================
-   LOADING & EMPTY STATES
+   EMPTY STATE
    ============================================ */
-.loading-state {
-  text-align: center;
-  padding: 3rem 0;
-  color: #6c7a89;
-}
-
 .empty-state {
   text-align: center;
   padding: 3rem 0;
@@ -390,7 +333,6 @@
     flex-direction: column;
   }
 
-  .events-search-bar select,
   .events-search-bar input,
   .events-search-bar .search-input,
   .events-search-bar .btn-search {
@@ -410,11 +352,6 @@
 
   .events-hero h1 {
     font-size: 1.5rem;
-  }
-
-  /* Grid adjustments for tablet */
-  .events-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -445,15 +382,10 @@
     padding: 0.3rem 1rem;
     font-size: 0.75rem;
   }
-
-  /* Grid adjustments for mobile */
-  .events-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ============================================
-   FILTERS BUTTON (στο hero)
+   FILTERS BUTTON
    ============================================ */
 .btn-open-filters {
   position: relative;

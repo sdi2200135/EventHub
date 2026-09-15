@@ -1,7 +1,6 @@
 // src/pages/events/EventsPage.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { eventService, categoryService } from '../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -14,7 +13,6 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 const ITEMS_PER_PAGE = 10;
 
 const EventsPage = () => {
-  const { user, isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [events, setEvents] = useState([]);

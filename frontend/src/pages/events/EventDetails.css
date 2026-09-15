@@ -11,9 +11,6 @@
   min-height: calc(100vh - 64px - 80px);
 }
 
-/* ============================================
-   EVENT DETAILS CONTAINER - 2 ΣΤΗΛΕΣ
-   ============================================ */
 .event-details-container {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -30,7 +27,7 @@
 }
 
 .event-image-wrapper {
-  position: relative;          /* ← για absolute arrows/dots */
+  position: relative;
   width: 100%;
   aspect-ratio: 1/1;
   border-radius: 0.75rem;
@@ -99,12 +96,6 @@
   margin-bottom: 0.25rem;
 }
 
-.event-subtitle {
-  font-size: 0.9rem;
-  color: #6c7a89;
-  margin-bottom: 1.5rem;
-}
-
 /* ============================================
    TABS
    ============================================ */
@@ -154,7 +145,6 @@
   min-height: 200px;
 }
 
-/* Description Panel */
 .description-panel {
   display: flex;
   flex-direction: column;
@@ -167,7 +157,7 @@
   font-size: 0.95rem;
 }
 
-/* MAP - Μέσα στην καρτέλα Description */
+/* MAP */
 .event-map-container {
   display: flex;
   flex-direction: column;
@@ -190,7 +180,7 @@
 }
 
 /* ============================================
-   ORGANIZER PANEL - ΕΝΗΜΕΡΩΜΕΝΟ
+   ORGANIZER PANEL
    ============================================ */
 .organizer-panel {
   display: flex;
@@ -241,9 +231,6 @@
   margin-top: 0.25rem;
 }
 
-/* ============================================
-   ORGANIZER DETAILS GRID - ΔΥΟ ΣΤΗΛΕΣ
-   ============================================ */
 .organizer-details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -295,95 +282,18 @@
 }
 
 /* ============================================
-   ORGANIZER STATS
+   TICKETS
    ============================================ */
-.organizer-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 0;
-}
-
-.stat-item {
-  padding: 1rem;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 0.75rem;
-  border: 1px solid #2A2A2A;
-}
-
-.stat-item .stat-number {
-  display: block;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #e0e0e0;
-}
-
-.stat-item .stat-label {
-  font-size: 0.85rem;
-  font-weight: 400;
-  color: #6c7a89;
-}
-
-/* ============================================
-   TICKETS LIST
-   ============================================ */
-.tickets-panel h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #e0e0e0;
-  margin-bottom: 1rem;
-}
-
 .tickets-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.ticket-item {
-  display: grid;
-  grid-template-columns: 1fr 2fr 1.5fr;
-  align-items: center;
-  padding: 0.75rem 1.25rem;
-  background: #1a1a2e;
-  border-radius: 0.5rem;
-  border: 1px solid #2A2A2A;
-  gap: 1rem;
-}
-
-.ticket-item:hover {
-  border-color: #203855;
-}
-
 .ticket-date {
   font-size: 0.9rem;
   color: #B0B0B0;
   font-weight: 500;
-}
-
-.ticket-match {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.ticket-match .team-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #e0e0e0;
-}
-
-.ticket-match .team-vs {
-  font-size: 0.85rem;
-  color: #6c7a89;
-}
-
-.ticket-match .event-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #e0e0e0;
 }
 
 .ticket-action {
@@ -393,31 +303,6 @@
   gap: 0.75rem;
 }
 
-/* ============================================
-   TICKET STATUS - ΧΡΩΜΑΤΑ
-   ============================================ */
-.ticket-status {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.6rem;
-  border-radius: 0.25rem;
-}
-
-.ticket-status.available {
-  color: #1A782E;
-}
-
-.ticket-status.limited {
-  color: #AF7812;
-}
-
-.ticket-status.sold-out {
-  color: #981818;
-}
-
-/* ============================================
-   TICKETS BUTTON - SLANTED
-   ============================================ */
 .btn-ticket {
   padding: 0.35rem 1.2rem;
   border: none;
@@ -432,16 +317,6 @@
   clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
 }
 
-.btn-ticket .arrow-icon-small {
-  font-size: 0.8rem !important;
-  transition: transform 0.2s;
-}
-
-.btn-ticket:hover .arrow-icon-small {
-  transform: translateX(3px);
-}
-
-/* AVAILABLE - ΠΡΑΣΙΝΟ */
 .btn-ticket.available {
   background: #1A782E;
   color: white;
@@ -450,29 +325,6 @@
 .btn-ticket.available:hover {
   background: #22963a;
   transform: scale(1.02);
-}
-
-/* LIMITED - ΠΟΡΤΟΚΑΛΙ */
-.btn-ticket.limited {
-  background: #AF7812;
-  color: white;
-}
-
-.btn-ticket.limited:hover {
-  background: #d49418;
-  transform: scale(1.02);
-}
-
-/* SOLD OUT - ΚΟΚΚΙΝΟ */
-.btn-ticket.sold-out {
-  background: #981818;
-  color: #B0B0B0;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.btn-ticket.sold-out:hover {
-  transform: none;
 }
 
 .no-tickets {
@@ -544,14 +396,9 @@
   background: #2a4a6a;
 }
 
-.ticket-item-single .btn-ticket .arrow-icon-small {
-  font-size: 0.8rem !important;
-}
-
 /* ============================================
-   LOADING & ERROR STATES
+   ERROR STATE
    ============================================ */
-.event-details-loading,
 .event-details-error {
   display: flex;
   flex-direction: column;
@@ -560,23 +407,6 @@
   min-height: calc(100vh - 64px - 80px);
   background-color: #1E1E1E;
   color: #e0e0e0;
-}
-
-.event-details-loading .loading-icon-spin {
-  font-size: 3.5rem !important;
-  color: #6c7a89;
-  margin-bottom: 0.5rem;
-  animation: spin 1.5s linear infinite;
-}
-
-.event-details-loading p {
-  font-size: 1rem;
-  color: #6c7a89;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .event-details-error h2 {
@@ -629,10 +459,6 @@
     height: 200px;
   }
 
-  .organizer-stats {
-    grid-template-columns: 1fr;
-  }
-
   .event-tabs {
     overflow-x: auto;
   }
@@ -657,15 +483,10 @@
     font-size: 13px;
   }
 
-  .ticket-item,
   .ticket-item-single {
     grid-template-columns: 1fr;
     gap: 0.5rem;
     text-align: center;
-  }
-
-  .ticket-match {
-    justify-content: center;
   }
 
   .ticket-action {
@@ -771,19 +592,12 @@
   cursor: not-allowed;
 }
 
-/* Override του :hover για disabled state —
-   αλλιώς το .ticket-item-single .btn-ticket:hover
-   αλλάζει το χρώμα ακόμα και σε disabled κουμπί. */
 .btn-ticket.disabled:hover,
 .ticket-item-single .btn-ticket.disabled:hover {
   background: #2A2A2A;
   color: #6c7a89;
   transform: none;
   cursor: not-allowed;
-}
-
-.btn-ticket.disabled:hover .arrow-icon-small {
-  transform: none;
 }
 
 /* ============================================
@@ -797,9 +611,6 @@
   transition: opacity 0.3s ease;
 }
 
-/* ============================================
-   ARROWS
-   ============================================ */
 .carousel-arrow {
   position: absolute;
   top: 50%;
@@ -817,7 +628,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 3px;   /* optical centering για το ‹ › */
+  padding-bottom: 3px;
   transition: background 0.2s, transform 0.2s;
   z-index: 2;
 }
@@ -839,9 +650,6 @@
   right: 12px;
 }
 
-/* ============================================
-   DOTS
-   ============================================ */
 .carousel-dots {
   position: absolute;
   bottom: 12px;
@@ -872,9 +680,6 @@
   transform: scale(1.25);
 }
 
-/* ============================================
-   COUNTER
-   ============================================ */
 .carousel-counter {
   position: absolute;
   top: 12px;
