@@ -1,15 +1,13 @@
 // src/components/common/Navbar.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messageService } from '../../services/api';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
-  const navigate = useNavigate();
   const location = useLocation();
 
   // ============================================
@@ -50,13 +48,6 @@ const Navbar = () => {
 
     return () => clearInterval(interval);
   }, [isAuthenticated, user?.id]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/events?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
 
   const isSignInPage = location.pathname === '/signin';
   const isForgotPwdPage = location.pathname === '/signin/forgot-password';

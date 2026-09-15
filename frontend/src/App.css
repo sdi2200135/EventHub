@@ -56,30 +56,12 @@ body {
 }
 
 /* ============================================
-   LOADING & EMPTY STATES (Global)
+   EMPTY STATE (Global fallback)
    ============================================ */
-.loading-spinner {
-  text-align: center;
-  padding: 3rem 0;
-  color: #6c7a89;
-}
-
-.loading-spinner::after {
-  content: '⏳';
-  display: block;
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
 .empty-state {
   text-align: center;
   padding: 3rem 0;
   color: #6c7a89;
-}
-
-.empty-state .icon {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
 }
 
 /* ============================================
@@ -96,11 +78,11 @@ body {
 
 .require-role-loading .loading-icon-spin {
   font-size: 3rem !important;
-  animation: spin 1.5s linear infinite;
+  animation: requireRoleSpin 1.5s linear infinite;
   margin-bottom: 12px;
 }
 
-@keyframes spin {
+@keyframes requireRoleSpin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
