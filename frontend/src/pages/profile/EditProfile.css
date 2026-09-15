@@ -29,7 +29,7 @@
   margin: 0;
 }
 
-.edit-profile-header .btn-back {
+.edit-profile-btn-back {
   background: transparent;
   border: none;
   color: #a0a0b8;
@@ -41,13 +41,13 @@
   transition: all 0.3s;
 }
 
-.edit-profile-header .btn-back:hover {
+.edit-profile-btn-back:hover {
   background: #2A2A2A;
   color: #ffffff;
 }
 
 /* Success/Error Messages */
-.edit-success {
+.edit-profile-success {
   background: rgba(46, 204, 113, 0.1);
   border: 1px solid #2ecc71;
   color: #2ecc71;
@@ -57,7 +57,7 @@
   font-size: 14px;
 }
 
-.edit-error {
+.edit-profile-error {
   background: rgba(231, 76, 60, 0.1);
   border: 1px solid #e74c3c;
   color: #e74c3c;
@@ -68,7 +68,7 @@
 }
 
 /* Form Layout */
-.form-layout {
+.edit-profile-form-layout {
   display: grid;
   grid-template-columns: 200px 1fr 1fr;
   gap: 40px;
@@ -76,14 +76,14 @@
 }
 
 /* Photo Section */
-.form-photo-section {
+.edit-profile-photo-section {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
 }
 
-.profile-photo-large {
+.edit-profile-photo-large {
   width: 180px;
   height: 180px;
   background: #d3d3d3;
@@ -96,7 +96,7 @@
   font-weight: 400;
 }
 
-.btn-change-photo {
+.edit-profile-btn-change-photo {
   background: transparent;
   border: 1px solid #4a4a5a;
   color: #e0e0e0;
@@ -108,32 +108,32 @@
   transition: all 0.2s;
 }
 
-.btn-change-photo:hover {
+.edit-profile-btn-change-photo:hover {
   background: #2A2A2A;
   border-color: #6c7a89;
 }
 
 /* Fields Section */
-.form-fields-section,
-.form-actions-section {
+.edit-profile-fields-section,
+.edit-profile-actions-section {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.form-group {
+.edit-profile-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.form-group label {
+.edit-profile-form-group label {
   font-size: 14px;
   font-weight: 500;
   color: #ffffff;
 }
 
-.form-group input {
+.edit-profile-form-group input {
   background: transparent;
   border: 1px solid #4a4a5a;
   border-radius: 6px;
@@ -145,23 +145,16 @@
   transition: border-color 0.2s;
 }
 
-.form-group input:focus {
+.edit-profile-form-group input:focus {
   border-color: #203855;
 }
 
-.form-group input::placeholder {
+.edit-profile-form-group input::placeholder {
   color: #6c7a89;
-}
-
-.form-group input.input-disabled {
-  background: #1a1a1a;
-  color: #6c7a89;
-  cursor: not-allowed;
-  border-color: #2A2A2A;
 }
 
 /* Password Section */
-.password-section {
+.edit-profile-password-section {
   margin-top: 24px;
   padding-top: 24px;
   border-top: 1px solid #2A2A2A;
@@ -170,7 +163,7 @@
   gap: 16px;
 }
 
-.password-section h4 {
+.edit-profile-password-section h4 {
   color: #ffffff;
   font-size: 16px;
   font-weight: 600;
@@ -178,14 +171,14 @@
 }
 
 /* Form Buttons */
-.form-buttons {
+.edit-profile-form-buttons {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   margin-top: 24px;
 }
 
-.btn-cancel {
+.edit-profile-btn-cancel {
   background: #2A2A2A;
   color: #e0e0e0;
   border: 1px solid #3A3A3A;
@@ -197,11 +190,11 @@
   transition: all 0.2s;
 }
 
-.btn-cancel:hover {
+.edit-profile-btn-cancel:hover {
   background: #3A3A3A;
 }
 
-.btn-save {
+.edit-profile-btn-save {
   background: #1a782e;
   color: #ffffff;
   border: none;
@@ -213,32 +206,32 @@
   transition: all 0.2s;
 }
 
-.btn-save:hover:not(:disabled) {
+.edit-profile-btn-save:hover:not(:disabled) {
   background: #22963a;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
 }
 
-.btn-save:disabled {
+.edit-profile-btn-save:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .form-layout {
+  .edit-profile-form-layout {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
   }
-  
-  .form-photo-section {
+
+  .edit-profile-photo-section {
     grid-column: 1 / -1;
     flex-direction: row;
     justify-content: flex-start;
     gap: 24px;
   }
-  
-  .profile-photo-large {
+
+  .edit-profile-photo-large {
     width: 140px;
     height: 140px;
   }
@@ -248,23 +241,23 @@
   .edit-profile-container {
     padding: 24px 16px;
   }
-  
-  .form-layout {
+
+  .edit-profile-form-layout {
     grid-template-columns: 1fr;
     gap: 32px;
   }
-  
-  .form-photo-section {
+
+  .edit-profile-photo-section {
     flex-direction: column;
     align-items: flex-start;
   }
-  
-  .form-buttons {
+
+  .edit-profile-form-buttons {
     flex-direction: column-reverse;
   }
-  
-  .btn-cancel,
-  .btn-save {
+
+  .edit-profile-btn-cancel,
+  .edit-profile-btn-save {
     width: 100%;
   }
 }

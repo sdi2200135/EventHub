@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
-// Import των επιμέρους σελίδων ανά ρόλο
 import AdminDashboard from '../profile/admin/AdminDashboard';
 import OrganizerDashboard from '../profile/organizer/OrganizerDashboard';
 import ParticipantDashboard from '../profile/participant/ParticipantDashboard';
@@ -18,7 +17,6 @@ const ProfilePage = () => {
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    // Έλεγχος αν ο χρήστης είναι συνδεδεμένος
     if (!authLoading && !isAuthenticated) {
       navigate('/signin');
       return;
@@ -30,40 +28,33 @@ const ProfilePage = () => {
     }
   }, [authLoading, isAuthenticated, user, navigate]);
 
-  // Προσδιορισμός ρόλου χρήστη
   const determineUserRole = () => {
-    // Έλεγχος αν είναι admin (is_staff ή is_superuser)
     if (user?.is_staff || user?.is_superuser) {
       setUserRole('admin');
       return;
     }
 
-    // Έλεγχος αν είναι organizer
     if (user?.role === 'ORGANIZER' || user?.user_type === 'organizer') {
       setUserRole('organizer');
       return;
     }
 
-    // Default: participant
     setUserRole('participant');
   };
 
-  // Φόρτωση
   if (authLoading || loading) {
     return (
       <div className="profile-loading">
-        <AutorenewIcon className="loading-icon-spin" />
+        <AutorenewIcon className="profile-loading-icon-spin" />
         <p>Loading profile...</p>
       </div>
     );
   }
 
-  // Αν δεν είναι συνδεδεμένος, ανακατεύθυνση
   if (!isAuthenticated) {
     return null;
   }
 
-  // Εμφάνιση της αντίστοιχης σελίδας ανάλογα με το ρόλο
   const renderDashboard = () => {
     switch (userRole) {
       case 'admin':

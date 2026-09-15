@@ -61,7 +61,7 @@ const EditProfile = () => {
 
     try {
       const updateData = {
-        username: formData.username,        // ← ΠΡΟΣΘΗΚΗ
+        username: formData.username,
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
@@ -76,25 +76,24 @@ const EditProfile = () => {
       }
 
       const response = await authService.updateProfile(updateData);
-      
+
       if (response.data) {
         setUser(prev => ({ ...prev, ...response.data }));
       }
 
       setSuccess(true);
-      
+
       setTimeout(() => {
         navigate('/profile');
       }, 2000);
     } catch (err) {
       console.error('Update profile error:', err);
-      // Ειδικός χειρισμός για το username
       const errorData = err.response?.data;
       if (errorData?.username) {
         setError(`Username: ${errorData.username.join(', ')}`);
       } else {
         setError(
-          errorData?.detail || 
+          errorData?.detail ||
           errorData?.message ||
           'Failed to update profile. Please try again.'
         );
@@ -112,40 +111,39 @@ const EditProfile = () => {
     <div className="edit-profile-page">
       <div className="edit-profile-container">
         <div className="edit-profile-header">
-          <button className="btn-back" onClick={handleCancel}>
+          <button className="edit-profile-btn-back" onClick={handleCancel}>
             <ArrowBackIcon />
           </button>
           <h1>Edit Profile</h1>
         </div>
 
         {success && (
-          <div className="edit-success">
+          <div className="edit-profile-success">
             ✅ Profile updated successfully! Redirecting...
           </div>
         )}
 
         {error && (
-          <div className="edit-error">
+          <div className="edit-profile-error">
             {error}
           </div>
         )}
 
-        <form className="edit-profile-form" onSubmit={handleSubmit}>
-          <div className="form-layout">
+        <form onSubmit={handleSubmit}>
+          <div className="edit-profile-form-layout">
             {/* Photo */}
-            <div className="form-photo-section">
-              <div className="profile-photo-large">
+            <div className="edit-profile-photo-section">
+              <div className="edit-profile-photo-large">
                 <span>Photo</span>
               </div>
-              <button type="button" className="btn-change-photo">
+              <button type="button" className="edit-profile-btn-change-photo">
                 Change Photo
               </button>
             </div>
 
             {/* Middle Column: Personal Info */}
-            <div className="form-fields-section">
-              {/* Username - ΤΩΡΑ ΕΠΕΞΕΡΓΑΣΙΜΟ */}
-              <div className="form-group">
+            <div className="edit-profile-fields-section">
+              <div className="edit-profile-form-group">
                 <label htmlFor="username">Username:</label>
                 <input
                   type="text"
@@ -158,7 +156,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="first_name">First Name:</label>
                 <input
                   type="text"
@@ -171,7 +169,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="last_name">Last Name:</label>
                 <input
                   type="text"
@@ -184,7 +182,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="email">Email:</label>
                 <input
                   type="email"
@@ -197,7 +195,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="phone">Phone Number:</label>
                 <input
                   type="tel"
@@ -209,7 +207,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="address">Address:</label>
                 <input
                   type="text"
@@ -221,7 +219,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="city">Location:</label>
                 <input
                   type="text"
@@ -233,7 +231,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              <div className="form-group">
+              <div className="edit-profile-form-group">
                 <label htmlFor="afm">Tax Registration Number:</label>
                 <input
                   type="text"
@@ -247,10 +245,10 @@ const EditProfile = () => {
             </div>
 
             {/* Right Column: Password & Actions */}
-            <div className="form-actions-section">
-              <div className="password-section">
+            <div className="edit-profile-actions-section">
+              <div className="edit-profile-password-section">
                 <h4>Change Password</h4>
-                <div className="form-group">
+                <div className="edit-profile-form-group">
                   <label htmlFor="password">New Password:</label>
                   <input
                     type="password"
@@ -262,7 +260,7 @@ const EditProfile = () => {
                   />
                 </div>
 
-                <div className="form-group">
+                <div className="edit-profile-form-group">
                   <label htmlFor="confirm_password">Confirm New Password:</label>
                   <input
                     type="password"
@@ -275,10 +273,10 @@ const EditProfile = () => {
                 </div>
               </div>
 
-              <div className="form-buttons">
+              <div className="edit-profile-form-buttons">
                 <button
                   type="button"
-                  className="btn-cancel"
+                  className="edit-profile-btn-cancel"
                   onClick={handleCancel}
                   disabled={loading}
                 >
@@ -286,7 +284,7 @@ const EditProfile = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn-save"
+                  className="edit-profile-btn-save"
                   disabled={loading}
                 >
                   {loading ? 'Saving...' : 'Save Changes'}
