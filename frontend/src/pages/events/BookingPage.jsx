@@ -156,7 +156,7 @@ const BookingPage = () => {
   };
 
   // ============================================
-  // 7. ΥΠΟΒΟΛΗ ΚΡΑΤΗΣΗΣ - ΕΝΗΜΕΡΩΜΕΝΗ
+  // 7. ΥΠΟΒΟΛΗ ΚΡΑΤΗΣΗΣ - ΜΕ CONFIRM DIALOG
   // ============================================
   const handleSubmitBooking = async () => {
     if (!isAuthenticated) {
@@ -172,6 +172,25 @@ const BookingPage = () => {
 
     if ((event.available_capacity ?? 0) <= 0) {
       setError('This event is sold out.');
+      return;
+    }
+
+    // ============================================
+    // CONFIRM DIALOG - ΑΠΑΙΤΕΙΤΑΙ ΑΠΟ ΤΗΝ ΕΚΦΩΝΗΣΗ
+    // ============================================
+    const confirmMessage = [
+      '⚠️  Confirm this booking?',
+      '',
+      `Event:    ${event.title}`,
+      `Ticket:   ${ticket?.name || 'N/A'}`,
+      `Quantity: ${bookingData.quantity}`,
+      bookingData.seats ? `Seats:    ${bookingData.seats}` : null,
+      `Total:    $${getTotalCost().toFixed(2)}`,
+      '',
+      'This action CANNOT be undone after submission.'
+    ].filter(Boolean).join('\n');
+
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
@@ -194,7 +213,7 @@ const BookingPage = () => {
       clearBookingData();
       setSuccess(true);
       
-      // Αλλαγή: Μετά από 3 δευτερόλεπτα πάει στην αρχική σελίδα
+      // Μετά από 3 δευτερόλεπτα πάει στην αρχική σελίδα
       setTimeout(() => {
         navigate('/');
       }, 3000);

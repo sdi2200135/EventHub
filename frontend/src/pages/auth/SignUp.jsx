@@ -45,14 +45,23 @@ const SignUp = () => {
 
     try {
       const submitData = { ...formData };
-      
-      if (!submitData.latitude) delete submitData.latitude;
-      if (!submitData.longitude) delete submitData.longitude;
-      
+
+      // Μετατροπή lat/lng σε float αν έχουν δοθεί
+      if (submitData.latitude !== '') {
+        submitData.latitude = parseFloat(submitData.latitude);
+      } else {
+        delete submitData.latitude;
+      }
+      if (submitData.longitude !== '') {
+        submitData.longitude = parseFloat(submitData.longitude);
+      } else {
+        delete submitData.longitude;
+      }
+
       console.log('Sending data to backend:', submitData);
-      
+
       const result = await register(submitData);
-      
+
       if (result.success) {
         setSuccess(true);
         setTimeout(() => {
@@ -278,8 +287,43 @@ const SignUp = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          {/* Latitude & Longitude */}
+          <div className="auth-form-row">
+            <div className="auth-form-group">
+              <label htmlFor="latitude">Latitude</label>
+              <input
+                type="number"
+                id="latitude"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleChange}
+                placeholder="e.g. 37.9838"
+                step="any"
+                min="-90"
+                max="90"
+                disabled={loading || success}
+              />
+            </div>
+
+            <div className="auth-form-group">
+              <label htmlFor="longitude">Longitude</label>
+              <input
+                type="number"
+                id="longitude"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleChange}
+                placeholder="e.g. 23.7275"
+                step="any"
+                min="-180"
+                max="180"
+                disabled={loading || success}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
             className="signup-btn"
             disabled={loading || success}
           >
