@@ -217,7 +217,7 @@ const OrganizerDashboard = ({ user }) => {
     switch (activeFolder) {
       case 'incoming':
         filtered = filtered.filter(m =>
-          m.recipient_id === user.id && !m.is_trash && !m.is_draft
+          m.recipient_id === user.id && !m.is_trash && !m.is_draft && !m.is_junk
         );
         break;
       case 'sent':
