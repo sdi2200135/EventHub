@@ -330,9 +330,8 @@
 }
 
 /* ============================================
-   LOADING & ERROR
+   ERROR
    ============================================ */
-.ed-organizer-loading,
 .ed-organizer-error {
   display: flex;
   flex-direction: column;
@@ -342,21 +341,6 @@
   color: #e0e0e0;
   text-align: center;
   padding: 20px;
-}
-
-.ed-organizer-loading .loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #333;
-  border-top: 4px solid #4a90d9;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .ed-organizer-error h2 {
