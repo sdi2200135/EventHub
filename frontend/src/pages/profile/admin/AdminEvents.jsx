@@ -91,23 +91,6 @@ const AdminEvents = () => {
   // ============================================
   // ACTIONS
   // ============================================
-  const handleCancel = async (eventId) => {
-    if (!window.confirm('Cancel this event? Attendees will still see it in their history.')) return;
-    setActionLoading(true);
-    try {
-      await eventService.updateEventStatus(eventId, 'CANCELLED');
-      setEvents(prev =>
-        prev.map(e => e.id === eventId ? { ...e, status: 'CANCELLED' } : e)
-      );
-      setSelectedEvent(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
-    } catch (err) {
-      console.error('Error cancelling event:', err);
-      alert('Failed to cancel event.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleDelete = async (eventId) => {
     if (!window.confirm('Delete this event permanently? This cannot be undone.')) return;
     setActionLoading(true);
@@ -191,19 +174,6 @@ const AdminEvents = () => {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
-    });
-  };
-
-  const formatDateTimeLong = (dateString) => {
-    if (!dateString) return '—';
-    const d = new Date(dateString);
-    return d.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
     });
   };
 

@@ -52,12 +52,10 @@ const UserManagement = () => {
   const getFilteredUsers = () => {
     let filtered = [...users];
 
-    // Filter κατά approval_status
     if (activeFilter !== 'ALL') {
       filtered = filtered.filter(u => u.approval_status === activeFilter);
     }
 
-    // Search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(u =>
@@ -73,7 +71,6 @@ const UserManagement = () => {
 
   const filteredUsers = getFilteredUsers();
 
-  // Counts ανά filter
   const counts = {
     ALL: users.length,
     PENDING: users.filter(u => u.approval_status === 'PENDING').length,
@@ -226,27 +223,27 @@ const UserManagement = () => {
             {filteredUsers.map(u => (
               <div
                 key={u.id}
-                className={`user-item status-${(u.approval_status || '').toLowerCase()}`}
+                className={`um-user-item status-${(u.approval_status || '').toLowerCase()}`}
                 onClick={() => setSelectedUser(u)}
               >
-                <div className="user-avatar-sm">
+                <div className="um-user-avatar-sm">
                   {getInitials(u)}
                 </div>
 
-                <div className="user-item-content">
-                  <div className="user-item-top">
-                    <span className="user-item-name">
+                <div className="um-user-item-content">
+                  <div className="um-user-item-top">
+                    <span className="um-user-item-name">
                       {u.first_name} {u.last_name}
                     </span>
-                    <span className="user-item-role">{getRoleLabel(u)}</span>
+                    <span className="um-user-item-role">{getRoleLabel(u)}</span>
                   </div>
-                  <div className="user-item-bottom">
-                    <span className="user-item-username">@{u.username}</span>
-                    <span className="user-item-email">{u.email}</span>
+                  <div className="um-user-item-bottom">
+                    <span className="um-user-item-username">@{u.username}</span>
+                    <span className="um-user-item-email">{u.email}</span>
                   </div>
                 </div>
 
-                <span className={`user-status status-${(u.approval_status || '').toLowerCase()}`}>
+                <span className={`um-user-status status-${(u.approval_status || '').toLowerCase()}`}>
                   {getStatusLabel(u.approval_status)}
                 </span>
               </div>

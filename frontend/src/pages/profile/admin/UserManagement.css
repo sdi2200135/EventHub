@@ -8,15 +8,13 @@
 }
 
 /* ============================================
-   SIDEBAR - FILTERS (ίδιο με MyEvents)
+   SIDEBAR - FILTERS (κοινόχρηστα .filter-btn από MyEvents.css)
    ============================================ */
 .um-sidebar {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-
-/* Τα .filter-btn, .filter-count τα παίρνουμε από MyEvents.css */
 
 /* ============================================
    CONTENT
@@ -82,7 +80,7 @@
   max-height: 550px;
 }
 
-.user-item {
+.um-user-item {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -95,7 +93,7 @@
   position: relative;
 }
 
-.user-item::before {
+.um-user-item::before {
   content: '';
   position: absolute;
   left: 0;
@@ -106,18 +104,18 @@
   background: #6c7a89;
 }
 
-.user-item.status-pending::before { background: #f39c12; }
-.user-item.status-approved::before { background: #2ecc71; }
-.user-item.status-rejected::before { background: #e74c3c; }
+.um-user-item.status-pending::before { background: #f39c12; }
+.um-user-item.status-approved::before { background: #2ecc71; }
+.um-user-item.status-rejected::before { background: #e74c3c; }
 
-.user-item:hover {
+.um-user-item:hover {
   background: #333;
   border-color: #203855;
   transform: translateX(2px);
 }
 
 /* Avatar */
-.user-avatar-sm {
+.um-user-avatar-sm {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -131,12 +129,12 @@
   flex-shrink: 0;
 }
 
-.user-item.status-pending .user-avatar-sm { background: #7a5a1e; }
-.user-item.status-approved .user-avatar-sm { background: #1a5a2e; }
-.user-item.status-rejected .user-avatar-sm { background: #6a1a1a; }
+.um-user-item.status-pending .um-user-avatar-sm { background: #7a5a1e; }
+.um-user-item.status-approved .um-user-avatar-sm { background: #1a5a2e; }
+.um-user-item.status-rejected .um-user-avatar-sm { background: #6a1a1a; }
 
 /* Content */
-.user-item-content {
+.um-user-item-content {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -144,13 +142,13 @@
   gap: 2px;
 }
 
-.user-item-top {
+.um-user-item-top {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.user-item-name {
+.um-user-item-name {
   font-size: 14px;
   font-weight: 600;
   color: #ffffff;
@@ -159,7 +157,7 @@
   white-space: nowrap;
 }
 
-.user-item-role {
+.um-user-item-role {
   font-size: 11px;
   color: #6c7a89;
   background: rgba(255, 255, 255, 0.05);
@@ -170,7 +168,7 @@
   font-weight: 600;
 }
 
-.user-item-bottom {
+.um-user-item-bottom {
   display: flex;
   gap: 12px;
   font-size: 12px;
@@ -178,15 +176,15 @@
   min-width: 0;
 }
 
-.user-item-username,
-.user-item-email {
+.um-user-item-username,
+.um-user-item-email {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* Status Badge */
-.user-status {
+.um-user-status {
   font-size: 11px;
   font-weight: 700;
   padding: 3px 10px;
@@ -197,26 +195,26 @@
   flex-shrink: 0;
 }
 
-.user-status.status-approved {
+.um-user-status.status-approved {
   background: rgba(46, 204, 113, 0.15);
   color: #2ecc71;
   border: 1px solid rgba(46, 204, 113, 0.3);
 }
 
-.user-status.status-pending {
+.um-user-status.status-pending {
   background: rgba(243, 156, 18, 0.15);
   color: #f39c12;
   border: 1px solid rgba(243, 156, 18, 0.3);
 }
 
-.user-status.status-rejected {
+.um-user-status.status-rejected {
   background: rgba(231, 76, 60, 0.15);
   color: #e74c3c;
   border: 1px solid rgba(231, 76, 60, 0.3);
 }
 
 /* ============================================
-   EMPTY / LOADING / ERROR
+   EMPTY / ERROR
    ============================================ */
 .um-empty {
   text-align: center;
@@ -225,7 +223,6 @@
   font-size: 14px;
 }
 
-.um-loading,
 .um-error {
   display: flex;
   flex-direction: column;
@@ -233,16 +230,6 @@
   justify-content: center;
   padding: 60px 20px;
   color: #6c7a89;
-}
-
-.um-loading .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #333;
-  border-top: 3px solid #4a90d9;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
 }
 
 .um-error p {
@@ -265,7 +252,7 @@
 .btn-retry:hover { background: #2a4a6f; }
 
 /* ============================================
-   MODAL (ίδιο pattern με ReservationsDetails)
+   MODAL
    ============================================ */
 .um-modal-overlay {
   position: fixed;
@@ -495,26 +482,26 @@
     font-size: 13px;
   }
 
-  .user-item-bottom {
+  .um-user-item-bottom {
     flex-direction: column;
     gap: 2px;
   }
 }
 
 @media (max-width: 480px) {
-  .user-item {
+  .um-user-item {
     padding: 10px 12px;
     gap: 10px;
   }
 
-  .user-avatar-sm {
+  .um-user-avatar-sm {
     width: 34px;
     height: 34px;
     font-size: 12px;
   }
 
-  .user-item-name { font-size: 13px; }
-  .user-item-role { display: none; }
+  .um-user-item-name { font-size: 13px; }
+  .um-user-item-role { display: none; }
 
   .um-modal-row {
     grid-template-columns: 1fr;
