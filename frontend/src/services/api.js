@@ -18,6 +18,32 @@ import {
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ============================================
+// COMPUTED EVENT STATUS
+// ============================================
+// Αν ένα PUBLISHED event έχει end_datetime στο παρελθόν,
+// εμφανίζεται αυτόματα ως COMPLETED.
+// CANCELLED / DRAFT / COMPLETED παραμένουν ως έχουν.
+const applyComputedStatus = (event) => {
+  if (!event) return event;
+
+  // Μόνο PUBLISHED events μπορούν να γίνουν COMPLETED
+  if (event.status !== 'PUBLISHED') return event;
+
+  if (event.end_datetime) {
+    const end = new Date(event.end_datetime);
+    if (!isNaN(end.getTime()) && end < new Date()) {
+      return { ...event, status: 'COMPLETED' };
+    }
+  }
+
+  return event;
+};
+
+// Helper για arrays
+const applyComputedStatusToList = (events) =>
+  (events || []).map(applyComputedStatus);
+
+// ============================================
 // AUTH SERVICES
 // ============================================
 export const authService = {
@@ -145,13 +171,16 @@ export const eventService = {
   getEvents: async () => {
     if (USE_MOCK) {
       await delay();
-      return { data: mockEvents };
+      return { data: applyComputedStatusToList(mockEvents) };
     }
     const response = await axios.get(`${API_BASE}/events/`);
     if (response.data && response.data.results) {
-      return { data: response.data.results };
+      return { data: applyComputedStatusToList(response.data.results) };
     }
-    return response;
+    return {
+      ...response,
+      data: applyComputedStatusToList(response.data),
+    };
   },
 
   getEvent: async (id) => {
@@ -161,10 +190,13 @@ export const eventService = {
       if (!event) {
         throw new Error('Event not found');
       }
-      return { data: event };
+      return { data: applyComputedStatus(event) };
     }
     const response = await axios.get(`${API_BASE}/events/${id}/`);
-    return response;
+    return {
+      ...response,
+      data: applyComputedStatus(response.data),
+    };
   },
 
   getAvailableSeats: async (eventId, ticketTypeId) => {
@@ -197,7 +229,7 @@ export const eventService = {
     if (USE_MOCK) {
       await delay();
       const events = mockEvents.filter(e => e.organizer?.id === organizerId);
-      return { data: events };
+      return { data: applyComputedStatusToList(events) };
     }
     const response = await axios.get(`${API_BASE}/events/?organizer=${organizerId}`, {
       headers: {
@@ -205,9 +237,12 @@ export const eventService = {
       }
     });
     if (response.data && response.data.results) {
-      return { data: response.data.results };
+      return { data: applyComputedStatusToList(response.data.results) };
     }
-    return response;
+    return {
+      ...response,
+      data: applyComputedStatusToList(response.data),
+    };
   },
 
   // ← ΝΕΟ: Δημιουργία event
@@ -425,7 +460,7 @@ export const eventService = {
   getAllEvents: async () => {
     if (USE_MOCK) {
       await delay();
-      return { data: mockEvents };
+      return { data: applyComputedStatusToList(mockEvents) };
     }
     const response = await axios.get(`${API_BASE}/events/`, {
       headers: {
@@ -433,9 +468,12 @@ export const eventService = {
       }
     });
     if (response.data && response.data.results) {
-      return { data: response.data.results };
+      return { data: applyComputedStatusToList(response.data.results) };
     }
-    return response;
+    return {
+      ...response,
+      data: applyComputedStatusToList(response.data),
+    };
   }
 };
 
