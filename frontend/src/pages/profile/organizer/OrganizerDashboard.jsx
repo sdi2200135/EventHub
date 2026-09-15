@@ -10,6 +10,7 @@ import ReportIcon from '@mui/icons-material/Report';
 import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import '../common/Dashboard.css';
+import '../common/MessagesPanel.css';
 import MyEvents from './MyEvents';
 import Reservations from './Reservations';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
@@ -30,6 +31,7 @@ const OrganizerDashboard = ({ user }) => {
     setActiveTabState(tab);
     setSearchParams({ tab });
   };
+
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
@@ -167,17 +169,12 @@ const OrganizerDashboard = ({ user }) => {
     }
   };
 
-  // ============================================
-  // MARK AS JUNK
-  // ============================================
   const handleMarkAsJunk = async (messageId) => {
     try {
       await messageService.markAsJunk(messageId);
       setMessages(prev =>
         prev.map(m =>
-          m.id === messageId
-            ? { ...m, is_junk: true, is_read: true }
-            : m
+          m.id === messageId ? { ...m, is_junk: true, is_read: true } : m
         )
       );
       handleCloseOpenedMessage();
@@ -188,16 +185,11 @@ const OrganizerDashboard = ({ user }) => {
     }
   };
 
-  // ============================================
-  // UNMARK JUNK (Restore στο Inbox)
-  // ============================================
   const handleUnmarkJunk = async (messageId) => {
     try {
       await messageService.unmarkJunk(messageId);
       setMessages(prev =>
-        prev.map(m =>
-          m.id === messageId ? { ...m, is_junk: false } : m
-        )
+        prev.map(m => m.id === messageId ? { ...m, is_junk: false } : m)
       );
       handleCloseOpenedMessage();
     } catch (err) {
@@ -206,16 +198,11 @@ const OrganizerDashboard = ({ user }) => {
     }
   };
 
-  // ============================================
-  // RESTORE FROM TRASH
-  // ============================================
   const handleRestoreFromTrash = async (messageId) => {
     try {
       await messageService.restoreFromTrash(messageId);
       setMessages(prev =>
-        prev.map(m =>
-          m.id === messageId ? { ...m, is_trash: false } : m
-        )
+        prev.map(m => m.id === messageId ? { ...m, is_trash: false } : m)
       );
       handleCloseOpenedMessage();
     } catch (err) {
@@ -285,7 +272,7 @@ const OrganizerDashboard = ({ user }) => {
         >
           Messages
           {unreadCount > 0 && (
-            <span className="tab-badge">{unreadCount}</span>
+            <span className="dashboard-tab-badge">{unreadCount}</span>
           )}
         </button>
         <button
@@ -333,12 +320,8 @@ const OrganizerDashboard = ({ user }) => {
             onRestoreFromTrash={handleRestoreFromTrash}
           />
         )}
-        {activeTab === 'events' && (
-          <MyEvents user={user} />
-        )}
-        {activeTab === 'reservations' && (
-          <Reservations user={user} />
-        )}
+        {activeTab === 'events' && <MyEvents user={user} />}
+        {activeTab === 'reservations' && <Reservations user={user} />}
       </div>
     </div>
   );
@@ -351,10 +334,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
   return (
     <div className="personal-info-container">
       <div className="edit-btn-wrapper">
-        <button
-          className="btn-edit-profile"
-          onClick={() => navigate('/profile/edit')}
-        >
+        <button className="btn-edit-profile" onClick={() => navigate('/profile/edit')}>
           <EditIcon className="edit-icon" />
           Edit
         </button>
@@ -368,45 +348,47 @@ const PersonalInfoTab = ({ user, navigate }) => {
         </div>
 
         <div className="profile-info-grid">
-          <div className="info-column">
-            <div className="info-row">
-              <span className="info-label">Username:</span>
-              <span className="info-value">{user?.username || 'Username'}</span>
+          <div className="dashboard-info-column">
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Username:</span>
+              <span className="dashboard-info-value">{user?.username || 'Username'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Password:</span>
-              <span className="info-value">{user?.password || 'password123'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Password:</span>
+              <span className="dashboard-info-value">{user?.password || 'password123'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">First Name:</span>
-              <span className="info-value">{user?.first_name || 'First Name'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">First Name:</span>
+              <span className="dashboard-info-value">{user?.first_name || 'First Name'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Last Name:</span>
-              <span className="info-value">{user?.last_name || 'Last Name'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Last Name:</span>
+              <span className="dashboard-info-value">{user?.last_name || 'Last Name'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Email:</span>
-              <span className="info-value">{user?.email || 'email@gmail.com'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Email:</span>
+              <span className="dashboard-info-value">{user?.email || 'email@gmail.com'}</span>
             </div>
           </div>
 
-          <div className="info-column">
-            <div className="info-row">
-              <span className="info-label">Phone Number:</span>
-              <span className="info-value">{user?.phone || 'Phone Number'}</span>
+          <div className="dashboard-info-column">
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Phone Number:</span>
+              <span className="dashboard-info-value">{user?.phone || 'Phone Number'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Address:</span>
-              <span className="info-value">{user?.address || 'Address'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Address:</span>
+              <span className="dashboard-info-value">{user?.address || 'Address'}</span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Location:</span>
-              <span className="info-value">{user?.city || user?.location || 'Location'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Location:</span>
+              <span className="dashboard-info-value">
+                {user?.city || user?.location || 'Location'}
+              </span>
             </div>
-            <div className="info-row">
-              <span className="info-label">Tax Registration Number:</span>
-              <span className="info-value">{user?.afm || 'Tax Registration Number'}</span>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Tax Registration Number:</span>
+              <span className="dashboard-info-value">{user?.afm || 'Tax Registration Number'}</span>
             </div>
           </div>
         </div>
@@ -462,9 +444,7 @@ const MessagesLayout = ({
     });
   };
 
-  const getInitial = (name) => {
-    return name?.charAt(0)?.toUpperCase() || 'U';
-  };
+  const getInitial = (name) => name?.charAt(0)?.toUpperCase() || 'U';
 
   const getAvatarColor = (id) => {
     const colors = ['#4a90d9', '#2ecc71', '#9b59b6', '#f39c12', '#e74c3c', '#1abc9c'];
@@ -472,12 +452,12 @@ const MessagesLayout = ({
   };
 
   return (
-    <div className={`messages-layout ${openedMessage ? 'with-opened' : ''}`}>
-      <aside className="messages-sidebar">
+    <div className={`msg-layout ${openedMessage ? 'with-opened' : ''}`}>
+      <aside className="msg-sidebar">
         {folders.map(folder => (
           <button
             key={folder.id}
-            className={`folder-btn ${activeFolder === folder.id ? 'active' : ''}`}
+            className={`msg-folder-btn ${activeFolder === folder.id ? 'active' : ''}`}
             onClick={() => {
               setActiveFolder(folder.id);
               onCloseOpened();
@@ -488,42 +468,36 @@ const MessagesLayout = ({
         ))}
       </aside>
 
-      <div className="messages-content">
-        {/* ============================================
-            TOOLBAR - Όλα σε μία σειρά
-            ============================================ */}
-        <div className="messages-toolbar">
-          <label className="checkbox-wrapper">
+      <div className="msg-content">
+        <div className="msg-toolbar">
+          <label className="msg-checkbox-wrapper">
             <input
               type="checkbox"
-              checked={
-                messages.length > 0 &&
-                selectedMessages.length === messages.length
-              }
+              checked={messages.length > 0 && selectedMessages.length === messages.length}
               onChange={onSelectAll}
             />
           </label>
 
           <button
-            className="btn-delete"
+            className="msg-btn-delete"
             disabled={selectedMessages.length === 0}
             onClick={onDeleteSelected}
           >
             Delete
           </button>
 
-          <div className="search-wrapper">
-            <SearchIcon className="search-icon" />
+          <div className="msg-search-wrapper">
+            <SearchIcon className="msg-search-icon" />
             <input
               type="text"
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="messages-search"
+              className="msg-search"
             />
           </div>
 
-          <button className="btn-new-message" onClick={onNewMessage}>
+          <button className="msg-btn-new" onClick={onNewMessage}>
             New Message
           </button>
         </div>
@@ -531,16 +505,16 @@ const MessagesLayout = ({
         {loading ? (
           <LoadingSpinner message="Loading messages..." />
         ) : messages.length === 0 ? (
-          <p className="messages-empty">No messages in {activeFolder}.</p>
+          <p className="msg-empty">No messages in {activeFolder}.</p>
         ) : (
-          <div className="messages-list-simple">
+          <div className="msg-list">
             {messages.map(message => (
               <div
                 key={message.id}
-                className={`message-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${!message.is_read ? 'unread' : ''} ${openedMessage?.id === message.id ? 'opened' : ''}`}
+                className={`msg-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${!message.is_read ? 'unread' : ''} ${openedMessage?.id === message.id ? 'opened' : ''}`}
               >
                 <label
-                  className="checkbox-wrapper"
+                  className="msg-checkbox-wrapper"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <input
@@ -551,14 +525,14 @@ const MessagesLayout = ({
                 </label>
 
                 <div
-                  className="message-row-avatar"
+                  className="msg-row-avatar"
                   style={{ background: getAvatarColor(message.sender_id) }}
                 >
                   {getInitial(message.sender_name)}
                 </div>
 
                 <div
-                  className="message-row-content"
+                  className="msg-row-content"
                   onClick={() => {
                     if (message.is_draft) {
                       onOpenDraft(message.id);
@@ -567,20 +541,16 @@ const MessagesLayout = ({
                     }
                   }}
                 >
-                  <div className="message-row-top">
-                    <span className="message-row-sender">
-                      {message.sender_name}
-                    </span>
-                    <span className="message-row-date">
-                      {formatDate(message.created_at)}
-                    </span>
+                  <div className="msg-row-top">
+                    <span className="msg-row-sender">{message.sender_name}</span>
+                    <span className="msg-row-date">{formatDate(message.created_at)}</span>
                   </div>
-                  <div className="message-row-bottom">
-                    <span className="message-row-title">
+                  <div className="msg-row-bottom">
+                    <span className="msg-row-title">
                       {message.subject || '(no subject)'}
                     </span>
                   </div>
-                  <div className="message-row-preview">
+                  <div className="msg-row-preview">
                     {message.body?.substring(0, 60)}
                     {message.body?.length > 60 ? '...' : ''}
                   </div>
@@ -592,29 +562,22 @@ const MessagesLayout = ({
       </div>
 
       {openedMessage && (
-        <div className="message-detail-panel">
-          <div className="message-detail-header">
+        <div className="msg-detail-panel">
+          <div className="msg-detail-header">
             <div
-              className="message-detail-avatar"
+              className="msg-detail-avatar"
               style={{ background: getAvatarColor(openedMessage.sender_id) }}
             >
               {getInitial(openedMessage.sender_name)}
             </div>
-            <div className="message-detail-info">
-              <div className="message-detail-name">
-                {openedMessage.sender_name}
-              </div>
-              <div className="message-detail-username">
-                @{openedMessage.sender_username}
-              </div>
+            <div className="msg-detail-info">
+              <div className="msg-detail-name">{openedMessage.sender_name}</div>
+              <div className="msg-detail-username">@{openedMessage.sender_username}</div>
             </div>
 
-            {/* ============================================
-                ACTION BUTTONS (Junk / Unjunk / Restore)
-                ============================================ */}
             {activeFolder === 'incoming' && !openedMessage.is_junk && (
               <button
-                className="btn-message-action junk"
+                className="msg-btn-action junk"
                 onClick={() => onMarkAsJunk(openedMessage.id)}
                 title="Mark as Junk"
               >
@@ -624,7 +587,7 @@ const MessagesLayout = ({
 
             {activeFolder === 'junk' && (
               <button
-                className="btn-message-action unjunk"
+                className="msg-btn-action unjunk"
                 onClick={() => onUnmarkJunk(openedMessage.id)}
                 title="Not Junk"
               >
@@ -634,7 +597,7 @@ const MessagesLayout = ({
 
             {activeFolder === 'trash' && (
               <button
-                className="btn-message-action restore"
+                className="msg-btn-action restore"
                 onClick={() => onRestoreFromTrash(openedMessage.id)}
                 title="Restore"
               >
@@ -642,48 +605,42 @@ const MessagesLayout = ({
               </button>
             )}
 
-            <button
-              className="btn-close-detail"
-              onClick={onCloseOpened}
-              title="Close"
-            >
+            <button className="msg-btn-close-detail" onClick={onCloseOpened} title="Close">
               <CloseIcon />
             </button>
           </div>
 
-          <div className="message-detail-subject">
+          <div className="msg-detail-subject">
             {openedMessage.subject || '(no subject)'}
           </div>
 
-          <div className="message-detail-date">
+          <div className="msg-detail-date">
             {formatDate(openedMessage.created_at)}
           </div>
 
           {loadingOpened ? (
-            <div className="message-detail-loading">Loading...</div>
+            <div className="msg-detail-loading">Loading...</div>
           ) : (
             <>
-              <div className="message-detail-body">
-                <div className="message-bubble incoming">
-                  <div className="message-bubble-text">
-                    {openedMessage.body}
-                  </div>
-                  <div className="message-bubble-time">
+              <div className="msg-detail-body">
+                <div className="msg-bubble incoming">
+                  <div className="msg-bubble-text">{openedMessage.body}</div>
+                  <div className="msg-bubble-time">
                     {formatDate(openedMessage.created_at)}
                   </div>
                 </div>
               </div>
 
-              <div className="message-reply-box">
+              <div className="msg-reply-box">
                 <textarea
-                  className="message-reply-input"
+                  className="msg-reply-input"
                   placeholder="Type your reply..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   rows={3}
                 />
                 <button
-                  className="btn-send-reply"
+                  className="msg-btn-send-reply"
                   onClick={onSendReply}
                   disabled={!replyText.trim() || sendingReply}
                 >

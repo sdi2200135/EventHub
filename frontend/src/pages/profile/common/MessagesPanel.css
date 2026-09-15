@@ -1,0 +1,651 @@
+/* src/pages/profile/common/MessagesPanel.css */
+
+/* ============================================
+   MESSAGES LAYOUT - 3 ΣΤΗΛΕΣ (Chat-style)
+   ============================================ */
+.msg-layout {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 20px;
+  min-height: 500px;
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Όταν υπάρχει ανοιχτό μήνυμα → 3 στήλες */
+.msg-layout.with-opened {
+  grid-template-columns: 140px 1fr 1fr;
+}
+
+/* ============================================
+   SIDEBAR - FOLDERS
+   ============================================ */
+.msg-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.msg-folder-btn {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  color: #a0a0b8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.msg-folder-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e0e0e0;
+}
+
+.msg-folder-btn.active {
+  color: #ffffff;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ============================================
+   CONTENT
+   ============================================ */
+.msg-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Toolbar */
+.msg-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+/* Checkbox */
+.msg-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.msg-checkbox-wrapper input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #203855;
+  cursor: pointer;
+}
+
+/* Delete Button */
+.msg-btn-delete {
+  background: transparent;
+  border: none;
+  color: #a0a0b8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.msg-btn-delete:hover:not(:disabled) {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.msg-btn-delete:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Search */
+.msg-search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.msg-search-wrapper .msg-search-icon {
+  position: absolute;
+  left: 12px;
+  font-size: 18px !important;
+  color: #6c7a89;
+  pointer-events: none;
+}
+
+.msg-search {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+  padding: 8px 12px 8px 38px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.msg-search:focus {
+  border-color: #203855;
+}
+
+.msg-search::placeholder {
+  color: #6c7a89;
+}
+
+/* New Message Button */
+.msg-btn-new {
+  background: #1a782e;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.msg-btn-new:hover {
+  background: #22963a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
+}
+
+/* ============================================
+   MESSAGES LIST
+   ============================================ */
+.msg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  max-height: 500px;
+}
+
+.msg-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #2A2A2A;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.msg-row:hover {
+  background: #333;
+  border-color: #203855;
+}
+
+.msg-row.unread {
+  background: #1a2535;
+  border-left: 3px solid #4a90d9;
+}
+
+.msg-row.selected {
+  background: #203855;
+  border-color: #4a7a9f;
+}
+
+.msg-row.opened {
+  background: #203855;
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 1px #4a90d9;
+}
+
+/* Avatar στη λίστα */
+.msg-row-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.msg-row-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.msg-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.msg-row-sender {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-row.unread .msg-row-sender {
+  color: #ffffff;
+}
+
+.msg-row-date {
+  font-size: 11px;
+  color: #6c7a89;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.msg-row-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.msg-row-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-row.unread .msg-row-title {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.msg-row-preview {
+  font-size: 12px;
+  color: #6c7a89;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Empty State */
+.msg-empty {
+  text-align: center;
+  color: #6c7a89;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
+/* ============================================
+   MESSAGE DETAIL PANEL (3η στήλη - Chat style)
+   ============================================ */
+.msg-detail-panel {
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: 650px;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Header του detail panel */
+.msg-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.msg-detail-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.msg-detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.msg-detail-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-detail-username {
+  font-size: 12px;
+  color: #6c7a89;
+}
+
+.msg-btn-close-detail {
+  background: transparent;
+  border: none;
+  color: #6c7a89;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.msg-btn-close-detail:hover {
+  background: #2A2A2A;
+  color: #e74c3c;
+}
+
+.msg-btn-close-detail svg {
+  font-size: 20px !important;
+}
+
+/* Subject */
+.msg-detail-subject {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  padding-bottom: 4px;
+}
+
+.msg-detail-date {
+  font-size: 12px;
+  color: #6c7a89;
+  margin-top: -8px;
+}
+
+/* Body - Chat bubble */
+.msg-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 0;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 120px;
+}
+
+.msg-bubble {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.msg-bubble.incoming {
+  align-self: flex-start;
+}
+
+.msg-bubble-text {
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e0e0e0;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.msg-bubble.incoming .msg-bubble-text {
+  background: #2A2A2A;
+  border-top-left-radius: 4px;
+}
+
+.msg-bubble-time {
+  font-size: 10px;
+  color: #6c7a89;
+  padding: 0 4px;
+}
+
+.msg-bubble.incoming .msg-bubble-time {
+  align-self: flex-start;
+}
+
+/* Loading */
+.msg-detail-loading {
+  text-align: center;
+  color: #6c7a89;
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* Reply Box */
+.msg-reply-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid #2A2A2A;
+  margin-top: auto;
+}
+
+.msg-reply-input {
+  width: 100%;
+  background: #2A2A2A;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s;
+}
+
+.msg-reply-input:focus {
+  border-color: #203855;
+}
+
+.msg-reply-input::placeholder {
+  color: #6c7a89;
+}
+
+.msg-btn-send-reply {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #1a782e;
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  align-self: flex-end;
+}
+
+.msg-btn-send-reply:hover:not(:disabled) {
+  background: #22963a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
+}
+
+.msg-btn-send-reply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.msg-btn-send-reply svg {
+  font-size: 16px !important;
+}
+
+/* ============================================
+   MESSAGE ACTION BUTTONS (Junk / Restore)
+   ============================================ */
+.msg-btn-action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.msg-btn-action svg {
+  font-size: 20px !important;
+}
+
+/* Junk - κίτρινο */
+.msg-btn-action.junk {
+  color: #a0a0b8;
+}
+
+.msg-btn-action.junk:hover {
+  background: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+/* Unjunk - πράσινο */
+.msg-btn-action.unjunk {
+  color: #a0a0b8;
+}
+
+.msg-btn-action.unjunk:hover {
+  background: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+/* Restore - μπλε */
+.msg-btn-action.restore {
+  color: #a0a0b8;
+}
+
+.msg-btn-action.restore:hover {
+  background: rgba(74, 144, 217, 0.15);
+  color: #4a90d9;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1100px) {
+  .msg-layout.with-opened {
+    grid-template-columns: 120px 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Σε tablet: folders οριζόντια, detail panel κάτω */
+  .msg-layout,
+  .msg-layout.with-opened {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .msg-sidebar {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2A2A2A;
+  }
+
+  .msg-folder-btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .msg-detail-panel {
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .msg-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .msg-btn-new {
+    width: 100%;
+  }
+
+  .msg-search-wrapper {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .msg-row {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .msg-row-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .msg-row-title {
+    font-size: 13px;
+  }
+
+  .msg-row-sender {
+    font-size: 12px;
+  }
+
+  .msg-btn-new {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .msg-bubble {
+    max-width: 95%;
+  }
+
+  .msg-btn-action svg {
+    font-size: 18px !important;
+  }
+}

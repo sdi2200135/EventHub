@@ -96,7 +96,7 @@
   gap: 16px;
 }
 
-.form-row {
+.new-message-form-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -104,11 +104,11 @@
   border-bottom: 1px solid #2A2A2A;
 }
 
-.form-row:last-of-type {
+.new-message-form-row:last-of-type {
   border-bottom: none;
 }
 
-.form-row label {
+.new-message-form-row label {
   min-width: 80px;
   font-size: 14px;
   font-weight: 600;
@@ -117,8 +117,8 @@
   letter-spacing: 0.5px;
 }
 
-.form-row input,
-.form-row textarea {
+.new-message-form-row input,
+.new-message-form-row textarea {
   flex: 1;
   background: transparent;
   border: none;
@@ -129,29 +129,29 @@
   padding: 8px 0;
 }
 
-.form-row input::placeholder,
-.form-row textarea::placeholder {
+.new-message-form-row input::placeholder,
+.new-message-form-row textarea::placeholder {
   color: #6c7a89;
 }
 
-.form-row textarea {
+.new-message-form-row textarea {
   resize: vertical;
   min-height: 200px;
   line-height: 1.6;
 }
 
 /* Body row - textarea κάτω από label */
-.body-row {
+.new-message-body-row {
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
 }
 
-.body-row label {
+.new-message-body-row label {
   min-width: auto;
 }
 
-.body-row textarea {
+.new-message-body-row textarea {
   background: #1a1a1a;
   border: 1px solid #2A2A2A;
   border-radius: 8px;
@@ -159,7 +159,7 @@
   transition: border-color 0.2s;
 }
 
-.body-row textarea:focus {
+.new-message-body-row textarea:focus {
   border-color: #203855;
 }
 
@@ -175,7 +175,7 @@
   border-top: 1px solid #2A2A2A;
 }
 
-.btn-cancel {
+.new-message-btn-cancel {
   background: #2A2A2A;
   color: #e0e0e0;
   border: 1px solid #3A3A3A;
@@ -188,16 +188,16 @@
   font-family: inherit;
 }
 
-.btn-cancel:hover:not(:disabled) {
+.new-message-btn-cancel:hover:not(:disabled) {
   background: #3A3A3A;
 }
 
-.btn-cancel:disabled {
+.new-message-btn-cancel:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-send {
+.new-message-btn-send {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -213,92 +213,27 @@
   font-family: inherit;
 }
 
-.btn-send:hover:not(:disabled) {
+.new-message-btn-send:hover:not(:disabled) {
   background: #22963a;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
 }
 
-.btn-send:disabled {
+.new-message-btn-send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.btn-send svg {
+.new-message-btn-send svg {
   font-size: 18px !important;
-}
-
-/* ============================================
-   LOADING
-   ============================================ */
-.new-message-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 0;
-  color: #6c7a89;
-}
-
-.new-message-loading .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #333;
-  border-top: 3px solid #4a90d9;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 768px) {
-  .new-message-page {
-    padding: 24px 16px;
-  }
-
-  .new-message-container {
-    padding: 20px;
-  }
-
-  .new-message-header h1 {
-    font-size: 18px;
-  }
-
-  .form-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 6px;
-  }
-
-  .form-row label {
-    min-width: auto;
-    font-size: 12px;
-  }
-
-  .new-message-actions {
-    flex-direction: column-reverse;
-  }
-
-  .btn-cancel,
-  .btn-send {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 /* ============================================
    SAVE AS DRAFT BUTTON
    ============================================ */
-.btn-save-draft {
+.new-message-btn-save-draft {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -315,32 +250,18 @@
   white-space: nowrap;
 }
 
-.btn-save-draft:hover:not(:disabled) {
+.new-message-btn-save-draft:hover:not(:disabled) {
   background: #3A3A3A;
   border-color: #4A4A4A;
 }
 
-.btn-save-draft:disabled {
+.new-message-btn-save-draft:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-save-draft svg {
+.new-message-btn-save-draft svg {
   font-size: 16px !important;
-}
-
-/* Responsive update - 3 κουμπιά */
-@media (max-width: 768px) {
-  .new-message-actions {
-    flex-direction: column-reverse;
-  }
-
-  .btn-cancel,
-  .btn-save-draft,
-  .btn-send {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 /* ============================================
@@ -385,4 +306,43 @@
   color: #a0a0b8;
   margin: 0;
   line-height: 1.5;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .new-message-page {
+    padding: 24px 16px;
+  }
+
+  .new-message-container {
+    padding: 20px;
+  }
+
+  .new-message-header h1 {
+    font-size: 18px;
+  }
+
+  .new-message-form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .new-message-form-row label {
+    min-width: auto;
+    font-size: 12px;
+  }
+
+  .new-message-actions {
+    flex-direction: column-reverse;
+  }
+
+  .new-message-btn-cancel,
+  .new-message-btn-save-draft,
+  .new-message-btn-send {
+    width: 100%;
+    justify-content: center;
+  }
 }

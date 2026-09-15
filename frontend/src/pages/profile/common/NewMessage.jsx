@@ -161,7 +161,7 @@ const NewMessage = () => {
   // ============================================
   // SUBMIT (Send)
   // ============================================
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -297,13 +297,13 @@ const NewMessage = () => {
           </div>
         )}
 
-                {error && (
+        {error && (
           <div className="new-message-error">
             {error}
           </div>
         )}
 
-        {/* ← ΝΕΟ: Warning όταν δεν υπάρχουν recipients */}
+        {/* Warning όταν δεν υπάρχουν recipients */}
         {recipients.length === 0 && mode === 'new' && !loadingOriginal && (
           <div className="new-message-warning">
             <span className="warning-icon">⚠️</span>
@@ -318,7 +318,7 @@ const NewMessage = () => {
         )}
 
         <form className="new-message-form" onSubmit={handleSubmit}>
-                    <div className="form-row">
+          <div className="new-message-form-row">
             <label htmlFor="recipient">To:</label>
             <input
               type="text"
@@ -348,7 +348,7 @@ const NewMessage = () => {
             </datalist>
           </div>
 
-          <div className="form-row">
+          <div className="new-message-form-row">
             <label htmlFor="subject">Subject:</label>
             <input
               type="text"
@@ -360,7 +360,7 @@ const NewMessage = () => {
             />
           </div>
 
-          <div className="form-row body-row">
+          <div className="new-message-form-row new-message-body-row">
             <label htmlFor="body">Message:</label>
             <textarea
               id="body"
@@ -372,10 +372,10 @@ const NewMessage = () => {
             />
           </div>
 
-                    <div className="new-message-actions">
+          <div className="new-message-actions">
             <button
               type="button"
-              className="btn-cancel"
+              className="new-message-btn-cancel"
               onClick={handleCancel}
               disabled={loading || savingDraft}
             >
@@ -383,7 +383,7 @@ const NewMessage = () => {
             </button>
             <button
               type="button"
-              className="btn-save-draft"
+              className="new-message-btn-save-draft"
               onClick={handleSaveDraft}
               disabled={
                 loading ||
@@ -397,7 +397,7 @@ const NewMessage = () => {
             </button>
             <button
               type="submit"
-              className="btn-send"
+              className="new-message-btn-send"
               disabled={
                 loading ||
                 savingDraft ||

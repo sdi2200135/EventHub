@@ -22,12 +22,12 @@ const MessageView = () => {
         setLoading(true);
         const response = await messageService.getMessage(id);
         setMessage(response.data);
-        
+
         // Σήμανση ως read αν είναι unread
         if (!response.data.is_read) {
           await messageService.markAsRead(id);
         }
-        
+
         setError(null);
       } catch (err) {
         console.error('Error fetching message:', err);
@@ -105,13 +105,13 @@ const MessageView = () => {
           </button>
           <h1>Message</h1>
           <div className="message-view-actions">
-            <button className="btn-action" onClick={handleReply} title="Reply">
+            <button className="message-view-btn-action" onClick={handleReply} title="Reply">
               <ReplyIcon /> Reply
             </button>
-            <button className="btn-action" onClick={handleForward} title="Forward">
+            <button className="message-view-btn-action" onClick={handleForward} title="Forward">
               <ForwardIcon /> Forward
             </button>
-            <button className="btn-action delete" onClick={handleDelete} title="Delete">
+            <button className="message-view-btn-action delete" onClick={handleDelete} title="Delete">
               <DeleteIcon /> Delete
             </button>
           </div>
@@ -121,12 +121,12 @@ const MessageView = () => {
         <div className="message-view-content">
           {/* Sender Info */}
           <div className="message-view-sender">
-            <div className="sender-avatar-large">
+            <div className="message-view-sender-avatar">
               {message.sender_name?.charAt(0) || 'U'}
             </div>
-            <div className="sender-info">
-              <div className="sender-name-large">{message.sender_name}</div>
-              <div className="sender-username">@{message.sender_username}</div>
+            <div className="message-view-sender-info">
+              <div className="message-view-sender-name">{message.sender_name}</div>
+              <div className="message-view-sender-username">@{message.sender_username}</div>
             </div>
             <div className="message-date-large">
               {formatDate(message.created_at)}
@@ -148,7 +148,7 @@ const MessageView = () => {
             <div className="message-view-attachments">
               <h4>Attachments</h4>
               {message.attachments.map((att, index) => (
-                <a key={index} href={att.url} className="attachment-item">
+                <a key={index} href={att.url} className="message-view-attachment-item">
                   📎 {att.name}
                 </a>
               ))}
@@ -158,10 +158,10 @@ const MessageView = () => {
 
         {/* Footer Actions */}
         <div className="message-view-footer">
-          <button className="btn-action-secondary" onClick={handleReply}>
+          <button className="message-view-btn-action-secondary" onClick={handleReply}>
             <ReplyIcon /> Reply
           </button>
-          <button className="btn-action-secondary" onClick={handleForward}>
+          <button className="message-view-btn-action-secondary" onClick={handleForward}>
             <ForwardIcon /> Forward
           </button>
         </div>
