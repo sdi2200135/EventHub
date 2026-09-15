@@ -9,6 +9,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
 import './EventDetails.css';
 import BookTicket from '../../components/BookTicket';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 // Διόρθωση για τα εικονίδια του Leaflet (χρειάζεται για να δουλέψει με React)
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -36,6 +37,7 @@ const EventDetails = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -157,13 +159,28 @@ const EventDetails = () => {
     setSelectedTicket(null);
   };
 
+  // ============================================
+  // CAROUSEL HANDLERS
+  // ============================================
+  const photos = event?.photos || [];
+  const hasMultiplePhotos = photos.length > 1;
+
+  const goToPrevPhoto = () => {
+    setCurrentPhotoIndex(prev => (prev === 0 ? photos.length - 1 : prev - 1));
+  };
+
+  const goToNextPhoto = () => {
+    setCurrentPhotoIndex(prev => (prev === photos.length - 1 ? 0 : prev + 1));
+  };
+
+  const goToPhoto = (index) => {
+    setCurrentPhotoIndex(index);
+  };
+
+  const currentPhoto = photos[currentPhotoIndex];
+
   if (loading) {
-    return (
-      <div className="event-details-loading">
-        <AutorenewIcon className="loading-icon-spin" />
-        <p>Loading event...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading event..." fullHeight />;
   }
 
   if (error || !event) {
@@ -182,8 +199,53 @@ const EventDetails = () => {
         {/* ΑΡΙΣΤΕΡΗ ΣΤΗΛΗ: Εικόνα + When + Where */}
         <div className="event-left-column">
           <div className="event-image-wrapper">
-            {event.photos && event.photos.length > 0 ? (
-              <img src={event.photos[0].image} alt={event.title} />
+            {photos.length > 0 ? (
+              <>
+                <img
+                  src={currentPhoto?.image}
+                  alt={currentPhoto?.caption || event.title}
+                  className="carousel-image"
+                />
+
+                {hasMultiplePhotos && (
+                  <>
+                    {/* Αριστερό βελάκι */}
+                    <button
+                      className="carousel-arrow carousel-arrow-left"
+                      onClick={goToPrevPhoto}
+                      aria-label="Previous photo"
+                    >
+                      ‹
+                    </button>
+
+                    {/* Δεξί βελάκι */}
+                    <button
+                      className="carousel-arrow carousel-arrow-right"
+                      onClick={goToNextPhoto}
+                      aria-label="Next photo"
+                    >
+                      ›
+                    </button>
+
+                    {/* Dots indicators */}
+                    <div className="carousel-dots">
+                      {photos.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`carousel-dot ${idx === currentPhotoIndex ? 'active' : ''}`}
+                          onClick={() => goToPhoto(idx)}
+                          aria-label={`Go to photo ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Counter (προαιρετικό) */}
+                    <div className="carousel-counter">
+                      {currentPhotoIndex + 1} / {photos.length}
+                    </div>
+                  </>
+                )}
+              </>
             ) : (
               <div className="event-image-placeholder">🎉</div>
             )}

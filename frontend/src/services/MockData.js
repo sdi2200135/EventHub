@@ -320,7 +320,9 @@ export const mockEvents = [
       { id: 8, user_id: 5, status: 'CONFIRMED', quantity: 1 }
     ],
     photos: [
-      { id: 1, image: 'https://picsum.photos/seed/concert/400/300', caption: 'Concert stage' }
+      { id: 1, image: 'https://picsum.photos/seed/concert/400/300', caption: 'Concert stage' },
+      { id: 2, image: 'https://picsum.photos/seed/concert2/400/300', caption: 'Crowd' },
+      { id: 3, image: 'https://picsum.photos/seed/concert3/400/300', caption: 'Live band' }
     ]
   },
   // ... (τα υπόλοιπα events με τις προσθήκες bookings)
