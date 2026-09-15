@@ -6,6 +6,7 @@ import { eventService, bookingService } from '../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import './BookingPage.css';
+import LoadingSpinner from '../../components/common/LoadingSpinner'; 
 
 const BookingPage = () => {
   const { id } = useParams();
@@ -228,12 +229,7 @@ const BookingPage = () => {
   // 9. ΦΟΡΤΩΣΗ
   // ============================================
   if (authLoading || loading) {
-    return (
-      <div className="booking-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading booking details...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading booking details..." />;
   }
 
   // ============================================

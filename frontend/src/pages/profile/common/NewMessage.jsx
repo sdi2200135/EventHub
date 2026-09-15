@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveIcon from '@mui/icons-material/Save';
 import './NewMessage.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const NewMessage = () => {
   const navigate = useNavigate();
@@ -261,10 +262,7 @@ const NewMessage = () => {
     return (
       <div className="new-message-page">
         <div className="new-message-container">
-          <div className="new-message-loading">
-            <div className="loading-spinner"></div>
-            <p>Loading message...</p>
-          </div>
+          <LoadingSpinner message="Loading message..." />
         </div>
       </div>
     );

@@ -11,6 +11,7 @@ import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import '../common/Dashboard.css';
 import MyBookings from './MyBookings';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const ParticipantDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -523,7 +524,7 @@ const MessagesLayout = ({
         </div>
 
         {loading ? (
-          <p className="messages-empty">Loading messages...</p>
+          <LoadingSpinner message="Loading messages..." />
         ) : messages.length === 0 ? (
           <p className="messages-empty">No messages in {activeFolder}.</p>
         ) : (

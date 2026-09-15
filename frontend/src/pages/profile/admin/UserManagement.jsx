@@ -7,6 +7,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import './UserManagement.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -168,12 +169,7 @@ const UserManagement = () => {
   // LOADING / ERROR
   // ============================================
   if (loading) {
-    return (
-      <div className="um-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading users...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading users..." />;
   }
 
   if (error) {

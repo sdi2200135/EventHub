@@ -5,6 +5,7 @@ import { eventService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import './MyEvents.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const MyEvents = ({ user }) => {
   const navigate = useNavigate();
@@ -174,12 +175,7 @@ const MyEvents = ({ user }) => {
   // LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="my-events-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading events...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading events..." />;
   }
 
   if (error) {

@@ -9,6 +9,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './EventsPage.css';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -505,7 +506,7 @@ const EventsPage = () => {
 
         {/* Results */}
         {loading ? (
-          <div className="loading-state">Loading events...</div>
+          <LoadingSpinner message="Loading events..." />
         ) : filteredEvents.length === 0 ? (
           <div className="empty-state">
             <p>No events found matching your criteria.</p>

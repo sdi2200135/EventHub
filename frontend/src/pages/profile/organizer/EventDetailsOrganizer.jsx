@@ -9,6 +9,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import './EventDetailsOrganizer.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const EventDetailsOrganizer = () => {
   const { id } = useParams();
@@ -145,12 +146,7 @@ const EventDetailsOrganizer = () => {
   // RENDER
   // ============================================
   if (loading) {
-    return (
-      <div className="ed-organizer-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading event...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading event..." />;
   }
 
   if (error || !event) {

@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventService } from '../../../services/api';
 import './Reservations.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const Reservations = ({ user }) => {
   const navigate = useNavigate();
@@ -60,12 +61,7 @@ const Reservations = ({ user }) => {
   // LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="reservations-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading reservations...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading reservations..." />;
   }
 
   if (error) {

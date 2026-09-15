@@ -6,6 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from '@mui/icons-material/Cancel';
 import './AdminEvents.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -224,12 +225,7 @@ const AdminEvents = () => {
   // LOADING / ERROR
   // ============================================
   if (loading) {
-    return (
-      <div className="ae-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading events...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading events..." />;
   }
 
   if (error) {

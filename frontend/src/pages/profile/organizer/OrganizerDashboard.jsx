@@ -12,6 +12,7 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import '../common/Dashboard.css';
 import MyEvents from './MyEvents';
 import Reservations from './Reservations';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const OrganizerDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -528,7 +529,7 @@ const MessagesLayout = ({
         </div>
 
         {loading ? (
-          <p className="messages-empty">Loading messages...</p>
+          <LoadingSpinner message="Loading messages..." />
         ) : messages.length === 0 ? (
           <p className="messages-empty">No messages in {activeFolder}.</p>
         ) : (

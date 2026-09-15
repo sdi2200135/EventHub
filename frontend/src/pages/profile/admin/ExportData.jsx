@@ -14,6 +14,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import './ExportData.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const ExportData = () => {
   const [events, setEvents] = useState([]);
@@ -66,12 +67,7 @@ const ExportData = () => {
   // LOADING / ERROR
   // ============================================
   if (loading) {
-    return (
-      <div className="export-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading data...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading data..." />;
   }
 
   if (error) {

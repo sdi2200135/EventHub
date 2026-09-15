@@ -7,6 +7,7 @@ import ReplyIcon from '@mui/icons-material/Reply';
 import ForwardIcon from '@mui/icons-material/Forward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import './MessageView.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const MessageView = () => {
   const { id } = useParams();
@@ -79,12 +80,7 @@ const MessageView = () => {
   };
 
   if (loading) {
-    return (
-      <div className="message-view-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading message...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading message..." />;
   }
 
   if (error || !message) {

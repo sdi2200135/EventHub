@@ -8,6 +8,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import EditIcon from '@mui/icons-material/Edit';
 import './CreateEvent.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const STEPS = [
   { id: 1, label: 'Event Details' },
@@ -1055,14 +1056,7 @@ const EditEvent = () => {
     return (
       <div className="create-event-page">
         <div className="create-event-container">
-          <div className="new-message-loading" style={{ padding: '60px 0', textAlign: 'center', color: '#6c7a89' }}>
-            <div className="loading-spinner" style={{
-              width: 40, height: 40, border: '3px solid #333',
-              borderTop: '3px solid #4a90d9', borderRadius: '50%',
-              animation: 'spin 1s linear infinite', margin: '0 auto 16px'
-            }}></div>
-            <p>Loading event...</p>
-          </div>
+          <LoadingSpinner message="Loading event..." />
         </div>
       </div>
     );

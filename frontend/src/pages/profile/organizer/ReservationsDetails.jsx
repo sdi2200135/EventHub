@@ -5,6 +5,7 @@ import { eventService, bookingService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import './ReservationsDetails.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const ReservationsDetails = () => {
   const { id } = useParams();
@@ -126,12 +127,7 @@ const ReservationsDetails = () => {
   // LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="rd-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading reservations...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading reservations..." />;
   }
 
   if (error || !event) {

@@ -8,6 +8,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import DeleteIcon from '@mui/icons-material/Delete';
 import './MyBookings.css';
+import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -101,12 +102,7 @@ const MyBookings = () => {
   // LOADING
   // ============================================
   if (loading) {
-    return (
-      <div className="my-bookings-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading your bookings...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Loading your bookings..." />;
   }
 
   // ============================================
