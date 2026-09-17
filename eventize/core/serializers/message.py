@@ -2,6 +2,7 @@
 from rest_framework import serializers
 
 from core.models import Message, Conversation
+from core.services.conv_mess import send_message
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -24,9 +25,11 @@ class MessageSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        conversation = validated_data['conversation']
-        sender = self.context['request'].user
-        receiver_id = conversation.attendee_id if sender.id == conversation.organizer_id else conversation.organizer_id
-        validated_data['sender'] = sender
-        validated_data['receiver_id'] = receiver_id
-        return super().create(validated_data)
+        try:
+            return send_message(
+                conversation_id=validated_data['conversation'].pk,
+                sender=self.context['request'].user,
+                body=validated_data['body'],
+            )
+        except Conversation.DoesNotExist:
+            raise serializers.ValidationError({'conversation': 'This conversation no longer exists.'})

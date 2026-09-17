@@ -56,12 +56,23 @@ class ConversationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'event': 'You must be the organizer or have a booking on this event to start a conversation.'})
         return attrs
 
-    # if the convo exists doeesn't create one pop up the existing one
+    # overide create func
     def create(self, validated_data):
         event = validated_data['event']
-        conversation, _ = Conversation.objects.get_or_create(
+        # if a conv between these people already exists don't create a second one use the existing one
+        conversation, created = Conversation.objects.get_or_create(
             event=event,
             attendee_id=validated_data['attendee_id'],
             defaults={'organizer': event.organizer},
         )
+        
+        # if someone has deleted the conv just use the existing one by just deleting the previous messages ( soft delete exists)
+        if not created:
+            user_id = self.context['request'].user.id
+            if user_id == conversation.organizer_id and conversation.deleted_by_organizer:
+                conversation.deleted_by_organizer = False
+                conversation.save(update_fields=['deleted_by_organizer'])
+            elif user_id == conversation.attendee_id and conversation.deleted_by_attendee:
+                conversation.deleted_by_attendee = False
+                conversation.save(update_fields=['deleted_by_attendee'])
         return conversation

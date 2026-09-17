@@ -16,6 +16,7 @@ def delete_conversation_for_organizer(*, conversation_id, user):
     if conv.deleted_by_attendee:
         conv.delete()
         return None
+    _delete_messages_for_user(conv, user)
     return conv
 
 @transaction.atomic
@@ -28,7 +29,15 @@ def delete_conversation_for_attendee(*, conversation_id, user):
     if conv.deleted_by_organizer:
         conv.delete()
         return None
+    _delete_messages_for_user(conv, user)
     return conv
+
+# in case a user deletes a conversation all the messages inside of it has to be deleted as well so mark all the conersaton's messages as deleted by the user
+# this happens so in case of getting a new message from the same user and the conv is brought back casue of soft delete the old messages won't appear
+def _delete_messages_for_user(conv, user):
+    conv.messages.filter(sender=user).update(deleted_by_sender=True)
+    conv.messages.filter(receiver=user).update(deleted_by_receiver=True)
+    conv.messages.filter(deleted_by_sender=True, deleted_by_receiver=True).delete()
 
 
 @transaction.atomic
@@ -54,3 +63,14 @@ def delete_message_for_receiver(*, message_id, user):
         mess.delete()
         return None
     return mess
+
+# func to send a message with lock due to race condition
+@transaction.atomic
+def send_message(*, conversation_id, sender, body):
+    conv = Conversation.objects.select_for_update().get(pk=conversation_id)
+    if conv.deleted_by_organizer or conv.deleted_by_attendee:
+        conv.deleted_by_organizer = False
+        conv.deleted_by_attendee = False
+        conv.save(update_fields=['deleted_by_organizer', 'deleted_by_attendee'])
+    receiver_id = conv.attendee_id if sender.id == conv.organizer_id else conv.organizer_id
+    return Message.objects.create(conversation=conv, sender=sender, receiver_id=receiver_id, body=body)

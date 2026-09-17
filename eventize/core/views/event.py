@@ -10,10 +10,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.filters import EventFilter
-from core.models import Event, EventPhoto, EventView, Message, Conversation
+from core.models import Event, EventPhoto, EventView, Conversation
 from core.permissions import IsApprovedUser, IsEventOwnerOrReadOnly, IsOrganizer
 from core.serializers import EventDetailSerializer, EventListSerializer, EventWriteSerializer, EventPhotoSerializer
 from core.services.booking import cancel_event_bookings
+from core.services.conv_mess import send_message
 from core.services.event import (
     create_event,
     update_event,
@@ -134,10 +135,9 @@ class EventViewSet(viewsets.ModelViewSet):
                     defaults={'organizer': event.organizer},
                     event=event,
                 )
-                Message.objects.create(
+                send_message(
+                    conversation_id=conversation.pk,
                     sender=event.organizer,
-                    receiver_id=attendee_id,
-                    conversation=conversation,
                     body=f'The event "{event.title}" scheduled for {event.start_datetime} has been cancelled.',
                 )
 

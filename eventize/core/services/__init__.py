@@ -36,6 +36,7 @@ from .conv_mess import (
     delete_conversation_for_attendee,
     delete_message_for_sender,
     delete_message_for_receiver,
+    send_message,
 )
 
 __all__ = [
@@ -73,4 +74,5 @@ __all__ = [
     'delete_conversation_for_attendee',
     'delete_message_for_sender',
     'delete_message_for_receiver',
+    'send_message',
 ]
