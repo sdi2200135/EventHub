@@ -1,4 +1,6 @@
 # core/serializers/event.py
+
+from django.utils import timezone
 from rest_framework import serializers
 
 from core.models import Category, Event
@@ -76,4 +78,9 @@ class EventWriteSerializer(serializers.ModelSerializer):
         end = attrs.get('end_datetime', getattr(self.instance, 'end_datetime', None))
         if start and end and end <= start:
             raise serializers.ValidationError({'end_datetime': 'Must be after start_datetime.'})
+
+        # check start date time to not be in the past
+        if 'start_datetime' in attrs and start < timezone.now():
+            raise serializers.ValidationError({'start_datetime': 'It cannot be in the past.'})
+            
         return attrs

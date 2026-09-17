@@ -62,6 +62,18 @@ class BookingAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     search_fields = ('booking_id', 'attendee__username')
 
+    # dont let the admin create change or delete a booking as only a customer can do it
+    readonly_fields = tuple(f.name for f in Booking._meta.fields)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class MessageInline(admin.TabularInline):
     model = Message

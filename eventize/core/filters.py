@@ -15,7 +15,7 @@ class EventFilter(django_filters.FilterSet):
 
     class Meta:
         model = Event
-        fields = ['category', 'city', 'country', 'event_type', 'start_after', 'start_before', 'min_price', 'max_price']
+        fields = ['category','organizer', 'city', 'country', 'event_type', 'start_after', 'start_before', 'min_price', 'max_price']
 
     def noop(self, queryset, name, value):
         return queryset

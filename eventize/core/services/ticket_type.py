@@ -1,6 +1,7 @@
 # core/services/ticket_type.py
 from django.db import transaction
 from django.db.models import Sum
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from core.models import TicketType, Event
 from core.utils import generate_id
@@ -38,6 +39,10 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
     if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
         raise EventNotEditableError(f"Can't modify ticket types when event is in '{event.status}' status. Only draft or published events can be modified.") 
 
+    # an event which has started is frozen, no changes applied
+    if event.start_datetime <= timezone.now():
+        raise EventNotEditableError("This event has already started, its ticket types cannot be changed.")
+
     # calc the total num of ticket types that already exist(with an SQL query)
     other_total = event.ticket_types.aggregate(total = Sum('quantity'))['total'] or 0
 
@@ -68,6 +73,10 @@ def update_ticket_type(*, ticket_type_id, user, **validated_data):
 
     if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
         raise EventNotEditableError(f"Cannot modify ticket types when event is in '{event.status}' status. Only draft or published events can be modified.")
+
+    # an event which has started is frozen, no changes applied
+    if event.start_datetime <= timezone.now():
+        raise EventNotEditableError("This event has already started, its ticket types cannot be changed.")
 
     # check if the amount of tickets the user is trying to reduce is more than the reserved tickets
     new_quantity = validated_data.get('quantity')
@@ -104,6 +113,10 @@ def delete_ticket_type(*, ticket_type_id, user):
     if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
             raise EventNotEditableError(f"Cannot modify ticket types when event is in '{event.status}' status."
                                         "Only published or draft events can be modified.")
+
+    # an event which has started is frozen, no changes applied
+    if event.start_datetime <= timezone.now():
+        raise EventNotEditableError("This event has already started, its ticket types cannot be changed.")
 
     # check if there are any bookings to avoid delete
     if ticket_type.bookings.exists():

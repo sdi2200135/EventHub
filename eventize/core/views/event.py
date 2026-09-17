@@ -98,6 +98,10 @@ class EventViewSet(viewsets.ModelViewSet):
             # check for the state of event
             if event.status != Event.EventStatus.DRAFT:
                 return Response({'detail': 'Only draft events can be published'}, status = 400)
+            
+            # publishing an event that has already started -> no point
+            if event.start_datetime <= timezone.now():
+                return Response({'detail': 'This event has already started, it cannot be published.'}, status = 400)
 
             # check for valid number of tickets and existing ticket types
             total_quantity = event.ticket_types.aggregate(total=Sum('quantity'))['total'] or 0
@@ -147,6 +151,11 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='photos', permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def add_photo(self, request, pk=None):
         event = self.get_object()
+
+        # an event which has started is frozen, no changes applied
+        if event.start_datetime <= timezone.now():
+            return Response({'detail': 'This event has already started, its photos cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = EventPhotoSerializer(data=request.data, context={'event': event, 'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -156,6 +165,11 @@ class EventViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['delete'], url_path=r'photos/(?P<photo_id>\d+)',permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def delete_photo(self, request, pk=None, photo_id=None):
         event = self.get_object()
+
+        # an event which has started is frozen, no changes applied
+        if event.start_datetime <= timezone.now():
+            return Response({'detail': 'This event has already started, its photos cannot be changed.'}, status=status.HTTP_400_BAD_REQUEST)
+
         photo = get_object_or_404(EventPhoto, pk=photo_id, event=event)
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

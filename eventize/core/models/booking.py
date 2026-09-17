@@ -5,7 +5,6 @@ from django.core.validators import MinValueValidator
 from .user import User
 from .event import Event
 from .ticket_type import TicketType
-from django.utils import timezone
 
 class Booking(models.Model):
     class BookingStatus(models.TextChoices):
@@ -61,10 +60,10 @@ class Booking(models.Model):
 
         if not self.pk and self.event_id:
             # the event is not published doesn't accept bookings
-            if self.event.status != Event.EventStatus.PUBLISHED:
+            if not self.event.is_published:
                 errors['event'] = 'This event is not accepting bookings.'
             # no bookings, it has already began
-            elif self.event.start_datetime <= timezone.now():
+            elif not self.event.is_active:
                 errors['event'] = 'This event has already started.'
 
         # not available tickets to purchase
