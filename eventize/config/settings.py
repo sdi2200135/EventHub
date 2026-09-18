@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
@@ -21,11 +22,9 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-fn9ys*irh2q-zkvpmezmath(tr^p&)fl9mb$_+-j-s8%iwkkef'
+SECRET_KEY = os.environ['SECRET_KEY']
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -78,7 +77,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 # new Database (neon  sahred db)
-import os
 import dj_database_url
 
 
