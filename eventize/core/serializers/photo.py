@@ -25,7 +25,7 @@ class EventPhotoSerializer(serializers.ModelSerializer):
         event = self.context.get('event')
         # check max number of images per event which is 20
         if self.instance is None and event and event.photos.count() >= 20:
-            raise serializers.ValidationError({'image': f'The max number of photos per event is:{MAX_PHOTOS_PER_EVENT}.'})
+            raise serializers.ValidationError({'image': f'The max number of photos per event is:{20}.'})
         return attrs
 
     def create(self, validated_data):

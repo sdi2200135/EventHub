@@ -1,5 +1,5 @@
 # core/urls.py
-from django.urls import include, path
+from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
 
 from core.views import (
@@ -8,6 +8,7 @@ from core.views import (
     ConversationViewSet,
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
+    EventExportView,
     EventViewSet,
     MeView,
     MessageViewSet,
@@ -30,5 +31,6 @@ urlpatterns = [
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='login'),
     path('auth/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('auth/me/', MeView.as_view(), name='me'),
+    re_path(r'^admin/events/export/(?P<file_format>xml|json)/$', EventExportView.as_view(), name='admin-event-export'),
     path('', include(router.urls)),
 ]

@@ -120,6 +120,3 @@ def get_booking_queryset(user): #returns the queryset of bookings that a user ca
     return Booking.objects.filter(  #attendee can see his own, organizer can see the ones in the events he organizes
         models.Q(attendee=user) | models.Q(event__organizer=user)
     )
-
-def send_booking_confirmation(booking):
-    pass 

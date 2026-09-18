@@ -39,6 +39,13 @@ from .conv_mess import (
     send_message,
 )
 
+from .export import (
+    get_exportable_events,
+    build_events_data,
+    events_to_xml,
+    events_to_json,
+)
+
 __all__ = [
     # Ticket Type services
     'create_ticket_type',
@@ -75,4 +82,10 @@ __all__ = [
     'delete_message_for_sender',
     'delete_message_for_receiver',
     'send_message',
+
+    # Export services
+    'get_exportable_events',
+    'build_events_data',
+    'events_to_xml',
+    'events_to_json',
 ]
