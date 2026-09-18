@@ -59,10 +59,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
             f"Not enough tickets available."
             f"Requested: {number_of_tickets}, Available: {ticket_type.available}"
         )
-    reserve_tickets(    #increases the reserved count for the ticket type
-        ticket_type_id=ticket_type.id,
-        quantity=number_of_tickets
-    )
+
     total_cost = ticket_type.price*number_of_tickets
     booking = Booking.objects.create(
         booking_id=generate_id(Booking, 'booking_id', 'BK'),
@@ -95,12 +92,11 @@ def confirm_booking(*, booking_id,event_id, user):
             f"Event '{event.title}' is not active."
             f"Status: {event.status}, Start: {event.start_datetime}"
         )
-    ticket_type = booking.ticket_type
-    if ticket_type.available < booking.number_of_tickets: #check if the available tickets changed since the booking was made
-        raise SoldOutError(
-            f"Not enough tickets available."
-            f"Requested: {booking.number_of_tickets}, Available: {ticket_type.available}"
-        )
+    # the final reservation of ticket takes place after the confirmation of booking
+    reserve_tickets(
+        ticket_type_id=booking.ticket_type_id,
+        quantity=booking.number_of_tickets
+    )
 
     booking.status = Booking.BookingStatus.CONFIRMED
     booking.save()
