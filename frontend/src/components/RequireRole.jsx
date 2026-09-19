@@ -7,17 +7,24 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 /**
  * Προστατεύει routes βάσει ρόλου χρήστη.
  *
+ * Μοντέλο 2 ρόλων:
+ *   - USER  → μπορεί να δημιουργεί events ΚΑΙ να κάνει κρατήσεις.
+ *             Δεν υπάρχει διάκριση organizer/participant.
+ *   - ADMIN → ό,τι ο USER + admin tools (User Management, Export, κλπ.)
+ *
  * Χρήση:
- *   <RequireRole roles={['ORGANIZER']}>
+ *   <RequireRole roles={['USER']}>
  *     <CreateEvent />
  *   </RequireRole>
  *
+ *   <RequireRole roles={['ADMIN']}>
+ *     <AdminDashboard />
+ *   </RequireRole>
+ *
  * Κανόνες:
- *  - Αν δεν είναι συνδεδεμένος → redirect στο /signin με ?redirect=...
- *  - Αν είναι συνδεδεμένος αλλά δεν έχει τον κατάλληλο ρόλο → redirect στο /
- *  - Ο admin έχει πάντα πρόσβαση (is_staff ή is_superuser)
- *  - Ο organizer έχει πρόσβαση μόνο σε organizer routes
- *  - Ο participant έχει πρόσβαση μόνο σε participant routes
+ *   - Αν δεν είναι συνδεδεμένος → redirect στο /signin με ?redirect=...
+ *   - Αν ο ρόλος του δεν είναι στη λίστα → redirect στο /
+ *   - Ο admin έχει πρόσβαση παντού (περνάει από κάθε roles check)
  */
 const RequireRole = ({ roles = [], children }) => {
   const { user, isAuthenticated, loading } = useAuth();
@@ -39,20 +46,21 @@ const RequireRole = ({ roles = [], children }) => {
     return <Navigate to={`/signin?redirect=${redirectUrl}`} replace />;
   }
 
-  // Προσδιορισμός ρόλου χρήστη
-  const isAdmin = user?.is_staff || user?.is_superuser;
-  const userRole = isAdmin
-    ? 'ADMIN'
-    : user?.role === 'ORGANIZER' || user?.user_type === 'organizer'
-    ? 'ORGANIZER'
-    : 'PARTICIPANT';
+  // ============================================
+  // Προσδιορισμός ρόλου χρήστη (2 ρόλοι μόνο)
+  // ============================================
+  const isAdmin =
+    user?.is_staff ||
+    user?.is_superuser ||
+    user?.role === 'ADMIN';
+
+  const userRole = isAdmin ? 'ADMIN' : 'USER';
 
   // Admin έχει πρόσβαση παντού
   if (isAdmin) return children;
 
-  // Έλεγχος αν ο ρόλος του χρήστη είναι στη λίστα
+  // Έλεγχος: ο ρόλος του χρήστη πρέπει να είναι στη λίστα
   if (roles.length > 0 && !roles.includes(userRole)) {
-    // Δεν έχει πρόσβαση → πίσω στην αρχική
     return <Navigate to="/" replace />;
   }
 
