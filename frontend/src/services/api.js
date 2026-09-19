@@ -18,6 +18,26 @@ import {
 const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ============================================
+// HELPER: Παίρνει τον τρέχοντα συνδεδεμένο mock user
+// ============================================
+// Σε MOCK mode, ο χρήστης που έχει κάνει login αποθηκεύεται
+// στο sessionStorage ως 'mock_user' (βλ. AuthContext.login).
+// Αυτός ο helper διαβάζει από εκεί ώστε τα API calls να
+// μην επιστρέφουν πάντα τον hardcoded participant (id: 3).
+const getCurrentMockUserId = () => {
+  try {
+    const saved = sessionStorage.getItem('mock_user');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed?.id != null) return parsed.id;
+    }
+  } catch (e) {
+    console.error('Error parsing mock_user:', e);
+  }
+  return null;
+};
+
+// ============================================
 // COMPUTED EVENT STATUS
 // ============================================
 // Αν ένα PUBLISHED event έχει end_datetime στο παρελθόν,
@@ -115,6 +135,18 @@ export const authService = {
   getProfile: async () => {
     if (USE_MOCK) {
       await delay();
+
+      // Διάβασε τον πραγματικό logged-in user από το sessionStorage
+      try {
+        const saved = sessionStorage.getItem('mock_user');
+        if (saved) {
+          return { data: JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.error('Error parsing mock_user:', e);
+      }
+
+      // Fallback στο legacy mockCurrentUser
       return { data: mockCurrentUser };
     }
     const response = await axios.get(`${API_BASE}/auth/me/`, {
@@ -128,12 +160,31 @@ export const authService = {
   updateProfile: async (data) => {
     if (USE_MOCK) {
       await delay();
-      Object.assign(mockCurrentUser, data);
-      const userIndex = mockUsers.findIndex(u => u.id === mockCurrentUser.id);
+      const uid = getCurrentMockUserId();
+      if (uid == null) throw new Error('No logged-in user');
+
+      // Update στον master πίνακα
+      const userIndex = mockUsers.findIndex(u => u.id === uid);
       if (userIndex !== -1) {
         Object.assign(mockUsers[userIndex], data);
       }
-      return { data: mockCurrentUser };
+
+      // Update στο sessionStorage (πηγή αλήθειας μετά το login)
+      try {
+        const saved = sessionStorage.getItem('mock_user');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          const updated = { ...parsed, ...data };
+          sessionStorage.setItem('mock_user', JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.error('Error updating sessionStorage:', e);
+      }
+
+      // Sync και το legacy mockCurrentUser
+      Object.assign(mockCurrentUser, data);
+
+      return { data: { id: uid, ...data } };
     }
     const response = await axios.patch(`${API_BASE}/auth/me/`, data, {
       headers: {
@@ -456,6 +507,7 @@ export const eventService = {
     });
     return response;
   },
+
   // Μέσα στο eventService, μετά το getOrganizerEvents:
   getAllEvents: async () => {
     if (USE_MOCK) {
@@ -502,6 +554,10 @@ export const bookingService = {
     if (USE_MOCK) {
       await delay();
       console.log('Mock booking created:', data);
+
+      // Πάρε τον πραγματικό logged-in user
+      const uid = getCurrentMockUserId();
+      if (uid == null) throw new Error('No logged-in user');
       
       const event = mockEvents.find(e => e.id === Number(data.event));
       let ticketType = null;
@@ -518,7 +574,7 @@ export const bookingService = {
         
         const newBooking = {
           id: mockBookings.length + 1,
-          user_id: 3,
+          user_id: uid,                                  // ← FIX: dynamic user
           event_id: data.event,
           ticket_type_id: data.ticket_type,
           quantity: data.quantity,
@@ -553,7 +609,12 @@ export const bookingService = {
   getMyBookings: async () => {
     if (USE_MOCK) {
       await delay();
-      const userBookings = mockBookings.filter(b => b.user_id === 3);
+
+      // Πάρε τον πραγματικό logged-in user
+      const uid = getCurrentMockUserId();
+      if (uid == null) return { data: [] };
+
+      const userBookings = mockBookings.filter(b => b.user_id === uid);
       return { data: userBookings };
     }
     const response = await axios.get(`${API_BASE}/bookings/me/`, {
@@ -828,7 +889,7 @@ export const messageService = {
       }
       const newMessage = {
         id: mockMessages.length + 1,
-        sender_id: data.sender_id || 3,
+        sender_id: data.sender_id || getCurrentMockUserId() || 3,
         sender_username: data.sender_username || 'user',
         sender_name: data.sender_name || 'User',
         recipient_id: data.recipient_id || 2,
@@ -888,7 +949,7 @@ export const messageService = {
       // Δημιούργησε νέο draft
       const newDraft = {
         id: mockMessages.length + 1,
-        sender_id: data.sender_id || 3,
+        sender_id: data.sender_id || getCurrentMockUserId() || 3,
         sender_username: data.sender_username || 'user',
         sender_name: data.sender_name || 'User',
         recipient_id: data.recipient_id || null,
@@ -928,7 +989,9 @@ export const messageService = {
     );
     return response;
   },
-    getRecipients: async (currentUserId = null) => {
+
+  // ← ΕΝΗΜΕΡΩΜΕΝΟ: Υποστηρίζει dual-role (organizer + participant)
+  getRecipients: async (currentUserId = null) => {
     if (USE_MOCK) {
       await delay(200);
 
@@ -940,8 +1003,8 @@ export const messageService = {
       const isOrganizer = currentUser.role === 'ORGANIZER';
       const allowedUserIds = new Set();
 
+      // ---- ORGANIZER SIDE: participants που έκλεισαν εισιτήρια σε δικά του events ----
       if (isOrganizer) {
-        // ---- ORGANIZER: βρες participants που έχουν κάνει booking σε δικά του events ----
         const myEventIds = mockEvents
           .filter(e => e.organizer?.id === currentUserId)
           .map(e => e.id);
@@ -951,19 +1014,19 @@ export const messageService = {
         );
 
         relevantBookings.forEach(b => allowedUserIds.add(b.user_id));
-      } else {
-        // ---- PARTICIPANT: βρες organizers των events στα οποία έχει κάνει booking ----
-        const myBookings = mockBookings.filter(b =>
-          b.user_id === currentUserId && b.status !== 'CANCELLED'
-        );
-
-        myBookings.forEach(b => {
-          const event = mockEvents.find(e => e.id === b.event_id);
-          if (event?.organizer?.id) {
-            allowedUserIds.add(event.organizer.id);
-          }
-        });
       }
+
+      // ---- PARTICIPANT SIDE: organizers των events που έχει κρατήσει ----
+      const myBookings = mockBookings.filter(b =>
+        b.user_id === currentUserId && b.status !== 'CANCELLED'
+      );
+
+      myBookings.forEach(b => {
+        const event = mockEvents.find(e => e.id === b.event_id);
+        if (event?.organizer?.id) {
+          allowedUserIds.add(event.organizer.id);
+        }
+      });
 
       // Φτιάξε τη λίστα recipients (εξαίρεσε τον εαυτό του + μόνο APPROVED users)
       const recipients = mockUsers
@@ -993,7 +1056,8 @@ export const messageService = {
     }
     return response;
   },
-    // ← ΝΕΟ: Mark as Junk
+
+  // ← ΝΕΟ: Mark as Junk
   markAsJunk: async (messageId) => {
     if (USE_MOCK) {
       await delay(200);
