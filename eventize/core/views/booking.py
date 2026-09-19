@@ -20,7 +20,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['event', 'status']
+    filterset_fields = ['event', 'status', 'attendee']
     permission_classes = [IsApprovedUser, IsBookingOwnerOrEventOrganizer]
 
     def get_queryset(self):

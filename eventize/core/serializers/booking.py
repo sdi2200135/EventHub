@@ -11,11 +11,12 @@ from core.services.booking import (
     TicketTypeMismatchError,
     BookingNotPendingError
 )
+from .user import UserPublicSerializer
 
 class BookingSerializer(serializers.ModelSerializer):
     #fields
     booking_id = serializers.CharField(read_only=True)
-    attendee = serializers.PrimaryKeyRelatedField(read_only=True)
+    attendee = UserPublicSerializer(read_only=True)
     total_cost = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     status = serializers.CharField(read_only=True)
 
