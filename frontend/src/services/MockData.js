@@ -20,7 +20,7 @@ export const mockUsers = [
     email: 'organizer@example.com',
     first_name: 'John',
     last_name: 'Organizer',
-    role: 'ORGANIZER',
+    role: 'USER',                              // ← ΑΛΛΑΓΗ (ήταν 'ORGANIZER')
     approval_status: 'APPROVED',
     phone: '6969696969',
     address: 'zografou',
@@ -48,7 +48,7 @@ export const mockUsers = [
     email: 'organizer2@example.com',
     first_name: 'Maria',
     last_name: 'Events',
-    role: 'ORGANIZER',
+    role: 'USER',                              // ← ΑΛΛΑΓΗ (ήταν 'ORGANIZER')
     approval_status: 'APPROVED',
     phone: '6977777777',
     address: 'Syntagma 5',
@@ -325,7 +325,6 @@ export const mockEvents = [
       { id: 3, image: 'https://picsum.photos/seed/concert3/400/300', caption: 'Live band' }
     ]
   },
-  // ... (τα υπόλοιπα events με τις προσθήκες bookings)
   // EVENT 2: COLOUR FESTIVAL
   {
     id: 2,
@@ -544,7 +543,7 @@ export const mockEvents = [
       { id: 7, image: 'https://picsum.photos/seed/comedy/400/300', caption: 'Comedy Club' }
     ]
   },
-    // ============================================
+  // ============================================
   // EVENT 8: DRAFT EVENT (για testing)
   // ============================================
   {
@@ -650,7 +649,7 @@ export const mockEvents = [
       { id: 10, image: 'https://picsum.photos/seed/techconf/400/300', caption: 'Tech Conference' }
     ]
   },
-    // ============================================
+  // ============================================
   // EVENT 11: ROCK CONCERT (organizer2)
   // ============================================
   {
