@@ -45,7 +45,7 @@ function App() {
             <Route
               path="/events/details/:id/booking"
               element={
-                <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <BookingPage />
                 </RequireRole>
               }
@@ -53,7 +53,7 @@ function App() {
             <Route
               path="/profile"
               element={
-                <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <ProfilePage />
                 </RequireRole>
               }
@@ -61,7 +61,7 @@ function App() {
             <Route
               path="/profile/edit"
               element={
-                <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <EditProfile />
                 </RequireRole>
               }
@@ -69,7 +69,7 @@ function App() {
             <Route
               path="/profile/messages/new"
               element={
-                <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <NewMessage />
                 </RequireRole>
               }
@@ -77,7 +77,7 @@ function App() {
             <Route
               path="/profile/messages/:id"
               element={
-                <RequireRole roles={['PARTICIPANT', 'ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <MessageView />
                 </RequireRole>
               }
@@ -89,7 +89,7 @@ function App() {
             <Route
               path="/profile/events/new"
               element={
-                <RequireRole roles={['ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <CreateEvent />
                 </RequireRole>
               }
@@ -97,7 +97,7 @@ function App() {
             <Route
               path="/profile/events/edit/:id"
               element={
-                <RequireRole roles={['ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <EditEvent />
                 </RequireRole>
               }
@@ -105,7 +105,7 @@ function App() {
             <Route
               path="/profile/events/:id"
               element={
-                <RequireRole roles={['ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <EventDetailsOrganizer />
                 </RequireRole>
               }
@@ -113,7 +113,7 @@ function App() {
             <Route
               path="/profile/reservations/:id"
               element={
-                <RequireRole roles={['ORGANIZER']}>
+                <RequireRole roles={['USER']}>
                   <ReservationsDetails />
                 </RequireRole>
               }
