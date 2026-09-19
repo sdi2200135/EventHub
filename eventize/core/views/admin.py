@@ -10,6 +10,7 @@ from rest_framework.exceptions import ValidationError, NotFound
 from core.models import User
 from core.permissions import IsAdmin
 from core.serializers import UserAdminSerializer
+from core.services.event import mark_completed_events
 from core.services.export import build_events_data, events_to_json, events_to_xml, get_exportable_events
 
 
@@ -43,8 +44,11 @@ class EventExportView(APIView):
     permission_classes = [IsAdmin]
 
     def get(self, request, file_format):
-        organizer = request.query_params.get('organizer')
         
+        # update the completed events' status
+        mark_completed_events()
+
+        organizer = request.query_params.get('organizer')
         # check if organizer_id is valid and the organizer exists
         if organizer is not None:
             try:

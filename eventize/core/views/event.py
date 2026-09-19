@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from core.filters import EventFilter
-from core.models import Event, EventPhoto, EventView, Conversation
+from core.models import Event, EventPhoto, EventView, Conversation, Booking
 from core.permissions import IsApprovedUser, IsEventOwnerOrReadOnly, IsOrganizer
 from core.serializers import EventDetailSerializer, EventListSerializer, EventWriteSerializer, EventPhotoSerializer
 from core.services.booking import cancel_event_bookings
@@ -18,8 +18,10 @@ from core.services.conv_mess import send_message
 from core.services.event import (
     create_event,
     update_event,
+    mark_completed_events,
     DomainError,
 )
+
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -28,6 +30,10 @@ class EventViewSet(viewsets.ModelViewSet):
     ordering_fields = ['start_datetime', 'capacity', 'created_at']
 
     def get_queryset(self):
+
+        # update the completed events' status
+        mark_completed_events()
+
         user = self.request.user
         qs = Event.objects.select_related('organizer').prefetch_related(
             'categories', 'ticket_types'
@@ -82,13 +88,20 @@ class EventViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
+    # race condition if someone tries to make a booking and the event is deleted
+    @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.status != Event.EventStatus.DRAFT and instance.bookings.exists():
+        event = Event.objects.select_for_update().get(pk=instance.pk)
+        if event.status != Event.EventStatus.DRAFT and event.bookings.exclude(status=Booking.BookingStatus.PENDING).exists():
             return Response(
                 {'detail': 'Cannot delete a published event with existing bookings. Use cancel instead.'}, status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().destroy(request, *args, **kwargs)
+
+        # before deleting the event, delete the pending bookings
+        event.bookings.filter(status=Booking.BookingStatus.PENDING).delete()
+        self.perform_destroy(event)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
     def publish(self, request, pk=None):

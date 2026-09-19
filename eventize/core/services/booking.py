@@ -37,8 +37,12 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
     # make sure only approved users can make bookings and no guests
     if not (user.is_authenticated and user.is_approved):
         raise PermissionError("Only approved users can make bookings.")
+
+    try:
+        event = Event.objects.select_for_update().get(pk=event_id)
+    except Event.DoesNotExist:
+        raise EventNotActiveError("This event no longer exists.")
     
-    event = Event.objects.select_for_update().get(pk=event_id)
     if not event.is_active: #check event is active
         raise EventNotActiveError(
             f"Event '{event.title}' is not active."
@@ -74,9 +78,12 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
 
 @transaction.atomic
 def confirm_booking(*, booking_id,event_id, user):
-    event = Event.objects.select_for_update().get(pk=event_id)
-    booking=Booking.objects.select_for_update().get(pk=booking_id)
-
+    try:
+        event = Event.objects.select_for_update().get(pk=event_id)
+        booking = Booking.objects.select_for_update().get(pk=booking_id)
+    except (Event.DoesNotExist, Booking.DoesNotExist):
+        raise EventNotActiveError("This event no longer exists.")
+    
     if booking.attendee_id != user.id: #check permissions
         raise PermissionError("Only the attendee can confirm thi booking.")
 

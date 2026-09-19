@@ -26,6 +26,7 @@ from .booking import (
 from .event import (
     create_event,
     update_event,
+    mark_completed_events,
     CapacityExceeded,
     InvalidTransition,
     DomainError,
@@ -72,6 +73,7 @@ __all__ = [
     # Event services
     'create_event',
     'update_event',
+    'mark_completed_events',
     'CapacityExceeded',
     'InvalidTransition',
     'DomainError',

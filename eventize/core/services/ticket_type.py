@@ -2,8 +2,7 @@
 from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
-from django.core.exceptions import ValidationError
-from core.models import TicketType, Event
+from core.models import TicketType, Event,Booking
 from core.utils import generate_id
 
 # Domain Exceptions (relate to the logic of ticket types)
@@ -119,10 +118,12 @@ def delete_ticket_type(*, ticket_type_id, user):
         raise EventNotEditableError("This event has already started, its ticket types cannot be changed.")
 
     # check if there are any bookings to avoid delete
-    if ticket_type.bookings.exists():
-        c_booking = ticket_type.bookings.count()
+    if ticket_type.bookings.exclude(status=Booking.BookingStatus.PENDING).exists():
+        c_booking = ticket_type.bookings.exclude(status=Booking.BookingStatus.PENDING).count()
         raise ReservedTicketsError(f"Cannot delete ticket type with {c_booking} existing bookings.")
-
+    
+    # firstly delete pending bookings and then the filter
+    ticket_type.bookings.filter(status=Booking.BookingStatus.PENDING).delete()
     ticket_type.delete()
     return True
 

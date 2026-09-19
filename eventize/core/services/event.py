@@ -62,3 +62,9 @@ def update_event(*, event, categories=None, **data):
         if categories is not None:
             event.categories.set(categories)
         return event
+
+# mark an event as completed 
+def mark_completed_events():
+    return Event.objects.filter(
+        status=Event.EventStatus.PUBLISHED, end_datetime__lte=timezone.now()
+    ).update(status=Event.EventStatus.COMPLETED)

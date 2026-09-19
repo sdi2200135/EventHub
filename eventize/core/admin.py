@@ -38,6 +38,7 @@ class EventPhotoInline(admin.TabularInline):
 class EventAdmin(admin.ModelAdmin):
     list_display = ('event_id', 'title', 'organizer', 'status', 'start_datetime')
     list_filter = ('status', 'event_type', 'city')
+    readonly_fields =['status']
     search_fields = ('title', 'event_id', 'organizer__username')
     filter_horizontal = ('categories',)
     inlines = [TicketTypeInline, EventPhotoInline]
