@@ -3,9 +3,8 @@
 /* ============================================
    COMMON DASHBOARD STYLES
    ============================================ */
-.participant-dashboard,
-.admin-dashboard,
-.organizer-dashboard {
+.user-dashboard,
+.admin-dashboard {
   width: 100%;
   background: #1E1E1E;
   border-radius: 12px;

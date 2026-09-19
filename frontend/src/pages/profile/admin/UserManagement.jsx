@@ -151,9 +151,8 @@ const UserManagement = () => {
   };
 
   const getRoleLabel = (user) => {
-    if (user.is_staff || user.is_superuser) return 'Admin';
-    if (user.role === 'ORGANIZER') return 'Organizer';
-    return 'Participant';
+    if (user.is_staff || user.is_superuser || user.role === 'ADMIN') return 'Admin';
+    return 'User';
   };
 
   const getInitials = (u) => {
