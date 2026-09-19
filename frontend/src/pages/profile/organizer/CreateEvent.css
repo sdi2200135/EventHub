@@ -1,0 +1,1286 @@
+/* src/pages/profile/organizer/CreateEvent.css */
+
+.create-event-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: calc(100vh - 64px - 80px);
+}
+
+.create-event-container {
+  background: #1E1E1E;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.create-event-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.create-event-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.create-event-header .btn-back {
+  background: transparent;
+  border: none;
+  color: #a0a0b8;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.create-event-header .btn-back:hover {
+  background: #2A2A2A;
+  color: #ffffff;
+}
+
+.create-event-header .btn-back svg {
+  font-size: 22px !important;
+}
+
+/* ============================================
+   STEPPER
+   ============================================ */
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin: 32px 0 40px;
+}
+
+.stepper-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #3A3A3A;
+  background: #1a1a1a;
+  color: #6c7a89;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.stepper-circle.active {
+  border-color: #4a90d9;
+  color: #4a90d9;
+  box-shadow: 0 0 0 4px rgba(74, 144, 217, 0.15);
+}
+
+.stepper-circle.completed {
+  border-color: #1a782e;
+  background: #1a782e;
+  color: #ffffff;
+}
+
+.stepper-circle.clickable {
+  cursor: pointer;
+}
+
+.stepper-circle.clickable:hover {
+  transform: scale(1.05);
+}
+
+.stepper-check {
+  font-size: 22px !important;
+}
+
+.stepper-line {
+  width: 120px;
+  height: 2px;
+  background: #3A3A3A;
+  transition: background 0.3s ease;
+}
+
+.stepper-line.completed {
+  background: #1a782e;
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+.create-event-error {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ============================================
+   STEP CONTENT
+   ============================================ */
+.step-content-wrapper {
+  margin-bottom: 32px;
+  min-height: 400px;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.step-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+}
+
+/* ============================================
+   STEP 1 - GRID
+   ============================================ */
+.step-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.step-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================
+   FORM ROWS
+   ============================================ */
+.form-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-row label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: left;
+}
+
+.form-row input {
+  background: transparent;
+  border: 1px solid #4a4a5a;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-row input:focus {
+  border-color: #4a90d9;
+}
+
+.form-row input::placeholder {
+  color: #6c7a89;
+}
+
+.form-row input.input-disabled {
+  background: #1a1a1a;
+  color: #6c7a89;
+  cursor: not-allowed;
+  border-color: #2A2A2A;
+}
+
+.form-row.two-inputs {
+  grid-template-columns: 100px 1fr;
+}
+
+/* ============================================
+   DATE AND TIME
+   ============================================ */
+.datetime-section {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.datetime-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+}
+
+.form-row.date-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.form-row.date-row label {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.datetime-input {
+  width: 100%;
+  color-scheme: dark;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* ============================================
+   CATEGORIES
+   ============================================ */
+.categories-section {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-input-wrapper {
+  position: relative;
+}
+
+.category-tag-row {
+  display: contents;
+}
+
+.form-row.category-display {
+  align-items: center;
+}
+
+.category-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #2A2A2A;
+  border: 1px solid #3A3A3A;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #e0e0e0;
+  gap: 8px;
+}
+
+.btn-remove-category {
+  background: transparent;
+  border: none;
+  color: #6c7a89;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-remove-category:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.btn-remove-category svg {
+  font-size: 16px !important;
+}
+
+.add-category-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn-add-category {
+  background: #2A2A2A;
+  color: #a0a0b8;
+  border: 1px solid #3A3A3A;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-add-category:hover:not(:disabled) {
+  background: #3A3A3A;
+  color: #e0e0e0;
+}
+
+.btn-add-category:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   STEP 2 - TICKET TYPES
+   ============================================ */
+
+/* Capacity Info Bar */
+.capacity-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(74, 144, 217, 0.08);
+  border: 1px solid rgba(74, 144, 217, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #a0a0b8;
+  flex-wrap: wrap;
+}
+
+.capacity-info.over {
+  background: rgba(231, 76, 60, 0.08);
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.capacity-info strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.capacity-sep {
+  color: #4a4a5a;
+}
+
+.capacity-ok {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.capacity-error {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+/* Ticket List */
+.ticket-types-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Ticket Row */
+.ticket-type-row {
+  display: grid;
+  grid-template-columns: 80px 1.2fr 1fr 1fr 1fr 36px;
+  gap: 12px;
+  align-items: end;
+  padding: 14px 16px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.ticket-type-row:hover {
+  border-color: #333;
+}
+
+.ticket-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ticket-field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #a0a0b8;
+  text-align: left;
+}
+
+.ticket-field input,
+.ticket-field .ticket-select {
+  background: transparent;
+  border: 1px solid #4a4a5a;
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #e0e0e0;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ticket-field input:focus,
+.ticket-field .ticket-select:focus {
+  border-color: #4a90d9;
+}
+
+.ticket-field input::placeholder {
+  color: #6c7a89;
+}
+
+.ticket-field input.input-disabled {
+  background: #141414;
+  color: #6c7a89;
+  cursor: not-allowed;
+  border-color: #232323;
+}
+
+.ticket-field .ticket-select {
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.ticket-field .ticket-select option {
+  background: #1E1E1E;
+  color: #e0e0e0;
+}
+
+/* Remove Button */
+.btn-remove-ticket {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #6c7a89;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  height: 36px;
+  width: 36px;
+  align-self: end;
+}
+
+.btn-remove-ticket:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.btn-remove-ticket svg {
+  font-size: 18px !important;
+}
+
+/* Add Ticket Wrapper */
+.add-ticket-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn-add-ticket {
+  background: #2A2A2A;
+  color: #a0a0b8;
+  border: 1px solid #3A3A3A;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-add-ticket:hover:not(:disabled) {
+  background: #3A3A3A;
+  color: #e0e0e0;
+  border-color: #4A4A4A;
+}
+
+.btn-add-ticket:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   FOOTER ACTIONS
+   ============================================ */
+.create-event-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid #2A2A2A;
+}
+
+.actions-right {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.btn-prev,
+.btn-next,
+.btn-save-draft,
+.btn-publish {
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  border: none;
+}
+
+.btn-prev {
+  background: transparent;
+  color: #a0a0b8;
+  border: 1px solid #3A3A3A;
+}
+
+.btn-prev:hover:not(:disabled) {
+  background: #2A2A2A;
+  color: #e0e0e0;
+}
+
+.btn-next {
+  background: #203855;
+  color: #ffffff;
+}
+
+.btn-next:hover {
+  background: #2a4a6f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(32, 56, 85, 0.4);
+}
+
+.btn-save-draft {
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border: 1px solid #3A3A3A;
+}
+
+.btn-save-draft:hover:not(:disabled) {
+  background: #3A3A3A;
+}
+
+.btn-publish {
+  background: #1a782e;
+  color: #ffffff;
+}
+
+.btn-publish:hover:not(:disabled) {
+  background: #22963a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
+}
+
+.btn-prev:disabled,
+.btn-next:disabled,
+.btn-save-draft:disabled,
+.btn-publish:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .ticket-type-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "id name"
+      "price quantity"
+      "available remove";
+    gap: 10px;
+  }
+
+  .ticket-field.id-field { grid-area: id; }
+  .ticket-field.name-field { grid-area: name; }
+  .ticket-field:nth-child(3) { grid-area: price; }
+  .ticket-field:nth-child(4) { grid-area: quantity; }
+  .ticket-field:nth-child(5) { grid-area: available; }
+  .btn-remove-ticket { grid-area: remove; justify-self: end; }
+}
+
+@media (max-width: 768px) {
+  .create-event-page {
+    padding: 24px 16px;
+  }
+
+  .create-event-container {
+    padding: 20px;
+  }
+
+  .create-event-header h1 {
+    font-size: 18px;
+  }
+
+  .stepper-circle {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .stepper-line {
+    width: 60px;
+  }
+
+  .step-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .form-row {
+    grid-template-columns: 90px 1fr;
+  }
+
+  .form-row.date-row {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+
+  .create-event-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .actions-right {
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+  }
+
+  .btn-prev,
+  .btn-next,
+  .btn-save-draft,
+  .btn-publish {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .ticket-type-row {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+  }
+
+  .ticket-field.id-field,
+  .ticket-field.name-field,
+  .ticket-field:nth-child(3),
+  .ticket-field:nth-child(4),
+  .ticket-field:nth-child(5),
+  .btn-remove-ticket {
+    grid-area: auto;
+  }
+
+  .btn-remove-ticket {
+    width: 100%;
+    justify-self: stretch;
+    margin-top: 4px;
+  }
+
+  .capacity-info {
+    font-size: 12px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stepper-circle {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .stepper-line {
+    width: 40px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .form-row label {
+    font-size: 12px;
+  }
+
+  .form-row.date-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .form-row.date-row label {
+    text-align: left;
+  }
+}
+
+/* ============================================
+   STEP 3 - EVENT INFO
+   ============================================ */
+
+.event-info-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+}
+
+.event-info-left,
+.event-info-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Description */
+.description-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.description-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  text-align: left;
+}
+
+.description-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.description-textarea {
+  width: 100%;
+  min-height: 260px;
+  background: #1a1a1a;
+  border: 1px solid #4a4a5a;
+  border-radius: 8px;
+  padding: 14px 16px 32px 16px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.description-textarea:focus {
+  border-color: #4a90d9;
+}
+
+.description-textarea::placeholder {
+  color: #6c7a89;
+}
+
+.char-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 11px;
+  color: #6c7a89;
+  pointer-events: none;
+}
+
+/* Media / Photo */
+.media-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.media-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.btn-choose-file {
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border: 1px solid #3A3A3A;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-choose-file:hover:not(:disabled) {
+  background: #3A3A3A;
+  border-color: #4A4A4A;
+}
+
+.btn-choose-file:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.media-list-wrapper {
+  position: relative;
+  background: #1a1a1a;
+  border: 1px solid #4a4a5a;
+  border-radius: 8px;
+  padding: 14px 16px 32px 16px;
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.media-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  color: #6c7a89;
+  gap: 4px;
+}
+
+.media-empty p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.media-hint {
+  font-size: 11px !important;
+  color: #4a4a5a !important;
+}
+
+.media-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.media-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  background: #2A2A2A;
+  border: 1px solid #333;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.media-item:hover {
+  background: #333;
+}
+
+.media-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #141414;
+}
+
+.media-name {
+  flex: 1;
+  font-size: 13px;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.btn-remove-photo {
+  background: transparent;
+  border: none;
+  color: #6c7a89;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-remove-photo:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.btn-remove-photo svg {
+  font-size: 16px !important;
+}
+
+.media-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 11px;
+  color: #6c7a89;
+}
+
+/* ============================================
+   STEP 3 - RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .event-info-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .description-textarea {
+    min-height: 180px;
+  }
+
+  .media-list-wrapper {
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .media-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-choose-file {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   PREVIEW PAGE
+   ============================================ */
+.preview-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 8px 0;
+}
+
+/* ============================================
+   PREVIEW SECTION
+   ============================================ */
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.preview-section-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  padding-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+
+/* ============================================
+   PREVIEW DETAILS GRID (3 στήλες)
+   ============================================ */
+.preview-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 24px;
+}
+
+.preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.preview-row-indent {
+  padding-left: 16px;
+  grid-template-columns: 50px 1fr;
+}
+
+.preview-row-inline {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.preview-row-mini {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  align-items: baseline;
+}
+
+.preview-label {
+  color: #a0a0b8;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.preview-value {
+  color: #e0e0e0;
+  font-weight: 400;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* ============================================
+   PREVIEW TICKET ROW
+   ============================================ */
+.preview-tickets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-ticket-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+}
+
+.preview-ticket-field {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  font-size: 13px;
+}
+
+/* ============================================
+   PREVIEW INFO GRID (2 στήλες)
+   ============================================ */
+.preview-info-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+}
+
+.preview-info-left,
+.preview-info-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-description {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.preview-description-text {
+  font-size: 13px;
+  color: #e0e0e0;
+  line-height: 1.6;
+  margin: 0;
+  padding: 12px 14px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  min-height: 80px;
+}
+
+/* Preview photo list */
+.preview-photo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.preview-photo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+}
+
+.preview-photo-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #141414;
+}
+
+.preview-photo-name {
+  font-size: 13px;
+  color: #e0e0e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-no-photos {
+  font-size: 13px;
+  color: #6c7a89;
+  font-style: italic;
+  margin: 0;
+  padding: 12px 14px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 6px;
+}
+
+/* ============================================
+   EDIT BUTTON (Header - Preview)
+   ============================================ */
+.btn-edit-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #203855;
+  color: #ffffff;
+  border: 1px solid #2a4a6f;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-left: auto;
+}
+
+.btn-edit-preview:hover {
+  background: #2a4a6f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(32, 56, 85, 0.4);
+}
+
+.btn-edit-preview svg {
+  font-size: 16px !important;
+}
+
+/* ============================================
+   CANCEL BUTTON (Preview Footer)
+   ============================================ */
+.btn-cancel-preview {
+  background: transparent;
+  color: #a0a0b8;
+  border: 1px solid #3A3A3A;
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-cancel-preview:hover:not(:disabled) {
+  background: #2A2A2A;
+  color: #e0e0e0;
+}
+
+.btn-cancel-preview:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   PREVIEW RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .preview-details-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .preview-details-grid .preview-col:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .preview-info-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .preview-ticket-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .preview-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-details-grid .preview-col:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .preview-row {
+    grid-template-columns: 80px 1fr;
+  }
+
+  .preview-ticket-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .preview-row-inline {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

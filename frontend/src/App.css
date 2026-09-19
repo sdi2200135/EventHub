@@ -1,0 +1,88 @@
+/* src/App.css - GLOBAL STYLES ONLY */
+
+/* ============================================
+   GENERAL RESET & BASE
+   ============================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1E1E1E;
+  color: #e0e0e0;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #203855;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2a4a6a;
+}
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ============================================
+   SECTION TITLE (Global)
+   ============================================ */
+.section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin: 2rem 0 1rem;
+  padding: 0 1.5rem;
+}
+
+/* ============================================
+   EMPTY STATE (Global fallback)
+   ============================================ */
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+  color: #6c7a89;
+}
+
+/* ============================================
+   REQUIRE ROLE - LOADING STATE
+   ============================================ */
+.require-role-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #6c7a89;
+}
+
+.require-role-loading .loading-icon-spin {
+  font-size: 3rem !important;
+  animation: requireRoleSpin 1.5s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes requireRoleSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

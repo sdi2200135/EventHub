@@ -1,0 +1,32 @@
+/* src/components/common/LoadingSpinner.css */
+
+.loading-spinner-unified {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6c7a89;
+}
+
+.loading-spinner-unified.full-height {
+  min-height: calc(100vh - 64px - 80px);
+}
+
+.loading-spinner-unified .loading-icon-spin {
+  font-size: 3rem !important;
+  color: #6c7a89;
+  animation: loading-spin 1.5s linear infinite;
+  margin-bottom: 12px;
+}
+
+.loading-spinner-unified .loading-spinner-message {
+  font-size: 1rem;
+  color: #6c7a89;
+  margin: 0;
+}
+
+@keyframes loading-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

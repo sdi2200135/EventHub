@@ -1,0 +1,14 @@
+/* src/components/common/Footer.css */
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+  background: #121212;
+  border-top: 1px solid #1a1a2a;
+  padding: 2rem 0;
+  margin-top: 3rem;
+  text-align: center;
+  color: #6c7a89;
+  font-size: 0.85rem;
+}

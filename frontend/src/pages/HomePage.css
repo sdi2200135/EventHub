@@ -1,0 +1,559 @@
+/* src/pages/HomePage.css */
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero {
+  background: transparent;
+  padding: 2rem 0 1rem;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  color: white;
+}
+
+.hero-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ========== ΑΡΙΣΤΕΡΑ: Κείμενο ========== */
+.hero-left {
+  flex: 1;
+  max-width: 100%;
+  margin-left: -8rem;
+}
+
+.hero-left h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: #D9D9D9;
+}
+
+.hero-left .hero-description {
+  font-size: 1.3rem;
+  opacity: 0.8;
+  color: #B0B0B0;
+  max-width: 45%;
+}
+
+/* ========== ΔΕΞΙΑ: Search Bar ========== */
+.hero-right {
+  flex: 1;
+  max-width: 100%;
+  padding-top: 6rem;
+}
+
+/* ============================================
+   SEARCH BAR
+   ============================================ */
+.hero-search {
+  display: flex;
+  gap: 0;
+  flex-wrap: nowrap;
+  background: transparent;
+  padding: 0;
+  border-radius: 0.75rem;
+  border: 1px solid #B6AEAE;
+  max-width: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.hero-search select {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 0;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  background: transparent;
+  outline: none;
+  border-right: 1px solid #B6AEAE;
+  cursor: pointer;
+}
+
+.hero-search select option {
+  background: #1a1a2e;
+  color: #e0e0e0;
+}
+
+.hero-search select:focus {
+  background: transparent;
+}
+
+/* ============================================
+   DATE PICKER
+   ============================================ */
+.react-datepicker-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.react-datepicker-wrapper .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.react-datepicker-wrapper .react-datepicker__input-container input {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 0;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  border-right: 1px solid #B6AEAE;
+}
+
+.react-datepicker-wrapper .react-datepicker__input-container input::placeholder {
+  color: #6c7a89;
+}
+
+/* ============================================
+   SEARCH BUTTON
+   ============================================ */
+.hero-search .btn-hero-search {
+  background: #203855;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 0;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex: 0 0 auto;
+  border-left: 1px solid #B6AEAE;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hero-search .btn-hero-search .search-icon {
+  font-size: 1.2rem;
+}
+
+.hero-search .btn-hero-search:hover {
+  background: #2a4a6a;
+}
+
+/* ============================================
+   CATEGORIES BAR - FULL WIDTH
+   ============================================ */
+.categories-bar {
+  background-color: #181818;
+  padding: 0.75rem 0;
+  margin-top: 2rem; 
+  border-top: 1px solid #181818;
+  border-bottom: 1px solid #181818;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.categories-bar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.categories-list {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* ========== ΚΑΤΗΓΟΡΙΕΣ ========== */
+.categories-list .category-item {
+  color: #B0B0B0;
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  padding-bottom: 2px;
+}
+
+.categories-list .category-item:hover {
+  color: #FFFFFF;
+}
+
+/* ΕΠΙΛΕΓΜΕΝΗ ΚΑΤΗΓΟΡΙΑ - ΛΕΥΚΟ, BOLD, ΥΠΟΓΡΑΜΜΙΣΜΕΝΗ */
+.categories-list .category-item.active {
+  color: #FFFFFF;
+  font-weight: 700;
+  border-bottom: 2px solid #FFFFFF;
+}
+
+/* ============================================
+   REACT DATEPICKER - DARK THEME
+   ============================================ */
+.react-datepicker {
+  background-color: #1a1a2e !important;
+  border: 1px solid #2a2a3e !important;
+  color: #e0e0e0 !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.react-datepicker__header {
+  background-color: #121212 !important;
+  border-bottom: 1px solid #2a2a3e !important;
+}
+
+.react-datepicker__current-month {
+  color: #e0e0e0 !important;
+}
+
+.react-datepicker__day-name {
+  color: #a0a0b8 !important;
+}
+
+.react-datepicker__day {
+  color: #e0e0e0 !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: #203855 !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #203855 !important;
+  color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #2a4a6a !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #a0a0b8 !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #e0e0e0 !important;
+}
+
+/* ============================================
+   EVENTS SECTION
+   ============================================ */
+.events-section {
+  background-color: #1E1E1E;
+  padding: 2rem 1.5rem;
+  margin: 0;
+}
+
+/* ============================================
+   EVENTS HEADER
+   ============================================ */
+.events-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.events-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e0e0e0;
+}
+
+.events-header .events-count {
+  font-size: 0.9rem;
+  color: #6c7a89;
+  background: #2a2a3e;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+/* ============================================
+   EVENTS GRID - 5 ΚΑΡΤΕΣ ΑΝΑ ΣΕΙΡΑ
+   ============================================ */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+  .events-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .events-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .events-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   EVENT CARD LINK - ΟΛΟΚΛΗΡΗ Η ΚΑΡΤΑ CLICKABLE
+   ============================================ */
+.event-card-link {
+  text-decoration: none;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.event-card-link:hover {
+  transform: translateY(-6px);
+}
+
+/* ============================================
+   EVENT CARD - ΝΕΑ ΧΡΩΜΑΤΑ
+   ============================================ */
+.event-card {
+  background: #181818;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  border: 0.2rem solid #2A2A2A;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card:hover {
+  border-color: #203855;
+}
+
+/* ============================================
+   EVENT IMAGE
+   ============================================ */
+.event-card .event-image {
+  height: 160px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #181818;
+  padding: 0.5rem 0.5rem;
+}
+
+.event-card .event-image .event-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  transition: transform 0.3s ease;
+}
+
+.event-card-link:hover .event-image .event-photo {
+  transform: scale(1.03);
+}
+
+.event-card .event-image .event-placeholder {
+  font-size: 3rem;
+  color: #6c7a89;
+}
+
+/* ============================================
+   EVENT BODY - ΚΕΝΤΡΑΡΙΣΜΕΝΑ ΠΑΝΤΑ
+   ============================================ */
+.event-card .event-body {
+  padding: 0.75rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+/* ========== ΤΙΤΛΟΣ - ΝΑ ΚΑΝΕΙ WORD-WRAP ========== */
+.event-card .event-body .event-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  color: #e0e0e0;
+  /* ΑΦΑΙΡΕΣΗ ΤΩΝ ΠΕΡΙΟΡΙΣΜΩΝ ΓΙΑ ΝΑ ΚΑΝΕΙ WORD-WRAP */
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  width: 100%;
+  max-width: 100%;
+  line-height: 1.3;
+}
+
+/* ========== ΠΛΗΡΟΦΟΡΙΕΣ - ΚΑΤΗΓΟΡΙΑ: ΣΤΟΙΧΕΙΟ ========== */
+.event-card .event-body .event-info {
+  font-size: 0.75rem;
+  margin-bottom: 0.15rem;
+  color: #B0B0B0;
+  width: 100%;
+}
+
+.event-card .event-body .event-info .info-label {
+  font-weight: 700;
+  color: #B0B0B0;
+}
+
+.event-card .event-body .event-info .info-value {
+  font-weight: 400;
+  color: #B0B0B0;
+}
+
+/* ========== AVAILABILITY - ΜΕ ΧΡΩΜΑ ========== */
+.event-card .event-body .event-info .availability-value {
+  font-weight: 700;
+}
+
+/* ============================================
+   LOADING & EMPTY STATES
+   ============================================ */
+.loading-state {
+  text-align: center;
+  padding: 3rem 0;
+  color: #6c7a89;
+}
+
+.loading-state .loading-icon {
+  font-size: 4rem !important;
+  color: #6c7a89;
+  margin-bottom: 0.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  animation: spin 3s linear infinite;
+  transform: scaleY(-1);
+}
+
+.loading-state p {
+  font-size: 1rem;
+  color: #6c7a89;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+  color: #6c7a89;
+}
+
+.empty-state .empty-icon {
+  font-size: 4rem !important;
+  color: #6c7a89;
+  margin-bottom: 0.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #6c7a89;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 992px) {
+  .hero-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-left {
+    max-width: 100%;
+    margin-left: 0;
+  }
+
+  .hero-right {
+    max-width: 100%;
+    padding-top: 1rem;
+  }
+
+  .hero-left h1 {
+    font-size: 2.25rem;
+  }
+
+  .hero-left .hero-description {
+    max-width: 100%;
+  }
+
+  .categories-list {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 1.5rem 0 1rem;
+  }
+
+  .hero-left h1 {
+    font-size: 1.75rem;
+  }
+
+  .hero-search {
+    flex-wrap: wrap;
+  }
+
+  .hero-search select {
+    border-right: none;
+    border-bottom: 1px solid #B6AEAE;
+    min-width: 100%;
+  }
+
+  .react-datepicker-wrapper {
+    min-width: 100%;
+  }
+
+  .react-datepicker-wrapper .react-datepicker__input-container input {
+    border-right: none;
+    border-bottom: 1px solid #B6AEAE;
+    min-width: 100%;
+  }
+
+  .hero-search .btn-hero-search {
+    border-left: none;
+    border-top: 1px solid #B6AEAE;
+    min-width: 100%;
+  }
+
+  .categories-list {
+    gap: 1rem;
+  }
+
+  .categories-list .category-item {
+    font-size: 0.75rem;
+  }
+
+  .event-card .event-body .event-title {
+    font-size: 0.85rem;
+  }
+
+  .event-card .event-body .event-info {
+    font-size: 0.7rem;
+  }
+}

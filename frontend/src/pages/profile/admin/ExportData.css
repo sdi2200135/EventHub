@@ -1,0 +1,357 @@
+/* src/pages/profile/admin/ExportData.css */
+
+.export-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   INFO BANNER
+   ============================================ */
+.export-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 22px;
+  background: rgba(74, 144, 217, 0.08);
+  border: 1px solid rgba(74, 144, 217, 0.25);
+  border-radius: 10px;
+}
+
+.export-info-banner .info-icon {
+  font-size: 28px !important;
+  color: #4a90d9;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.export-info-banner .info-text h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px 0;
+}
+
+.export-info-banner .info-text p {
+  font-size: 13px;
+  color: #a0a0b8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.export-info-banner .info-text strong {
+  color: #e0e0e0;
+}
+
+/* ============================================
+   CARDS GRID
+   ============================================ */
+.export-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.export-card {
+  display: flex;
+  flex-direction: column;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.export-card:hover {
+  border-color: #203855;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Header */
+.export-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.export-card-icon {
+  font-size: 32px !important;
+  flex-shrink: 0;
+}
+
+.export-card-icon.xml-icon { color: #e67e22; }
+.export-card-icon.json-icon { color: #f1c40f; }
+.export-card-icon.dtd-icon { color: #9b59b6; }
+
+.export-card-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.export-card-subtitle {
+  font-size: 11px;
+  color: #6c7a89;
+  margin: 2px 0 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Body */
+.export-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.export-card-description {
+  font-size: 12.5px;
+  color: #a0a0b8;
+  line-height: 1.55;
+  margin: 0;
+  flex: 1;
+}
+
+.export-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.meta-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #a0a0b8;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #2A2A2A;
+  padding: 3px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+/* Actions */
+.export-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.btn-preview,
+.btn-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.btn-preview {
+  background: transparent;
+  color: #a0a0b8;
+  border-color: #3A3A3A;
+}
+
+.btn-preview:hover {
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border-color: #4A4A4A;
+}
+
+.btn-download.primary {
+  background: #203855;
+  color: #ffffff;
+  border-color: #2a4a6f;
+}
+
+.btn-download.primary:hover {
+  background: #2a4a6f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(32, 56, 85, 0.4);
+}
+
+.btn-download.secondary {
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border-color: #3A3A3A;
+}
+
+.btn-download.secondary:hover {
+  background: #3A3A3A;
+  border-color: #4A4A4A;
+}
+
+.btn-preview svg,
+.btn-download svg {
+  font-size: 16px !important;
+}
+
+/* ============================================
+   PREVIEW SECTION
+   ============================================ */
+.export-preview-section {
+  background: #141414;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  overflow: hidden;
+  animation: previewFadeIn 0.25s ease;
+}
+
+@keyframes previewFadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.preview-header h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.preview-count {
+  font-size: 11px;
+  color: #6c7a89;
+  font-family: 'Courier New', monospace;
+}
+
+.preview-content {
+  margin: 0;
+  padding: 16px 20px;
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #d4d4d4;
+  background: #0d0d0d;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+
+.preview-content.xml-preview {
+  color: #ce9178;
+}
+
+.preview-content.json-preview {
+  color: #9cdcfe;
+}
+
+/* Custom scrollbar */
+.preview-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.preview-content::-webkit-scrollbar-track {
+  background: #0d0d0d;
+}
+
+.preview-content::-webkit-scrollbar-thumb {
+  background: #2A2A2A;
+  border-radius: 5px;
+}
+
+.preview-content::-webkit-scrollbar-thumb:hover {
+  background: #3A3A3A;
+}
+
+/* ============================================
+   ERROR
+   ============================================ */
+.export-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #6c7a89;
+}
+
+.export-error p {
+  color: #e74c3c;
+  margin-bottom: 16px;
+}
+
+.btn-retry {
+  background: #203855;
+  color: #ffffff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-retry:hover { background: #2a4a6f; }
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 900px) {
+  .export-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .export-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .btn-preview,
+  .btn-download {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .export-info-banner {
+    padding: 14px 16px;
+  }
+
+  .export-card {
+    padding: 16px;
+  }
+
+  .preview-content {
+    font-size: 11px;
+    padding: 12px;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
