@@ -43,6 +43,9 @@ class BookingSerializer(serializers.ModelSerializer):
         #check availability
         if ticket_type and number_of_tickets and not ticket_type.is_available(number_of_tickets):
             errors['number_of_tickets'] = 'Not enough tickets available for this ticket type.'
+            # protect possible overflow
+        elif ticket_type and number_of_tickets and ticket_type.price * number_of_tickets >= 99999999:
+            errors['number_of_tickets'] = 'The total cost of this booking is too large.'
         #raise errors if any
         if errors:
             raise serializers.ValidationError(errors)

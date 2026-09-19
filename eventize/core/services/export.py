@@ -1,10 +1,13 @@
 # core/services/export.py
-import json
+import json, re
 import xml.etree.ElementTree as ET
 
 from django.utils import timezone
 
 from core.models import Event
+
+# in xml formats there are some characters which can cause trouble so drop them if they exist
+_INVALID_XML_CHARS = re.compile('[\x00-\x08\x0b\x0c\x0e-\x1f\ufffe\uffff]')
 
 # the DTD which is given in the assignment used to validate xml 
 # json is built based on xml for this reason no validation needed
@@ -137,11 +140,11 @@ def build_events_data(events):
     return data
 
 
+# remove speacial characters which break xml format
 def _add(parent, tag, value):
     element = ET.SubElement(parent, tag)
-    element.text = str(value)
+    element.text = _INVALID_XML_CHARS.sub('', str(value))
     return element
-
 
 # ElementTree escapes & and < in the text for us for description title safety
 def events_to_xml(data):

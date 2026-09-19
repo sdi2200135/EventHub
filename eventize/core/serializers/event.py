@@ -10,6 +10,8 @@ from .photo import EventPhotoSerializer
 from .ticket_type import TicketTypeSerializer
 from .user import UserPublicSerializer
 
+from decimal import ROUND_HALF_UP, Decimal
+
 # serializer in order to list many events in grid 
 class EventListSerializer(serializers.ModelSerializer):
     
@@ -27,9 +29,9 @@ class EventListSerializer(serializers.ModelSerializer):
 
     def get_min_price(self, obj):
         prices = [tt.price for tt in obj.ticket_types.all()]
-        return min(prices) if prices else None
+        return f'{min(prices):.2f}' if prices else None
 
-# serializer for full details about the event basically when u ahve the event alone
+# serializer for full details about the event basically when u have the event alone
 class EventDetailSerializer(serializers.ModelSerializer):
     organizer = UserPublicSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True, read_only=True)
@@ -53,7 +55,8 @@ class EventWriteSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Category.objects.all(), required=True, allow_empty=False
     )
-    
+    latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
     class Meta:
         model = Event
         fields = [
@@ -72,6 +75,15 @@ class EventWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'longitude': 'Latitude and longitude must be provided together.'}
             )
+        # check lat long range and round to 5 decimal
+        if lat is not None:
+            if not -90 <= lat <= 90:
+                raise serializers.ValidationError({'latitude': 'Latitude must be between -90 and 90.'})
+            if not -180 <= lon <= 180:
+                raise serializers.ValidationError({'longitude': 'Longitude must be between -180 and 180.'})
+            for field in ('latitude', 'longitude'):
+                if attrs.get(field) is not None:
+                    attrs[field] = attrs[field].quantize(Decimal('0.00001'), rounding=ROUND_HALF_UP)
 
         # make sure start/end time is correct
         start = attrs.get('start_datetime', getattr(self.instance, 'start_datetime', None))

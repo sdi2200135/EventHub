@@ -12,10 +12,11 @@ class EventFilter(django_filters.FilterSet):
     # so both bounds land on the SAME ticket type instead of one bound each on different ones
     min_price = django_filters.NumberFilter(method='noop')
     max_price = django_filters.NumberFilter(method='noop')
-
+    city = django_filters.CharFilter(field_name='city', lookup_expr='icontains')
+    country = django_filters.CharFilter(field_name='country', lookup_expr='icontains')
     class Meta:
         model = Event
-        fields = ['category','organizer', 'status', 'city', 'country', 'event_type', 'start_after', 'start_before', 'min_price', 'max_price']
+        fields = ['category','organizer', 'status', 'event_type', 'start_after', 'start_before', 'min_price', 'max_price']
 
     def noop(self, queryset, name, value):
         return queryset

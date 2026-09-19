@@ -20,8 +20,9 @@ class TicketTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketType
         fields = ['id', 'ticket_type_id', 'event', 'name', 'price', 'quantity', 'available']
-        read_only_fields = ['event', 'ticket_type_id'] 
-        
+        read_only_fields = ['event', 'ticket_type_id']
+        extra_kwargs = {'price': {'max_value': 99999}}
+
     #verify that the sum of the ticket types doesn't exceed the event's capacity 
     def validate(self, attrs):
         # get event from context or from instance

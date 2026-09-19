@@ -1,6 +1,8 @@
 # core/views/admin.py
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.http import content_disposition_header
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -69,8 +71,8 @@ class EventExportView(APIView):
             content, content_type = events_to_json(data), 'application/json'
 
         response = HttpResponse(content, content_type=f'{content_type}; charset=utf-8')
-        if organizer is None:
-            response['Content-Disposition'] = f'attachment; filename="events.{file_format}"'
-        else:
-            response['Content-Disposition'] = f'attachment; filename="events_{user.username}.{file_format}"'
+        
+        filename = f'events.{file_format}' if organizer is None else f'events_{user.username}.{file_format}'
+        # content disposition header so it can work with greek usernames as well
+        response['Content-Disposition'] = content_disposition_header(True, filename)
         return response

@@ -116,7 +116,11 @@ def delete_ticket_type(*, ticket_type_id, user):
     # an event which has started is frozen, no changes applied
     if event.start_datetime <= timezone.now():
         raise EventNotEditableError("This event has already started, its ticket types cannot be changed.")
-
+    
+    # a published event must always have one ticket type and  if this is the last one u cannot delet it 
+    if event.status == event.EventStatus.PUBLISHED and event.ticket_types.count() == 1:
+        raise EventNotEditableError("A published event must have at least a ticket type.")
+    
     # check if there are any bookings to avoid delete
     if ticket_type.bookings.exclude(status=Booking.BookingStatus.PENDING).exists():
         c_booking = ticket_type.bookings.exclude(status=Booking.BookingStatus.PENDING).count()

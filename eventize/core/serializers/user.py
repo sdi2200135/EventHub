@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from core.models import User
 
+from decimal import ROUND_HALF_UP, Decimal
 
 class UserPublicSerializer(serializers.ModelSerializer):
     """info about what anyone can see"""
@@ -15,6 +16,8 @@ class UserPublicSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """user's account info"""
     approval_status_display = serializers.CharField(source='get_approval_status_display', read_only=True)
+    latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -35,6 +38,16 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'longitude': 'Latitude and longitude must be provided together.'}
             )
+        
+        # check lat long range and round to 5 decimal
+        if lat is not None:
+            if not -90 <= lat <= 90:
+                raise serializers.ValidationError({'latitude': 'Latitude must be from -90 to 90.'})
+            if not -180 <= lon <= 180:
+                raise serializers.ValidationError({'longitude': 'Longitude must be from -180 to 180.'})
+            for field in ('latitude', 'longitude'):
+                if attrs.get(field) is not None:
+                    attrs[field] = attrs[field].quantize(Decimal('0.00001'), rounding=ROUND_HALF_UP)
         return attrs
 
     # in order to update a race condtion canbe created if user edits his info and admin approve the user 
@@ -71,7 +84,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     # passwords are enabled with trim whitespace from end and beginning
     password = serializers.CharField(write_only=True)
     password2 = serializers.CharField(write_only=True)
-
+    latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
+    longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
     class Meta:
         model = User
         fields = [
@@ -99,6 +113,16 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {'longitude': 'Latitude and longitude must be provided together.'}
             )
+        
+        # check lat long range and round to 5 decimal
+        if lat is not None:
+            if not -90 <= lat <= 90:
+                raise serializers.ValidationError({'latitude': 'Latitude must be between -90 and 90.'})
+            if not -180 <= lon <= 180:
+                raise serializers.ValidationError({'longitude': 'Longitude must be between -180 and 180.'})
+            for field in ('latitude', 'longitude'):
+                if attrs.get(field) is not None:
+                    attrs[field] = attrs[field].quantize(Decimal('0.00001'), rounding=ROUND_HALF_UP)
 
         unsaved = User(
             username=attrs.get('username'),

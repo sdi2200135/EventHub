@@ -42,8 +42,8 @@ def update_event(*, event, categories=None, **data):
         if event.status in (event.EventStatus.COMPLETED, event.EventStatus.CANCELLED):
             raise InvalidTransition("Cancelled or completed events cannot be edited.")
 
-        # an event which has started is frozen, no changes applied
-        if event.start_datetime <= timezone.now():
+        # an event which has started is frozen, no changes applied but be able to reschedule it
+        if event.status != event.EventStatus.DRAFT and event.start_datetime <= timezone.now():
             raise InvalidTransition("An event that has already started cannot be edited.")
 
         # check if the new capacity is bigger than the sum of the toal tickets 

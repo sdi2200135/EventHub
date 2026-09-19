@@ -42,9 +42,12 @@ class EventViewSet(viewsets.ModelViewSet):
             return qs.filter(status=Event.EventStatus.PUBLISHED)
         if user.is_admin:
             return qs
-        if user.is_organizer:
-            return qs.filter(Q(status=Event.EventStatus.PUBLISHED) | Q(organizer=user))
-        return qs.filter(status=Event.EventStatus.PUBLISHED)
+
+        visible = Q(status=Event.EventStatus.PUBLISHED) | Q(organizer=user)
+        # an attendee can open a canceled event only through my bookings which are cancelled
+        if self.action != 'list':
+            visible |= Q(pk__in=Booking.objects.filter(attendee=user).values('event_id'))
+        return qs.filter(visible)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -155,7 +158,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 send_message(
                     conversation_id=conversation.pk,
                     sender=event.organizer,
-                    body=f'The event "{event.title}" scheduled for {event.start_datetime} has been cancelled.',
+                    body=f'The event "{event.title}" scheduled for {timezone.localtime(event.start_datetime):%d-%m-%Y, %H:%M} has been cancelled. We will contact you afterwards for more info',
                 )
 
         return Response(EventDetailSerializer(event).data)

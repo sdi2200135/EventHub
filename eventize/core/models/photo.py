@@ -1,7 +1,9 @@
 # core/models/photo.py
 
-from django.db import models
+from django.db import models, transaction
 from .event import Event
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 class EventPhoto(models.Model):
     event = models.ForeignKey(
@@ -21,3 +23,10 @@ class EventPhoto(models.Model):
 
     def __str__(self):
         return f"Media for {self.event.title}"
+
+# when the db row of photo is deleted, delete the actual photo
+@receiver(post_delete, sender=EventPhoto)
+def delete_photo_file(sender, instance, **kwargs):
+    name, storage = instance.image.name, instance.image.storage
+    if name:
+        transaction.on_commit(lambda: storage.delete(name))

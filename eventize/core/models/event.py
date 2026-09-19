@@ -96,7 +96,7 @@ class Event(models.Model):
 
     @property
     def available_capacity(self):
-        return self.capacity - self.total_reserved
+        return sum(tt.available for tt in self.ticket_types.all())
 
     def clean(self):
         super().clean()
