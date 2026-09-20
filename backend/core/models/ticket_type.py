@@ -1,10 +1,11 @@
 # core/models/ticket_type.py
 
-from django.db import models
+from django.db import models, transaction
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Sum, Q, F
 from django.db.models.functions import Lower
+from core.utils import generate_id
 
 from .event import Event
 
@@ -65,6 +66,19 @@ class TicketType(models.Model):
             raise ValidationError({
                 'quantity': f'Exceeds the capacity. Available: {self.event.capacity - others}.'
             })
+
+    # ids are numbered per event, so we use generated id with the scope of the event on save
+    def save(self, *args, **kwargs):
+        if not self.ticket_type_id and self.event_id:
+            # the event row locked cayuse two parallel saves read the same last number so it won't be unique
+            with transaction.atomic():
+                Event.objects.select_for_update().get(pk=self.event_id)
+                self.ticket_type_id = generate_id(
+                    TicketType, 'ticket_type_id', 'T', scope={'event_id': self.event_id}
+                )
+                return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+
 
     def is_available(self, num_tickets=1):
         return self.available >= num_tickets

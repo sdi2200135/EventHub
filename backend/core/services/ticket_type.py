@@ -3,7 +3,6 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from core.models import TicketType, Event,Booking
-from core.utils import generate_id
 
 # Domain Exceptions (relate to the logic of ticket types)
 class TicketTypeError(Exception):
@@ -49,10 +48,9 @@ def create_ticket_type(*, event_id, user, name, price, quantity):
         available = event.capacity - other_total
         raise CapacityExceededError(f"Can't add {quantity} tickets. Only {available} capacity available.")
 
-    # create new ticket type
+    # unique id given on .save() of ticket_type by generated_id per scope
     ticket_type = TicketType.objects.create(
         event = event,
-        ticket_type_id = generate_id(TicketType, 'ticket_type_id', 'T', scope={'event': event}),
         name = name,
         price = price,
         quantity = quantity,

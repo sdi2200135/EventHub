@@ -3,7 +3,6 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from core.models import Event, TicketType
-from core.utils import set_id_from_pk, temporary_id
 
 class DomainError(Exception):
     """Base for all business-rule violations."""
@@ -23,15 +22,12 @@ def create_event(*, organizer, categories=None, ticket_types=None, **data):
             raise CapacityExceeded(f"Ticket quantities ({total}) exceed capacity ({data['capacity']}).")
 
     with transaction.atomic():
-        # by giving a temporary id and then build the unique id based on the pk solves the race condition 
-        # as both will be based on the pk which can never be duplicated
+        # unique id given on .save() of event_id based on pk 
         event = Event.objects.create(
-            event_id=temporary_id(),
             organizer=organizer,
             status=Event.EventStatus.DRAFT,
             **data,
         )
-        set_id_from_pk(event, 'event_id', 'EV')
         if categories:
             event.categories.set(categories)
         for tt in (ticket_types or []):
