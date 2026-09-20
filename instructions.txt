@@ -1,0 +1,22 @@
+BACKEND VENV
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate 
+
+CERTIFICATE SELF SIGNED
+cd ..
+sh scripts/make_certs.sh
+
+
+FRONT END
+cd frontend
+node -v            # v24.x, via nvm
+npm install
+
+RUN
+cd backend && source venv/bin/activate
+python manage.py runserver_plus 8000 --threaded \
+  --cert-file ../certs/localhost.pem --key-file ../certs/localhost-key.pem
+
+cd frontend && npm run dev
