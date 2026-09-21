@@ -27,6 +27,44 @@ api.interceptors.request.use((config) => {
 // while a refresh is in flight, other 401s wait for the same promise
 let refreshing = null;
 
+
+// DRF sends an error either as { detail: "..." } or under the field it concerns,
+// Turn it into one readable line, so a page only needs err.message
+const errorMessage = (error) => {
+  let data = error.response?.data;
+  // a request made with responseType 'text' (the export) gets its error as text too
+  if (typeof data === 'string') {
+    try { data = JSON.parse(data); 
+
+    } catch { }
+  }
+  if (!data || typeof data !== 'object') 
+    return error.message;   
+
+  // look inside lists and objects until the first message
+  const firstString = (value) => {
+    if (typeof value === 'string') return value;
+    for (const item of Object.values(value || {})) {
+      const found = firstString(item);
+      if (found) return found;
+    }
+    return null;
+  };
+
+  for (const [field, value] of Object.entries(data)) {
+    const message = firstString(value);
+    if (message) 
+      return ['detail', 'non_field_errors'].includes(field) ? message : `${field}: ${message}`;
+  }
+   return error.message;
+};
+
+// every failed request leaves `api` through here
+const reject = (error) => {
+  error.message = errorMessage(error);
+  return Promise.reject(error);
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -35,7 +73,7 @@ api.interceptors.response.use(
 
     // only retry once, and never for the refresh call itself
     if (error.response?.status !== 401 || !refresh || original._retried) {
-      return Promise.reject(error);
+      return reject(error);
     }
     original._retried = true;
 
@@ -53,7 +91,7 @@ api.interceptors.response.use(
       // refresh token expired, or the admin rejected the account meanwhile
       sessionStorage.removeItem('access_token');
       sessionStorage.removeItem('refresh_token');
-      return Promise.reject(refreshError);
+      return reject(refreshError);
     }
   }
 );
@@ -133,7 +171,7 @@ export const authService = {
       return { data: { ...data, user } };
     } catch (error) {
       if (error.response?.status === 401) {
-        throw new Error('Invalid username or password');
+        throw new Error('Invalid username or password', { cause: error });
       }
       throw error;
     }
@@ -740,60 +778,23 @@ export const messageService = {
 // USER SERVICES (Admin only)
 // ============================================
 export const userService = {
-  getAllUsers: async () => {
-    if (USE_MOCK) {
-      await delay();
-      return { data: mockUsers };
-    }
-    const response = await axios.get(`${API_BASE}/admin/users/`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    if (response.data && response.data.results) {
-      return { data: response.data.results };
-    }
-    return response;
-  },
+  getAllUsers: async () => ({
+    data: await fetchAll('/admin/users/')
+  }),
 
   approveUser: async (userId) => {
-    if (USE_MOCK) {
-      await delay();
-      const user = mockUsers.find(u => u.id === Number(userId));
-      if (user) user.approval_status = 'APPROVED';
-      return { data: user };
-    }
-    const response = await axios.post(
-      `${API_BASE}/admin/users/${userId}/approve/`,
-      // { approval_status: 'APPROVED' },
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-        }
-      }
-    );
-    return response;
+    return await api.post(`/admin/users/${userId}/approve/`);
   },
 
   rejectUser: async (userId) => {
-    if (USE_MOCK) {
-      await delay();
-      const user = mockUsers.find(u => u.id === Number(userId));
-      if (user) user.approval_status = 'REJECTED';
-      return { data: user };
-    }
-    const response = await axios.post(
-      `${API_BASE}/admin/users/${userId}/reject/`,
-      // { approval_status: 'REJECTED' },
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-        }
-      }
-    );
-    return response;
+    return await api.post(`/admin/users/${userId}/reject/`);
   },
 
+  exportEvents: async (format, organizerId) => {
+    const { data } = await api.get(`/admin/events/export/${format}/`, {
+      params: { organizer: organizerId },
+      responseType: 'text',
+    });
+    return { data };
+  },
 };

@@ -40,7 +40,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     # we use a custon token refresh serilizer cause we want on every refresh of token to check the status of approval by admin
-    # otherwise the user can be rejected but still getting the token as the REFRESH_TOKEN_LIFETIME is 7 days
+    # otherwise the user can be rejected but still getting the token as the REFRESH_TOKEN_LIFETIME is 1 day
     def validate(self, attrs):
         token = RefreshToken(attrs['refresh'])
         user = User.objects.filter(
