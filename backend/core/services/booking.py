@@ -5,7 +5,6 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from core.models import Booking, TicketType, Event, User
 from core.services.ticket_type import reserve_tickets
-from core.utils import set_id_from_pk, temporary_id
 
 #Domain Exceptions
 class BookingError(Exception):
@@ -65,10 +64,8 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
         )
 
     total_cost = ticket_type.price*number_of_tickets
-    # by giving a temporary id and then build the unique id based on the pk solves the race condition 
-    # as both will be based on the pk which can never be duplicated
-    booking = Booking.objects.create(
-        booking_id=temporary_id(),
+    # unique id given on .save() of booking_id based on pk 
+    return Booking.objects.create(
         event=event,
         attendee=user,
         ticket_type=ticket_type,
@@ -76,7 +73,6 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
         total_cost=total_cost,
         status=Booking.BookingStatus.PENDING
     )
-    return set_id_from_pk(booking, 'booking_id', 'BK')
 
 @transaction.atomic
 def confirm_booking(*, booking_id,event_id, user):

@@ -24,9 +24,20 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ['SECRET_KEY']
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False').strip().lower() == 'true'
 
-ALLOWED_HOSTS = []
+# --- HTTPS ---
+# cookies are only sent over TLS (the admin's sessionid / csrftoken;
+# the API itself is stateless and uses JWT in the Authorization header)
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# redirect http -> https in production; locally both servers are TLS-only,
+# and forcing it would break a plain `runserver` used for debugging
+SECURE_SSL_REDIRECT = not DEBUG
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]']
+
+
 
 
 # Application definition
@@ -38,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'rest_framework',
     'corsheaders',
     'django_filters',
@@ -159,5 +171,11 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',   # Vite/React dev server
+    'https://localhost:5173',   # Vite/React dev server over TLS
+]
+
+# the admin login form posts over HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8000',
+    'https://localhost:5173',
 ]

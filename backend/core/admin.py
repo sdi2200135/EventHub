@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (User, Event, Category, TicketType, Booking,
                      Conversation, Message, EventPhoto, EventView)
-
+from django import forms
+from django.core.exceptions import ValidationError
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
@@ -23,11 +24,30 @@ class CustomUserAdmin(UserAdmin):
         }),
     )
 
+class TicketTypeInlineFormSet(forms.BaseInlineFormSet):
 
+    def clean(self):
+        super().clean()
+        capacity = getattr(self.instance, 'capacity', None)
+        if capacity is None:
+            return
+
+        total = 0
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get('DELETE'):
+                continue
+            total += form.cleaned_data.get('quantity') or 0
+
+        if total > capacity:
+            raise ValidationError(
+                f'Sum of ticket type quantities ({total}) exceeds the event capacity ({capacity}).'
+            )
+        
 class TicketTypeInline(admin.TabularInline):
     model = TicketType
+    formset = TicketTypeInlineFormSet
     extra = 1
-
+    readonly_fields = ['ticket_type_id','reserved']
 
 class EventPhotoInline(admin.TabularInline):
     model = EventPhoto
@@ -38,7 +58,7 @@ class EventPhotoInline(admin.TabularInline):
 class EventAdmin(admin.ModelAdmin):
     list_display = ('event_id', 'title', 'organizer', 'status', 'start_datetime')
     list_filter = ('status', 'event_type', 'city')
-    readonly_fields =['status']
+    readonly_fields =['status','event_id']
     search_fields = ('title', 'event_id', 'organizer__username')
     filter_horizontal = ('categories',)
     inlines = [TicketTypeInline, EventPhotoInline]
@@ -52,9 +72,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(TicketType)
 class TicketTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'event', 'price', 'quantity', 'reserved', 'available')
+    list_display = ('ticket_type_id', 'name', 'event', 'price', 'quantity', 'reserved', 'available')
     list_filter = ('event',)
-
+    readonly_fields = ['ticket_type_id', 'reserved']
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):

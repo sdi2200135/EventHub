@@ -2,6 +2,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+from core.utils import set_id_from_pk, temporary_id
+
 from .user import User
 from .event import Event
 from .ticket_type import TicketType
@@ -46,6 +48,17 @@ class Booking(models.Model):
             models.Index(fields=['attendee', '-created_at']),
             models.Index(fields=['event', 'status']),
         ]
+
+    # the unique value of booking is given on .save and it is built based on the pk
+    def save(self, *args, **kwargs):
+        if not self.booking_id:
+            # by giving a temporary id and then build the unique id based on the pk solves the race condition 
+            # as both will be based on the pk which can never be duplicated
+            self.booking_id = temporary_id()
+            super().save(*args, **kwargs)
+            set_id_from_pk(self, 'booking_id', 'BK')
+            return
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.booking_id} — {self.attendee.username} — {self.number_of_tickets}×{self.ticket_type.name}"
