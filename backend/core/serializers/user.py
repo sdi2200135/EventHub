@@ -104,7 +104,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         password = attrs['password']
         password2 = attrs.pop('password2')
         if password != password2:
-            raise serializers.ValidationError({'password2': 'Passwords do not match.'})
+            raise serializers.ValidationError('Passwords do not match.')
 
         # check the longitude latitude is given as a pair 
         lat = attrs.get('latitude')

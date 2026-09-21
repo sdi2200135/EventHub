@@ -18,24 +18,33 @@ class EventListSerializer(serializers.ModelSerializer):
     available_capacity = serializers.IntegerField(read_only=True)
     min_price = serializers.SerializerMethodField()
     categories = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
-
+    cover_photo = serializers.SerializerMethodField()
     class Meta:
         model = Event
         fields = [
             'id', 'event_id', 'title', 'event_type', 'venue', 'city', 'country',
             'start_datetime', 'end_datetime', 'capacity', 'status',
-            'available_capacity', 'min_price', 'categories',
+            'available_capacity', 'min_price', 'categories', 'cover_photo'
         ]
 
     def get_min_price(self, obj):
         prices = [tt.price for tt in obj.ticket_types.all()]
-        return f'{min(prices):.2f}' if prices else None
-
+        return min(prices) if prices else None
+    
+    # the 1st photo in order becomes cover photo of the event
+    def get_cover_photo(self, obj):
+        photos = list(obj.photos.all())
+        if not photos:
+            return None
+        request = self.context.get('request')
+        url = photos[0].image.url
+        return request.build_absolute_uri(url) if request else url
+    
 # serializer for full details about the event basically when u have the event alone
 class EventDetailSerializer(serializers.ModelSerializer):
     organizer = UserPublicSerializer(read_only=True)
     ticket_types = TicketTypeSerializer(many=True, read_only=True)
-    photo = EventPhotoSerializer(source='photos',many=True, read_only=True)
+    photos = EventPhotoSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     available_capacity = serializers.IntegerField(read_only=True)
     total_booked = serializers.IntegerField(source='total_reserved', read_only=True)
@@ -46,7 +55,7 @@ class EventDetailSerializer(serializers.ModelSerializer):
             'id', 'event_id', 'organizer', 'title', 'description', 'event_type',
             'venue', 'address', 'city', 'country', 'latitude', 'longitude',
             'start_datetime', 'end_datetime', 'capacity', 'status',
-            'categories', 'ticket_types', 'photo',
+            'categories', 'ticket_types', 'photos',
             'available_capacity', 'total_booked', 'created_at', 'updated_at',
         ]
 

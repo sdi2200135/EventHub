@@ -775,7 +775,7 @@ const CreateEvent = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp"
                 multiple
                 onChange={handleFileSelect}
                 style={{ display: 'none' }}

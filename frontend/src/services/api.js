@@ -4,83 +4,114 @@ import axios from 'axios';
 const API_BASE = import.meta.env.VITE_API_URL || 'https://localhost:8000/api';
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
-// Mock data
-import {
-  mockEvents,
-  mockCategories,
-  mockUsers,
-  mockCurrentUser,
-  mockBookings,
-  mockVenues,
-  mockMessages
-} from './MockData';
-
-const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
-
+// AXIOS INSTANCE
 // ============================================
-// HELPER: Παίρνει τον τρέχοντα συνδεδεμένο mock user
-// ============================================
-// Σε MOCK mode, ο χρήστης που έχει κάνει login αποθηκεύεται
-// στο sessionStorage ως 'mock_user' (βλ. AuthContext.login).
-// Αυτός ο helper διαβάζει από εκεί ώστε τα API calls να
-// μην επιστρέφουν πάντα τον hardcoded participant (id: 3).
-const getCurrentMockUserId = () => {
-  try {
-    const saved = sessionStorage.getItem('mock_user');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed?.id != null) return parsed.id;
+// a client for the whole app: it knows the base URL and attaches the JWT to every request.
+// The access token lives 10 minutes and the refresh token 1 day.
+//
+// every request goes through `api`. when the backend answers 401
+// interceptor catches it, asks for a new access token and retries the request once.
+//
+// The refresh request itself is sent with plain `axios`, not `api`, so it bypasses
+// the interceptor: if the refresh token has expired too, that 401 is simply returned
+// instead of triggering another refresh and waiting forever.
+
+export const api = axios.create({ baseURL: API_BASE });
+
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem('access_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// while a refresh is in flight, other 401s wait for the same promise
+let refreshing = null;
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const original = error.config;
+    const refresh = sessionStorage.getItem('refresh_token');
+
+    // only retry once, and never for the refresh call itself
+    if (error.response?.status !== 401 || !refresh || original._retried) {
+      return Promise.reject(error);
     }
-  } catch (e) {
-    console.error('Error parsing mock_user:', e);
+    original._retried = true;
+
+    try {
+      refreshing = refreshing || axios
+        .post(`${API_BASE}/auth/refresh/`, { refresh })
+        .then((r) => r.data.access)
+        .finally(() => { refreshing = null; });
+
+      const access = await refreshing;
+      sessionStorage.setItem('access_token', access);
+      original.headers.Authorization = `Bearer ${access}`;
+      return api(original);
+    } catch (refreshError) {
+      // refresh token expired, or the admin rejected the account meanwhile
+      sessionStorage.removeItem('access_token');
+      sessionStorage.removeItem('refresh_token');
+      return Promise.reject(refreshError);
+    }
   }
-  return null;
+);
+
+
+// =====================================
+//       HELPER FNUCTIONS
+// =====================================
+
+// The API paginates is paginated so in order to get all events, or categories, events users floow then next
+// it is linked and returns the whole collection (like a linked list)
+const fetchAll = async (path, params = {}) => {
+  const rows = [];
+  let response = await api.get(path, { params });
+  for (;;) {
+    const { data } = response;
+    if (!data?.results) return Array.isArray(data) ? data : [];
+    rows.push(...data.results);
+    if (!data.next) return rows;
+    // `next` is a full url, so it takes over from baseURL
+    response = await api.get(data.next);
+  }
 };
 
-// ============================================
-// COMPUTED EVENT STATUS
-// ============================================
-// Αν ένα PUBLISHED event έχει end_datetime στο παρελθόν,
-// εμφανίζεται αυτόματα ως COMPLETED.
-// CANCELLED / DRAFT / COMPLETED παραμένουν ως έχουν.
-const applyComputedStatus = (event) => {
-  if (!event) return event;
-
-  // Μόνο PUBLISHED events μπορούν να γίνουν COMPLETED
-  if (event.status !== 'PUBLISHED') return event;
-
-  if (event.end_datetime) {
-    const end = new Date(event.end_datetime);
-    if (!isNaN(end.getTime()) && end < new Date()) {
-      return { ...event, status: 'COMPLETED' };
-    }
+// we need to match the categories with their ids as the api waits for the id
+const resolveCategoryIds = async (names = []) => {
+  const all = await fetchAll('/categories/');
+  const ids = [];
+  const unknown = [];
+  for (const name of names) {
+    const match = all.find((c) => c.name.toLowerCase() === String(name).trim().toLowerCase());
+    if (match) ids.push(match.id);
+    else unknown.push(name);
   }
-
-  return event;
+  if (unknown.length) throw new Error(`Unknown category: ${unknown.join(', ')}`);
+  return ids;
 };
 
-// Helper για arrays
-const applyComputedStatusToList = (events) =>
-  (events || []).map(applyComputedStatus);
+// the from keeps photo as blob(url). read it back into a file and upload it, one request per photo in the correct order
+const uploadEventPhotos = async (eventId, photos = []) => {
+  for (const [index, photo] of photos.entries()) {
+    const file = await fetch(photo.image).then((r) => r.blob());
+    const form = new FormData();
+    form.append('image', file, photo.name || `photo-${index + 1}.jpg`);
+    form.append('caption', photo.caption || '');
+    form.append('order', index);
+    await api.post(`/events/${eventId}/photos/`, form);
+  }
+};
+
 
 // ============================================
 // AUTH SERVICES
 // ============================================
 export const authService = {
   register: async (data) => {
-    if (USE_MOCK) {
-      await delay();
-      const newUser = {
-        id: mockUsers.length + 1,
-        ...data,
-        approval_status: 'PENDING'
-      };
-      mockUsers.push(newUser);
-      return { data: newUser };
-    }
     try {
-      const response = await axios.post(`${API_BASE}/auth/register/`, data);
-      return response;
+      return  await api.post(`/auth/register/`, data);
     } catch (error) {
       console.error('Register API error:', error.response?.data);
       throw error;
@@ -88,42 +119,18 @@ export const authService = {
   },
 
   login: async (credentials) => {
-    if (USE_MOCK) {
-      await delay();
-      const user = mockUsers.find(
-        u => u.username === credentials.username && u.password === credentials.password
-      );
-      if (!user) {
-        throw new Error('Invalid username or password');
-      }
-      if (user.approval_status === 'PENDING') {
-        throw new Error('Your account is pending administrator approval.');
-      }
-      if (user.approval_status === 'REJECTED') {
-        throw new Error('Your account registration was rejected.');
-      }
-
-      // ============================================
-      // SYNC mockCurrentUser ΜΕ ΤΟΝ ΣΥΝΔΕΔΕΜΕΝΟ ΧΡΗΣΤΗ
-      // ============================================
-      // Χωρίς αυτό, το getProfile() (που καλείται στο page load
-      // μέσω του AuthContext.loadUser) επιστρέφει πάντα τον
-      // hardcoded participant, με αποτέλεσμα ο organizer/admin
-      // να χάνει τον ρόλο του μετά από refresh ή απευθείας URL.
-      Object.keys(mockCurrentUser).forEach(key => delete mockCurrentUser[key]);
-      Object.assign(mockCurrentUser, user);
-
-      return {
-        data: {
-          access: 'mock_access_token',
-          refresh: 'mock_refresh_token',
-          user: user
-        }
-      };
-    }
+    // clean possible tokens from previous session
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
     try {
-      const response = await axios.post(`${API_BASE}/auth/login/`, credentials);
-      return response;
+      const {data} = await api.post(`/auth/login/`, credentials);
+      // save new tokens in session storage
+      sessionStorage.setItem('access_token', data.access);
+      sessionStorage.setItem('refresh_token', data.refresh);
+
+      // get user's info from backend using the token
+      const { data: user } = await api.get('/auth/me/');
+      return { data: { ...data, user } };
     } catch (error) {
       if (error.response?.status === 401) {
         throw new Error('Invalid username or password');
@@ -133,400 +140,191 @@ export const authService = {
   },
 
   getProfile: async () => {
-    if (USE_MOCK) {
-      await delay();
-
-      // Διάβασε τον πραγματικό logged-in user από το sessionStorage
-      try {
-        const saved = sessionStorage.getItem('mock_user');
-        if (saved) {
-          return { data: JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error('Error parsing mock_user:', e);
-      }
-
-      // Fallback στο legacy mockCurrentUser
-      return { data: mockCurrentUser };
-    }
-    const response = await axios.get(`${API_BASE}/auth/me/`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    return response;
+    return  await api.get(`/auth/me/`)
   },
 
   updateProfile: async (data) => {
-    if (USE_MOCK) {
-      await delay();
-      const uid = getCurrentMockUserId();
-      if (uid == null) throw new Error('No logged-in user');
-
-      // Update στον master πίνακα
-      const userIndex = mockUsers.findIndex(u => u.id === uid);
-      if (userIndex !== -1) {
-        Object.assign(mockUsers[userIndex], data);
-      }
-
-      // Update στο sessionStorage (πηγή αλήθειας μετά το login)
-      try {
-        const saved = sessionStorage.getItem('mock_user');
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          const updated = { ...parsed, ...data };
-          sessionStorage.setItem('mock_user', JSON.stringify(updated));
-        }
-      } catch (e) {
-        console.error('Error updating sessionStorage:', e);
-      }
-
-      // Sync και το legacy mockCurrentUser
-      Object.assign(mockCurrentUser, data);
-
-      return { data: { id: uid, ...data } };
-    }
-    const response = await axios.patch(`${API_BASE}/auth/me/`, data, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    return response;
+    return await api.patch(`/auth/me/`, data);
   },
 
-  updateLastLogin: async () => {
-    if (USE_MOCK) {
-      await delay(100);
-      if (mockCurrentUser) {
-        mockCurrentUser.last_login = new Date().toISOString();
-      }
-      return { data: { success: true } };
-    }
-    const response = await axios.post(
-      `${API_BASE}/auth/update_last_login/`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-        }
-      }
-    );
-    return response;
-  }
 };
 
 // ============================================
 // EVENT SERVICES
 // ============================================
+
+//  it works with pagination which is set on services of backend
 export const eventService = {
-  getEvents: async () => {
-    if (USE_MOCK) {
-      await delay();
-      return { data: applyComputedStatusToList(mockEvents) };
-    }
-    const response = await axios.get(`${API_BASE}/events/`);
-    if (response.data && response.data.results) {
-      return { data: applyComputedStatusToList(response.data.results) };
-    }
-    return {
-      ...response,
-      data: applyComputedStatusToList(response.data),
-    };
+  getEvents: async (params={}) => {
+    const { data } = await api.get('/events/', { params: { status: 'PUBLISHED', ...params } });
+    return { data: data.results, count: data.count };
   },
 
   getEvent: async (id) => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(id) || e.event_id === id);
-      if (!event) {
-        throw new Error('Event not found');
-      }
-      return { data: applyComputedStatus(event) };
-    }
-    const response = await axios.get(`${API_BASE}/events/${id}/`);
-    return {
-      ...response,
-      data: applyComputedStatus(response.data),
-    };
+    return await api.get(`/events/${id}/`);
   },
 
-  getAvailableSeats: async (eventId, ticketTypeId) => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(eventId));
-      if (!event) return { data: { available_seats: [] } };
-      
-      const primaryCategory = event.categories?.[0] || '';
-      const venue = mockVenues[primaryCategory];
-      if (!venue || !venue.seats) return { data: { available_seats: [] } };
-      
-      const seats = Object.keys(venue.seats).map(key => ({
-        id: key,
-        row: venue.seats[key].row,
-        number: venue.seats[key].number,
-        ticketType: venue.seats[key].ticketType,
-        available: venue.seats[key].available
-      }));
-      
-      return { data: { available_seats: seats } };
-    }
-    const response = await axios.get(
-      `${API_BASE}/events/${eventId}/available_seats/?ticket_type=${ticketTypeId}`
-    );
-    return response;
-  },
-    // ← ΝΕΟ: Events του συγκεκριμένου organizer
-  getOrganizerEvents: async (organizerId) => {
-    if (USE_MOCK) {
-      await delay();
-      const events = mockEvents.filter(e => e.organizer?.id === organizerId);
-      return { data: applyComputedStatusToList(events) };
-    }
-    const response = await axios.get(`${API_BASE}/events/?organizer=${organizerId}`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    if (response.data && response.data.results) {
-      return { data: applyComputedStatusToList(response.data.results) };
-    }
-    return {
-      ...response,
-      data: applyComputedStatusToList(response.data),
-    };
-  },
+  // events of a particlar organizer 
+  // My events
+  getOrganizerEvents: async (organizerId) => ({
+    data: await fetchAll('/events/', { organizer: organizerId }),
+  }),
 
-  // ← ΝΕΟ: Δημιουργία event
   createEvent: async (data) => {
-    if (USE_MOCK) {
-      await delay();
-      const newEvent = {
-        id: mockEvents.length + 1,
-        event_id: `EV${1000 + mockEvents.length + 1}`,
-        ...data,
-        status: data.status || 'DRAFT',
-        available_capacity: data.capacity,
-        bookings: [],
-        photos: data.photos || [],
-        ticket_types: (data.ticket_types || []).map((t, i) => ({
-          id: mockEvents.length * 100 + i + 1,
-          ticket_type_id: `T${mockEvents.length * 100 + i + 1}`,
-          ...t,
-          available: t.quantity
-        }))
-      };
-      mockEvents.push(newEvent);
-      return { data: newEvent };
-    }
-    const response = await axios.post(`${API_BASE}/events/`, data, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
+    const { ticket_types = [], photos = [], categories = [], status, organizer, event_id, ...fields } = data;
+
+    const { data: event } = await api.post('/events/', {
+      ...fields,
+      event_type: fields.event_type || 'OTHER',
+      categories: await resolveCategoryIds(categories),
     });
-    return response;
-  },
-
-  // ← ΝΕΟ: Ενημέρωση event
-  updateEvent: async (eventId, data) => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(eventId));
-      if (!event) throw new Error('Event not found');
-      Object.assign(event, data);
-      return { data: event };
-    }
-    const response = await axios.patch(`${API_BASE}/events/${eventId}/`, data, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    return response;
-  },
-
-  // ← ΝΕΟ: Διαγραφή event (μόνο DRAFT ή χωρίς bookings)
-  deleteEvent: async (eventId) => {
-    if (USE_MOCK) {
-      await delay();
-      const index = mockEvents.findIndex(e => e.id === Number(eventId));
-      if (index === -1) throw new Error('Event not found');
-      const event = mockEvents[index];
-      if (event.status === 'PUBLISHED' && event.bookings?.length > 0) {
-        throw new Error('Cannot delete a published event with bookings');
-      }
-      mockEvents.splice(index, 1);
-      return { data: { success: true } };
-    }
-    const response = await axios.delete(`${API_BASE}/events/${eventId}/`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    return response;
-  },
-
-  // ← ΝΕΟ: Αλλαγή status (publish / cancel / complete)
-  updateEventStatus: async (eventId, status) => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(eventId));
-      if (!event) throw new Error('Event not found');
-      event.status = status;
-      return { data: event };
-    }
-    const response = await axios.patch(
-      `${API_BASE}/events/${eventId}/`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-        }
-      }
-    );
-    return response;
-  },
-    // ← ΝΕΟ: Ακύρωση event (status → CANCELLED)
-  cancelEvent: async (eventId, notify = false, notifySubject = '', notifyBody = '') => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(eventId));
-      if (!event) throw new Error('Event not found');
-      event.status = 'CANCELLED';
-
-      // Bulk notification προς attendees
-      if (notify && event.bookings?.length > 0) {
-        const attendees = event.bookings
-          .filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING')
-          .map(b => b.user_id);
-        const uniqueAttendees = [...new Set(attendees)];
-
-        uniqueAttendees.forEach((userId, idx) => {
-          mockMessages.push({
-            id: mockMessages.length + 1 + idx,
-            sender_id: event.organizer?.id || 2,
-            sender_username: event.organizer?.username || 'organizer',
-            sender_name: `${event.organizer?.first_name || ''} ${event.organizer?.last_name || ''}`.trim() || 'Organizer',
-            recipient_id: userId,
-            recipient_username: '',
-            subject: notifySubject || `Event Cancelled: ${event.title}`,
-            body: notifyBody || `We regret to inform you that the event "${event.title}" has been cancelled.`,
-            is_read: false,
-            is_draft: false,
-            is_trash: false,
-            created_at: new Date().toISOString(),
-            attachments: []
-          });
+    try{
+      // create tickets
+      if (ticket_types.length) {
+        await api.post('/ticket-types/bulk/', {
+          event_id: event.id,
+          ticket_types: ticket_types.map(({ name, price, quantity }) => ({ name, price, quantity })),
         });
-      }
+      }  
+      // upload the photos
+      await uploadEventPhotos(event.id, photos);
 
-      return { data: event };
+    }catch(err){
+      // the event exists but is incomplete due to some fault in ticket type creation so delete so a duplicate won't exist
+      await api.delete(`/events/${event.id}/`).catch(() => {});
+      throw err;
     }
-    const response = await axios.patch(
-      `${API_BASE}/events/${eventId}/`,
-      { status: 'CANCELLED' },
-      {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-        }
-      }
-    );
-    return response;
+    
+    if (status === 'PUBLISHED') {
+      return api.post(`/events/${event.id}/publish/`);
+    }
+    return api.get(`/events/${event.id}/`);
   },
 
-    // ← ΕΜΠΛΟΥΤΙΣΜΕΝΟ: Επιστρέφει enriched bookings με ticket type + user info + total_price
+  // todo
+  updateEvent: async (eventId, data) => {
+    // if (USE_MOCK) {
+    //   await delay();
+    //   const event = mockEvents.find(e => e.id === Number(eventId));
+    //   if (!event) throw new Error('Event not found');
+    //   Object.assign(event, data);
+    //   return { data: event };
+    // }
+    return  await api.patch(`/events/${eventId}/`, data)
+  },
+
+  // todo
+  deleteEvent: async (eventId) => {
+    // if (USE_MOCK) {
+    //   await delay();
+    //   const index = mockEvents.findIndex(e => e.id === Number(eventId));
+    //   if (index === -1) throw new Error('Event not found');
+    //   const event = mockEvents[index];
+    //   if (event.status === 'PUBLISHED' && event.bookings?.length > 0) {
+    //     throw new Error('Cannot delete a published event with bookings');
+    //   }
+    //   mockEvents.splice(index, 1);
+    //   return { data: { success: true } };
+    // }
+    return await api.delete(`/events/${eventId}/`)
+  },
+
+  cancelEvent: async (eventId) => {
+    return await api.post(`/events/${eventId}/cancel/`);
+  },
+
+  // ← ΕΜΠΛΟΥΤΙΣΜΕΝΟ: Επιστρέφει enriched bookings με ticket type + user info + total_price
   getEventBookings: async (eventId) => {
-    if (USE_MOCK) {
-      await delay();
-      const event = mockEvents.find(e => e.id === Number(eventId));
-      if (!event) return { data: [] };
+    // if (USE_MOCK) {
+    //   await delay();
+    //   const event = mockEvents.find(e => e.id === Number(eventId));
+    //   if (!event) return { data: [] };
 
-      const enriched = (event.bookings || []).map((b, idx) => {
-        // ---- Ticket Type ----
-        let ticketTypeId = 'T1';
-        let ticketTypeName = 'Regular';
-        let ticketPrice = 0;
+    //   const enriched = (event.bookings || []).map((b, idx) => {
+    //     // ---- Ticket Type ----
+    //     let ticketTypeId = 'T1';
+    //     let ticketTypeName = 'Regular';
+    //     let ticketPrice = 0;
 
-        if (event.ticket_types && event.ticket_types.length > 0) {
-          // Αν το booking έχει ticket_type_id, ψάξε το σωστό
-          let tt = null;
-          if (b.ticket_type_id) {
-            tt = event.ticket_types.find(
-              t => t.id === b.ticket_type_id || t.ticket_type_id === b.ticket_type_id
-            );
-          }
-          // Αλλιώς round-robin
-          if (!tt) tt = event.ticket_types[idx % event.ticket_types.length];
+    //     if (event.ticket_types && event.ticket_types.length > 0) {
+    //       // Αν το booking έχει ticket_type_id, ψάξε το σωστό
+    //       let tt = null;
+    //       if (b.ticket_type_id) {
+    //         tt = event.ticket_types.find(
+    //           t => t.id === b.ticket_type_id || t.ticket_type_id === b.ticket_type_id
+    //         );
+    //       }
+    //       // Αλλιώς round-robin
+    //       if (!tt) tt = event.ticket_types[idx % event.ticket_types.length];
 
-          ticketTypeId = tt.ticket_type_id || `T${idx + 1}`;
-          ticketTypeName = tt.name || ticketTypeId;
-          ticketPrice = Number(tt.price) || 0;
-        }
+    //       ticketTypeId = tt.ticket_type_id || `T${idx + 1}`;
+    //       ticketTypeName = tt.name || ticketTypeId;
+    //       ticketPrice = Number(tt.price) || 0;
+    //     }
 
-        // ---- Total Price ----
-        // 1. Αν το booking έχει total_price, χρησιμοποίησέ το
-        // 2. Αλλιώς ψάξε στο standalone mockBookings
-        // 3. Αλλιώς υπολόγισε price × quantity
-        let totalPrice = b.total_price;
-        if (totalPrice == null) {
-          const standalone = mockBookings.find(mb => mb.id === b.id);
-          if (standalone?.total_price != null) {
-            totalPrice = standalone.total_price;
-          } else {
-            totalPrice = ticketPrice * (b.quantity || 0);
-          }
-        }
+    //     // ---- Total Price ----
+    //     // 1. Αν το booking έχει total_price, χρησιμοποίησέ το
+    //     // 2. Αλλιώς ψάξε στο standalone mockBookings
+    //     // 3. Αλλιώς υπολόγισε price × quantity
+    //     let totalPrice = b.total_price;
+    //     if (totalPrice == null) {
+    //       const standalone = mockBookings.find(mb => mb.id === b.id);
+    //       if (standalone?.total_price != null) {
+    //         totalPrice = standalone.total_price;
+    //       } else {
+    //         totalPrice = ticketPrice * (b.quantity || 0);
+    //       }
+    //     }
 
-        // ---- Booking Date ----
-        const bookingDate = b.booking_date
-          || mockBookings.find(mb => mb.id === b.id)?.booking_date
-          || event.start_datetime;
+    //     // ---- Booking Date ----
+    //     const bookingDate = b.booking_date
+    //       || mockBookings.find(mb => mb.id === b.id)?.booking_date
+    //       || event.start_datetime;
 
-        // ---- User info ----
-        const user = mockUsers.find(u => u.id === b.user_id);
-        const userName = user
-          ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username
-          : `User ${b.user_id}`;
+    //     // ---- User info ----
+    //     const user = mockUsers.find(u => u.id === b.user_id);
+    //     const userName = user
+    //       ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.username
+    //       : `User ${b.user_id}`;
 
-        return {
-          ...b,
-          ticket_type_id: ticketTypeId,
-          ticket_type_name: ticketTypeName,
-          ticket_price: ticketPrice,
-          total_price: totalPrice,
-          booking_date: bookingDate,
-          user_name: userName,
-          user_username: user?.username || `user${b.user_id}`,
-        };
-      });
+    //     return {
+    //       ...b,
+    //       ticket_type_id: ticketTypeId,
+    //       ticket_type_name: ticketTypeName,
+    //       ticket_price: ticketPrice,
+    //       total_price: totalPrice,
+    //       booking_date: bookingDate,
+    //       user_name: userName,
+    //       user_username: user?.username || `user${b.user_id}`,
+    //     };
+    //   });
 
-      return { data: enriched };
-    }
-    const response = await axios.get(`${API_BASE}/events/${eventId}/bookings/`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
+    //   return { data: enriched };
+    // }
+    const response = await axios.get(`${API_BASE}/events/${eventId}/bookings/`)
     return response;
   },
 
-  // Μέσα στο eventService, μετά το getOrganizerEvents:
-  getAllEvents: async () => {
-    if (USE_MOCK) {
-      await delay();
-      return { data: applyComputedStatusToList(mockEvents) };
-    }
-    const response = await axios.get(`${API_BASE}/events/`, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-      }
-    });
-    if (response.data && response.data.results) {
-      return { data: applyComputedStatusToList(response.data.results) };
-    }
-    return {
-      ...response,
-      data: applyComputedStatusToList(response.data),
-    };
-  }
+  // REMOVE LATER
+//   // Μέσα στο eventService, μετά το getOrganizerEvents:
+//   getAllEvents: async () => {
+//     if (USE_MOCK) {
+//       await delay();
+//       return { data: applyComputedStatusToList(mockEvents) };
+//     }
+//     const response = await axios.get(`${API_BASE}/events/`, {
+//       headers: {
+//         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
+//       }
+//     });
+//     if (response.data && response.data.results) {
+//       return { data: applyComputedStatusToList(response.data.results) };
+//     }
+//     return {
+//       ...response,
+//       data: applyComputedStatusToList(response.data),
+//     };
+//   }
 };
 
 // ============================================
@@ -625,6 +423,7 @@ export const bookingService = {
       const userBookings = mockBookings.filter(b => b.user_id === uid);
       return { data: userBookings };
     }
+
     // 1. Παίρνουμε το τρέχον user id για filtering
     const meRes = await axios.get(`${API_BASE}/auth/me/`, {
       headers: { Authorization: `Bearer ${sessionStorage.getItem('access_token')}` }
@@ -653,108 +452,6 @@ export const bookingService = {
 
     return { data };
   },
-
-  // ← ΝΕΟ: Λήψη μίας κράτησης
-  // getBooking: async (bookingId) => {
-  //   if (USE_MOCK) {
-  //     await delay();
-  //     const booking = mockBookings.find(b => b.id === Number(bookingId));
-  //     if (!booking) throw new Error('Booking not found');
-  //     return { data: booking };
-  //   }
-  //   const response = await axios.get(`${API_BASE}/bookings/${bookingId}/`, {
-  //     headers: {
-  //       Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //     }
-  //   });
-  //   return response; 
-  // },
-
-  // cancelBooking: async (bookingId) => {
-  //   if (USE_MOCK) {
-  //     await delay();
-  //     const booking = mockBookings.find(b => b.id === Number(bookingId));
-  //     if (booking) {
-  //       booking.status = 'CANCELLED';
-  //       const event = mockEvents.find(e => e.id === booking.event_id);
-  //       if (event) {
-  //         event.available_capacity += booking.quantity;
-  //         if (event.ticket_types) {
-  //           const ticketType = event.ticket_types.find(t => t.id === booking.ticket_type_id);
-  //           if (ticketType) {
-  //             ticketType.available += booking.quantity;
-  //           }
-  //         }
-  //       }
-  //     }
-  //     return { data: { message: 'Booking cancelled successfully' } };
-  //   }
-  //   const response = await axios.delete(`${API_BASE}/bookings/${bookingId}/`, {
-  //     headers: {
-  //       Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //     }
-  //   });
-  //   return response;
-  // },
-
-  // ← ΝΕΟ: Approve booking (PENDING → CONFIRMED)
-  // approveBooking: async (bookingId) => {
-  //   if (USE_MOCK) {
-  //     await delay(300);
-  //     // Ψάξε σε όλα τα events
-  //     for (const event of mockEvents) {
-  //       const booking = event.bookings?.find(b => b.id === Number(bookingId));
-  //       if (booking) {
-  //         booking.status = 'CONFIRMED';
-  //         return { data: booking };
-  //       }
-  //     }
-  //     throw new Error('Booking not found');
-  //   }
-  //   const response = await axios.patch(
-  //     `${API_BASE}/bookings/${bookingId}/`,
-  //     { status: 'CONFIRMED' },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //       }
-  //     }
-  //   );
-  //   return response;
-  // },
-
-  // ← ΝΕΟ: Reject booking (PENDING → CANCELLED + επιστροφή tickets)
-  // rejectBooking: async (bookingId) => {
-  //   if (USE_MOCK) {
-  //     await delay(300);
-  //     for (const event of mockEvents) {
-  //       const booking = event.bookings?.find(b => b.id === Number(bookingId));
-  //       if (booking) {
-  //         booking.status = 'CANCELLED';
-  //         // Επιστροφή διαθεσιμότητας
-  //         event.available_capacity = (event.available_capacity || 0) + (booking.quantity || 0);
-  //         if (event.ticket_types && booking.ticket_type_id) {
-  //           const tt = event.ticket_types.find(
-  //             t => t.id === booking.ticket_type_id || t.ticket_type_id === booking.ticket_type_id
-  //           );
-  //           if (tt) tt.available = (tt.available || 0) + (booking.quantity || 0);
-  //         }
-  //         return { data: booking };
-  //       }
-  //     }
-  //     throw new Error('Booking not found');
-  //   }
-  //   const response = await axios.patch(
-  //     `${API_BASE}/bookings/${bookingId}/`,
-  //     { status: 'CANCELLED' },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //       }
-  //     }
-  //   );
-  //   return response;
-  // }
 };
 
 // ============================================
@@ -800,6 +497,7 @@ export const messageService = {
     return response;
   },
 
+  // REMOVE LATER
   // markAsRead: async (messageId) => {
   //   if (USE_MOCK) {
   //     await delay(200);
@@ -836,6 +534,7 @@ export const messageService = {
     return response;
   },
 
+  // DELETE OLO CHECK IT 
   // Οριστική διαγραφή (μόνο από Trash)
   deleteMessage: async (messageId) => {
     if (USE_MOCK) {
@@ -959,70 +658,6 @@ export const messageService = {
     return response;
   },
 
-  // ← ΝΕΟ: Αποθήκευση ως Draft
-  // saveDraft: async (data) => {
-  //   if (USE_MOCK) {
-  //     await delay();
-  //     // Αν υπάρχει draftId, ενημέρωσε το υπάρχον
-  //     if (data.draftId) {
-  //       const existing = mockMessages.find(m => m.id === Number(data.draftId));
-  //       if (existing) {
-  //         Object.assign(existing, {
-  //           recipient_id: data.recipient_id || null,
-  //           recipient_username: data.recipient_username || '',
-  //           subject: data.subject || '',
-  //           body: data.body || '',
-  //           is_draft: true,
-  //           is_trash: false,
-  //           updated_at: new Date().toISOString()
-  //         });
-  //         return { data: existing };
-  //       }
-  //     }
-  //     // Δημιούργησε νέο draft
-  //     const newDraft = {
-  //       id: mockMessages.length + 1,
-  //       sender_id: data.sender_id || getCurrentMockUserId() || 3,
-  //       sender_username: data.sender_username || 'user',
-  //       sender_name: data.sender_name || 'User',
-  //       recipient_id: data.recipient_id || null,
-  //       recipient_username: data.recipient_username || '',
-  //       subject: data.subject || '',
-  //       body: data.body || '',
-  //       is_read: true,
-  //       is_draft: true,
-  //       is_trash: false,
-  //       created_at: new Date().toISOString(),
-  //       attachments: []
-  //     };
-  //     mockMessages.push(newDraft);
-  //     return { data: newDraft };
-  //   }
-  //   // Backend
-  //   if (data.draftId) {
-  //     const response = await axios.patch(
-  //       `${API_BASE}/messages/${data.draftId}/`,
-  //       { ...data, is_draft: true },
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //         }
-  //       }
-  //     );
-  //     return response;
-  //   }
-  //   const response = await axios.post(
-  //     `${API_BASE}/messages/`,
-  //     { ...data, is_draft: true },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //       }
-  //     }
-  //   );
-  //   return response;
-  // },
-
   // ← ΕΝΗΜΕΡΩΜΕΝΟ: Υποστηρίζει dual-role (organizer + participant)
   getRecipients: async (currentUserId = null) => {
     if (USE_MOCK) {
@@ -1099,52 +734,6 @@ export const messageService = {
     }
     return response;
   },
-
-  // ← ΝΕΟ: Mark as Junk
-  // markAsJunk: async (messageId) => {
-  //   if (USE_MOCK) {
-  //     await delay(200);
-  //     const message = mockMessages.find(m => m.id === Number(messageId));
-  //     if (message) {
-  //       message.is_junk = true;
-  //       message.is_read = true;
-  //       message.is_trash = false;
-  //     }
-  //     return { data: { success: true } };
-  //   }
-  //   const response = await axios.patch(
-  //     `${API_BASE}/messages/${messageId}/`,
-  //     { is_junk: true, is_read: true, is_trash: false },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //       }
-  //     }
-  //   );
-  //   return response;
-  // },
-
-  // // ← ΝΕΟ: Unmark Junk (Restore στο Inbox)
-  // unmarkJunk: async (messageId) => {
-  //   if (USE_MOCK) {
-  //     await delay(200);
-  //     const message = mockMessages.find(m => m.id === Number(messageId));
-  //     if (message) {
-  //       message.is_junk = false;
-  //     }
-  //     return { data: { success: true } };
-  //   }
-  //   const response = await axios.patch(
-  //     `${API_BASE}/messages/${messageId}/`,
-  //     { is_junk: false },
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //       }
-  //     }
-  //   );
-  //   return response;
-  // }
 };
 
 // ============================================
@@ -1166,21 +755,6 @@ export const userService = {
     }
     return response;
   },
-
-  // getUser: async (userId) => {
-  //   if (USE_MOCK) {
-  //     await delay();
-  //     const user = mockUsers.find(u => u.id === Number(userId));
-  //     if (!user) throw new Error('User not found');
-  //     return { data: user };
-  //   }
-  //   const response = await axios.get(`${API_BASE}/users/${userId}/`, {
-  //     headers: {
-  //       Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //     }
-  //   });
-  //   return response;
-  // },
 
   approveUser: async (userId) => {
     if (USE_MOCK) {
@@ -1222,18 +796,4 @@ export const userService = {
     return response;
   },
 
-  // deleteUser: async (userId) => {
-  //   if (USE_MOCK) {
-  //     await delay();
-  //     const index = mockUsers.findIndex(u => u.id === Number(userId));
-  //     if (index !== -1) mockUsers.splice(index, 1);
-  //     return { data: { success: true } };
-  //   }
-  //   const response = await axios.delete(`${API_BASE}/users/${userId}/`, {
-  //     headers: {
-  //       Authorization: `Bearer ${sessionStorage.getItem('access_token')}`
-  //     }
-  //   });
-  //   return response;
-  // }
 };

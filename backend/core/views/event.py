@@ -36,7 +36,7 @@ class EventViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
         qs = Event.objects.select_related('organizer').prefetch_related(
-            'categories', 'ticket_types'
+            'categories', 'ticket_types', 'photos'
         ).order_by('start_datetime', 'pk')
         if not user.is_authenticated:
             return qs.filter(status=Event.EventStatus.PUBLISHED)
@@ -83,7 +83,8 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if request.user.is_authenticated:
+        # don't increase view count when the organizer clicks his event (noise)
+        if request.user.is_authenticated and instance.organizer_id != request.user.id:
             view,created = EventView.objects.get_or_create(user=request.user, event=instance)
             if( not created ):
                 EventView.objects.filter(pk=view.pk).update(view_count=F('view_count') + 1, last_viewed_at = timezone.now())

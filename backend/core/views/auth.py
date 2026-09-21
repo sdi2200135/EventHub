@@ -6,6 +6,7 @@ from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from django.contrib.auth.models import update_last_login
 from core.models import User
 from core.permissions import IsApprovedUser
 from core.serializers import RegisterSerializer, UserSerializer
@@ -28,6 +29,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             else:
                 detail = 'Your account registration was rejected.'
             raise serializers.ValidationError({'detail': detail})
+        update_last_login(None, user)
+
         return data
 
 
