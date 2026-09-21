@@ -15,6 +15,7 @@
   justify-content: center;
   z-index: 1000;
   animation: bkFadeIn 0.3s ease;
+  padding: 1rem;
 }
 
 @keyframes bkFadeIn {
@@ -30,27 +31,12 @@
   border: 1px solid #2A2A2A;
   border-radius: 1rem;
   padding: 2rem 2.5rem;
-  max-width: 700px;
+  max-width: 500px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   animation: bkSlideUp 0.3s ease;
   position: relative;
-}
-
-/* Για stage venues (Theater, Cinema) με πολλές θέσεις - πολύ πλατύ */
-.bk-modal-content.stage-venue {
-  max-width: 760px;
-}
-
-/* Για boxes venues (Sports) - πιο πλατύ */
-.bk-modal-content.boxes-venue {
-  max-width: 700px;
-}
-
-/* Για venues χωρίς θέσεις (Music, Stand Up Comedy) - κανονικό */
-.bk-modal-content.no-seats-venue {
-  max-width: 500px;
 }
 
 @keyframes bkSlideUp {
@@ -199,6 +185,70 @@
 }
 
 /* ============================================
+   TICKET TYPE SELECTOR
+   ============================================ */
+.bk-ticket-type-selector {
+  margin: 0.5rem 0 1rem;
+  padding: 0.5rem;
+  background: #181818;
+  border-radius: 0.5rem;
+  border: 1px solid #2A2A2A;
+}
+
+.bk-ticket-type-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6c7a89;
+  margin-bottom: 0.4rem;
+}
+
+.bk-ticket-type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.bk-ticket-type-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 0.5rem 0.8rem;
+  background: transparent;
+  border: 1px solid #2A2A2A;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.bk-ticket-type-btn:hover {
+  border-color: #203855;
+}
+
+.bk-ticket-type-btn.active {
+  border-color: #a29bfe;
+}
+
+.bk-ticket-type-name {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.bk-ticket-type-price {
+  display: block;
+  font-size: 0.75rem;
+  color: #a29bfe;
+}
+
+.bk-ticket-type-available {
+  display: block;
+  font-size: 0.65rem;
+  color: #6c7a89;
+}
+
+/* ============================================
    QUANTITY SELECTOR
    ============================================ */
 .bk-modal-quantity {
@@ -263,341 +313,8 @@
 }
 
 /* ============================================
-   SEAT MAP
+   TOTAL
    ============================================ */
-.bk-modal-seat-selection {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: #181818;
-  border-radius: 0.5rem;
-  border: 1px solid #2A2A2A;
-}
-
-.bk-seat-section {
-  margin-bottom: 0.75rem;
-}
-
-.bk-seat-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6c7a89;
-  margin-bottom: 0.4rem;
-}
-
-.bk-seat-map {
-  background: #0d0d1a;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  border: 1px solid #2A2A2A;
-}
-
-.bk-stage-indicator {
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6c7a89;
-  padding: 0.5rem;
-  margin-bottom: 1rem;
-  background: #1a1a2e;
-  border-radius: 0.25rem;
-  border: 1px solid #2A2A2A;
-}
-
-.bk-seats-grid-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0 0.5rem;
-}
-
-.bk-seat-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.bk-row-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6c7a89;
-  min-width: 20px;
-  text-align: center;
-}
-
-.bk-seat-row-seats {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-}
-
-/* ============================================
-   SEAT BUTTONS
-   ============================================ */
-.bk-seat-btn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #2A2A2A;
-  border-radius: 4px;
-  background: #1E1E1E;
-  color: #6c7a89;
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.bk-seat-btn:hover:not(:disabled) {
-  border-color: #203855;
-  background: #2a2a3e;
-}
-
-.bk-seat-btn.selected {
-  border-color: #1A782E;
-  background: rgba(26, 120, 46, 0.3);
-  color: #1A782E;
-}
-
-.bk-seat-btn.unavailable {
-  background: #2A2A2A;
-  color: #3A3A3A;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.bk-seat-btn:disabled:not(.unavailable) {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* ============================================
-   BOX MAP - FIELD ΣΤΟ ΚΕΝΤΡΟ ΜΕ BOXES ΓΥΡΩ
-   ============================================ */
-.bk-box-map {
-  background: #0d0d1a;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  border: 1px solid #2A2A2A;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: relative;
-}
-
-/* Field Indicator (κέντρο γηπέδου) */
-.bk-field-indicator {
-  text-align: center;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #6c7a89;
-  padding: 0.5rem;
-  background: #1a1a2e;
-  border-radius: 0.25rem;
-  border: 1px dashed #2A2A2A;
-  margin-bottom: 0.5rem;
-}
-
-/* Boxes γύρω από το field - ΧΡΗΣΗ EXPLICIT GRID PLACEMENT */
-.bk-boxes-grid {
-  display: grid;
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 450px;
-  margin: 0 auto;
-}
-
-/* Για 8 boxes: διάταξη 3-2-3 γύρω από το field */
-.bk-boxes-grid.has-8 {
-  grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 0.4rem;
-  max-width: 450px;
-}
-
-/* Για λιγότερα από 8 boxes - απλή διάταξη */
-.bk-boxes-grid:not(.has-8) {
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto;
-  max-width: 450px;
-}
-
-.bk-box-item {
-  background: #1E1E1E;
-  border: 1px solid #2A2A2A;
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.bk-box-item:hover:not(.unavailable) {
-  border-color: #203855;
-}
-
-.bk-box-item.selected {
-  border-color: #1A782E;
-  background: rgba(26, 120, 46, 0.15);
-}
-
-.bk-box-item.unavailable {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.bk-box-item.not-selectable {
-  background: #1a1a2e;
-  border-color: #2a2a3e;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.bk-box-item.not-selectable:hover {
-  border-color: #2a2a3e;
-  transform: none;
-}
-
-.bk-box-item.not-selectable .bk-box-available {
-  color: #4a4a5e;
-}
-
-.bk-box-name {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #e0e0e0;
-}
-
-.bk-box-capacity {
-  font-size: 0.65rem;
-  color: #6c7a89;
-}
-
-.bk-box-available {
-  font-size: 0.65rem;
-  color: #1A782E;
-}
-
-.bk-box-item.unavailable .bk-box-available {
-  color: #981818;
-}
-
-/* Box Quantity Selector */
-.bk-box-quantity-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.2rem;
-  margin-top: 0.3rem;
-  padding-top: 0.3rem;
-  border-top: 1px solid #2A2A2A;
-  width: 100%;
-}
-
-.bk-box-qty-btn {
-  width: 20px;
-  height: 20px;
-  background: #2A2A2A;
-  border: 1px solid #3A3A3A;
-  border-radius: 0.25rem;
-  color: #e0e0e0;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bk-box-qty-btn:hover:not(:disabled) {
-  background: #3A3A3A;
-  border-color: #a29bfe;
-}
-
-.bk-box-qty-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.bk-box-qty-value {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #e0e0e0;
-  min-width: 16px;
-  text-align: center;
-}
-
-.bk-box-qty-max {
-  font-size: 0.55rem;
-  color: #6c7a89;
-}
-
-/* ============================================
-   LEGEND
-   ============================================ */
-.bk-seats-legend {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 0.5rem 0;
-  flex-wrap: wrap;
-}
-
-.bk-legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-size: 0.7rem;
-  color: #6c7a89;
-}
-
-.bk-legend-box {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 1px solid #2A2A2A;
-}
-
-.bk-legend-box.available {
-  background: #1E1E1E;
-}
-
-.bk-legend-box.selected {
-  background: rgba(26, 120, 46, 0.3);
-  border-color: #1A782E;
-}
-
-.bk-legend-box.unavailable {
-  background: #2A2A2A;
-  opacity: 0.5;
-}
-
-.bk-legend-box.not-selectable {
-  background: #1a1a2e;
-  border-color: #2a2a3e;
-  opacity: 0.5;
-}
-
-/* Seats Info */
-.bk-seats-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #6c7a89;
-}
-
-.bk-seats-hint {
-  color: #AF7812;
-}
-
-/* Total */
 .bk-modal-total {
   padding-top: 0.5rem;
   border-top: 1px solid #2A2A2A;
@@ -696,131 +413,32 @@
 }
 
 /* ============================================
-   TICKET TYPE SELECTOR
-   ============================================ */
-.bk-ticket-type-selector {
-  margin: 0.5rem 0 1rem;
-  padding: 0.5rem;
-  background: #181818;
-  border-radius: 0.5rem;
-  border: 1px solid #2A2A2A;
-}
-
-.bk-ticket-type-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #6c7a89;
-  margin-bottom: 0.4rem;
-}
-
-.bk-ticket-type-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-
-.bk-ticket-type-btn {
-  flex: 1;
-  min-width: 100px;
-  padding: 0.5rem 0.8rem;
-  background: transparent;
-  border: 1px solid #2A2A2A;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.bk-ticket-type-btn:hover {
-  border-color: #203855;
-}
-
-.bk-ticket-type-btn.active {
-  border-color: #a29bfe;
-}
-
-.bk-ticket-type-name {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #e0e0e0;
-}
-
-.bk-ticket-type-price {
-  display: block;
-  font-size: 0.75rem;
-  color: #a29bfe;
-}
-
-.bk-ticket-type-available {
-  display: block;
-  font-size: 0.65rem;
-  color: #6c7a89;
-}
-
-/* ============================================
-   NOT SELECTABLE - ΓΙΑ ΘΕΣΕΙΣ ΠΟΥ ΔΕΝ ΑΝΤΙΣΤΟΙΧΟΥΝ ΣΤΟΝ ΤΥΠΟ ΕΙΣΙΤΗΡΙΟΥ
-   ============================================ */
-.bk-seat-btn.not-selectable {
-  background: #1a1a2e;
-  border-color: #2a2a3e;
-  color: #4a4a5e;
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.bk-seat-btn.not-selectable:hover {
-  border-color: #2a2a3e;
-  transform: none;
-}
-
-/* ============================================
    RESPONSIVE
    ============================================ */
-@media (max-width: 1024px) {
-  .bk-modal-content.stage-venue {
-    max-width: 90vw;
-  }
-}
-
 @media (max-width: 768px) {
   .bk-modal-content {
     max-width: 95%;
     padding: 1.5rem;
   }
 
-  .bk-modal-content.stage-venue,
-  .bk-modal-content.boxes-venue,
-  .bk-modal-content.no-seats-venue {
-    max-width: 95%;
-  }
-
-  .bk-seat-row-seats {
-    gap: 0.15rem;
-    flex-wrap: wrap;
-  }
-
-  .bk-seat-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 0.55rem;
-  }
-
-  .bk-boxes-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .bk-modal-title {
+    font-size: 1.35rem;
   }
 }
 
 @media (max-width: 480px) {
+  .bk-modal-overlay {
+    padding: 0.5rem;
+  }
+
   .bk-modal-content {
     padding: 1rem;
-    margin: 0.5rem;
     max-width: 100%;
   }
 
   .bk-modal-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
   }
 
   .bk-modal-ticket-item {
@@ -833,8 +451,21 @@
     text-align: right;
   }
 
-  .bk-info-row {
-    flex-wrap: wrap;
+  .bk-ticket-type-btn {
+    min-width: 80px;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .bk-ticket-type-name {
+    font-size: 0.8rem;
+  }
+
+  .bk-ticket-type-price {
+    font-size: 0.7rem;
+  }
+
+  .bk-ticket-type-available {
+    font-size: 0.6rem;
   }
 
   .bk-modal-quantity {
@@ -848,60 +479,12 @@
     text-align: center;
   }
 
-  .bk-seat-btn {
-    width: 22px;
-    height: 22px;
-    font-size: 0.5rem;
+  .bk-info-row {
+    flex-wrap: wrap;
   }
 
-  .bk-seat-row {
-    gap: 0.2rem;
-  }
-
-  .bk-row-label {
-    font-size: 0.6rem;
-    min-width: 14px;
-  }
-
-  .bk-seats-legend {
-    gap: 0.5rem;
-  }
-
-  .bk-boxes-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.3rem;
-  }
-
-  .bk-box-item {
-    padding: 0.3rem;
-  }
-
-  .bk-box-name {
-    font-size: 0.7rem;
-  }
-
-  .bk-box-capacity,
-  .bk-box-available {
-    font-size: 0.6rem;
-  }
-
-  .bk-box-qty-btn {
-    width: 20px;
-    height: 20px;
-    font-size: 0.8rem;
-  }
-
-  .bk-box-qty-value {
-    font-size: 0.8rem;
-    min-width: 16px;
-  }
-
-  .bk-box-map {
-    padding: 0.5rem;
-  }
-
-  .bk-field-indicator {
-    font-size: 0.7rem;
-    padding: 0.3rem;
+  .bk-modal-book-btn {
+    font-size: 0.95rem;
+    padding: 0.65rem;
   }
 }
