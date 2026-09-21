@@ -1,8 +1,8 @@
 // src/pages/profile/organizer/CreateEvent.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { eventService } from '../../../services/api';
+import { eventService, categoryService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
@@ -17,6 +17,7 @@ const STEPS = [
 
 const MAX_DESCRIPTION = 150;
 const MAX_PHOTOS = 20;
+const OTHER_OPTION_VALUE = '__OTHER__';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -48,6 +49,10 @@ const CreateEvent = () => {
   });
 
   const [newCategory, setNewCategory] = useState('');
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   // ============================================
   // STEP 2: TICKETS STATE
@@ -63,6 +68,25 @@ const CreateEvent = () => {
   const [photos, setPhotos] = useState([]);
 
   // ============================================
+  // FETCH CATEGORIES FROM BACKEND
+  // ============================================
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const response = await categoryService.getCategories();
+        setAvailableCategories(response.data || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Could not load categories. Please try again later.');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // ============================================
   // STEP 1 HANDLERS
   // ============================================
   const handleChange = (e) => {
@@ -76,7 +100,11 @@ const CreateEvent = () => {
   };
 
   const handleAddCategory = () => {
-    const trimmed = newCategory.trim();
+    // Αν είναι στο "Other" mode, χρησιμοποιούμε το customCategory
+    const trimmed = showCustomCategory
+      ? customCategory.trim()
+      : newCategory.trim();
+
     if (!trimmed) return;
     if (formData.categories.includes(trimmed)) {
       setError('Category already added');
@@ -86,7 +114,11 @@ const CreateEvent = () => {
       ...prev,
       categories: [...prev.categories, trimmed]
     }));
+
+    // Reset
     setNewCategory('');
+    setCustomCategory('');
+    setShowCustomCategory(false);
     setError('');
   };
 
@@ -97,10 +129,15 @@ const CreateEvent = () => {
     }));
   };
 
-  const handleCategoryKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddCategory();
+  const handleCategorySelectChange = (e) => {
+    const value = e.target.value;
+    if (value === OTHER_OPTION_VALUE) {
+      setShowCustomCategory(true);
+      setNewCategory('');
+    } else {
+      setShowCustomCategory(false);
+      setCustomCategory('');
+      setNewCategory(value);
     }
   };
 
@@ -235,7 +272,6 @@ const CreateEvent = () => {
     }
 
     if (currentStep === 3) {
-      // Μεταβαίνουμε στο Preview
       setIsPreview(true);
       return;
     }
@@ -334,7 +370,6 @@ const CreateEvent = () => {
   // RENDER HELPERS
   // ============================================
   const renderStepper = () => {
-    // Στο preview, όλα τα steps είναι completed
     const displayStep = isPreview ? 4 : currentStep;
 
     return (
@@ -382,198 +417,243 @@ const CreateEvent = () => {
   // ============================================
   // RENDER STEP 1
   // ============================================
-  const renderStep1 = () => (
-    <div className="step-content">
-      <h2 className="step-title">Event Details</h2>
+  const renderStep1 = () => {
+    // Κατηγορίες που δεν έχουν ήδη προστεθεί
+    const selectableCategories = availableCategories.filter(
+      cat => !formData.categories.includes(cat.name)
+    );
 
-      <div className="step-grid">
-        <div className="step-column">
-          <div className="form-row">
-            <label>ID:</label>
-            <input
-              type="text"
-              name="event_id"
-              value={formData.event_id || 'Auto-generated'}
-              disabled
-              className="input-disabled"
-            />
-          </div>
+    return (
+      <div className="step-content">
+        <h2 className="step-title">Event Details</h2>
 
-          <div className="form-row">
-            <label>Title:</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Title"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Type:</label>
-            <input
-              type="text"
-              name="event_type"
-              value={formData.event_type}
-              onChange={handleChange}
-              placeholder="Type"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Venue:</label>
-            <input
-              type="text"
-              name="venue"
-              value={formData.venue}
-              onChange={handleChange}
-              placeholder="Venue"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Address:</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Address"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>City:</label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="City"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Country:</label>
-            <input
-              type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder="Country"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Capacity:</label>
-            <input
-              type="number"
-              name="capacity"
-              value={formData.capacity}
-              onChange={handleCapacityChange}
-              min="1"
-              placeholder="150"
-            />
-          </div>
-        </div>
-
-        <div className="step-column">
-          <div className="form-row two-inputs">
-            <label>Latitude:</label>
-            <input
-              type="text"
-              name="latitude"
-              value={formData.latitude}
-              onChange={handleChange}
-              placeholder="Latitude"
-            />
-          </div>
-
-          <div className="form-row two-inputs">
-            <label>Longitude:</label>
-            <input
-              type="text"
-              name="longitude"
-              value={formData.longitude}
-              onChange={handleChange}
-              placeholder="Longitude"
-            />
-          </div>
-
-          <div className="datetime-section">
-            <div className="datetime-label">Date and Time:</div>
-
-            <div className="form-row date-row">
-              <label>START:</label>
-              <input
-                type="datetime-local"
-                name="start_datetime"
-                value={formData.start_datetime}
-                onChange={handleChange}
-                className="datetime-input"
-              />
-            </div>
-
-            <div className="form-row date-row">
-              <label>END:</label>
-              <input
-                type="datetime-local"
-                name="end_datetime"
-                value={formData.end_datetime}
-                onChange={handleChange}
-                className="datetime-input"
-              />
-            </div>
-          </div>
-
-          <div className="categories-section">
+        <div className="step-grid">
+          <div className="step-column">
             <div className="form-row">
-              <label>Category:</label>
-              <div className="category-input-wrapper">
+              <label>ID:</label>
+              <input
+                type="text"
+                name="event_id"
+                value={formData.event_id || 'Auto-generated'}
+                disabled
+                className="input-disabled"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Title:</label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                placeholder="Title"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Type:</label>
+              <input
+                type="text"
+                name="event_type"
+                value={formData.event_type}
+                onChange={handleChange}
+                placeholder="Type"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Venue:</label>
+              <input
+                type="text"
+                name="venue"
+                value={formData.venue}
+                onChange={handleChange}
+                placeholder="Venue"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Address:</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                placeholder="Address"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>City:</label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                placeholder="City"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Country:</label>
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleChange}
+                placeholder="Country"
+              />
+            </div>
+
+            <div className="form-row">
+              <label>Capacity:</label>
+              <input
+                type="number"
+                name="capacity"
+                value={formData.capacity}
+                onChange={handleCapacityChange}
+                min="1"
+                placeholder="150"
+              />
+            </div>
+          </div>
+
+          <div className="step-column">
+            <div className="form-row two-inputs">
+              <label>Latitude:</label>
+              <input
+                type="text"
+                name="latitude"
+                value={formData.latitude}
+                onChange={handleChange}
+                placeholder="Latitude"
+              />
+            </div>
+
+            <div className="form-row two-inputs">
+              <label>Longitude:</label>
+              <input
+                type="text"
+                name="longitude"
+                value={formData.longitude}
+                onChange={handleChange}
+                placeholder="Longitude"
+              />
+            </div>
+
+            <div className="datetime-section">
+              <div className="datetime-label">Date and Time:</div>
+
+              <div className="form-row date-row">
+                <label>START:</label>
                 <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyDown={handleCategoryKeyDown}
-                  placeholder="Category"
+                  type="datetime-local"
+                  name="start_datetime"
+                  value={formData.start_datetime}
+                  onChange={handleChange}
+                  className="datetime-input"
+                />
+              </div>
+
+              <div className="form-row date-row">
+                <label>END:</label>
+                <input
+                  type="datetime-local"
+                  name="end_datetime"
+                  value={formData.end_datetime}
+                  onChange={handleChange}
+                  className="datetime-input"
                 />
               </div>
             </div>
 
-            {formData.categories.map((cat, idx) => (
-              <div key={idx} className="category-tag-row">
-                <div className="form-row category-display">
-                  <label>Category:</label>
-                  <div className="category-tag">
-                    <span>{cat}</span>
-                    <button
-                      type="button"
-                      className="btn-remove-category"
-                      onClick={() => handleRemoveCategory(cat)}
-                    >
-                      <CloseIcon />
-                    </button>
-                  </div>
+            <div className="categories-section">
+              <div className="form-row">
+                <label>Category:</label>
+                <div className="category-input-wrapper">
+                  <select
+                    value={showCustomCategory ? OTHER_OPTION_VALUE : newCategory}
+                    onChange={handleCategorySelectChange}
+                    className="category-select"
+                    disabled={loadingCategories}
+                  >
+                    <option value="">
+                      {loadingCategories
+                        ? 'Loading categories...'
+                        : 'Select a category...'}
+                    </option>
+                    {selectableCategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                    <option value={OTHER_OPTION_VALUE}>Other</option>
+                  </select>
                 </div>
               </div>
-            ))}
 
-            <div className="add-category-wrapper">
-              <button
-                type="button"
-                className="btn-add-category"
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim()}
-              >
-                Add Category
-              </button>
+              {/* Custom category input - εμφανίζεται μόνο όταν επιλεχθεί "Other" */}
+              {showCustomCategory && (
+                <div className="form-row">
+                  <label></label>
+                  <div className="category-input-wrapper">
+                    <input
+                      type="text"
+                      value={customCategory}
+                      onChange={(e) => setCustomCategory(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCategory();
+                        }
+                      }}
+                      placeholder="Type your custom category..."
+                      className="category-custom-input"
+                      autoFocus
+                    />
+                  </div>
+                </div>
+              )}
+
+              {formData.categories.map((cat, idx) => (
+                <div key={idx} className="category-tag-row">
+                  <div className="form-row category-display">
+                    <label>Category:</label>
+                    <div className="category-tag">
+                      <span>{cat}</span>
+                      <button
+                        type="button"
+                        className="btn-remove-category"
+                        onClick={() => handleRemoveCategory(cat)}
+                      >
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="add-category-wrapper">
+                <button
+                  type="button"
+                  className="btn-add-category"
+                  onClick={handleAddCategory}
+                  disabled={
+                    showCustomCategory
+                      ? !customCategory.trim()
+                      : !newCategory.trim()
+                  }
+                >
+                  Add Category
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ============================================
   // RENDER STEP 2
@@ -801,15 +881,10 @@ const CreateEvent = () => {
 
     return (
       <div className="preview-content">
-
-        {/* ============================================
-            SECTION 1: EVENT DETAILS
-            ============================================ */}
         <section className="preview-section">
           <h2 className="preview-section-title">Event Details</h2>
 
           <div className="preview-details-grid">
-            {/* Column 1 */}
             <div className="preview-col">
               <div className="preview-row">
                 <span className="preview-label">ID:</span>
@@ -837,7 +912,6 @@ const CreateEvent = () => {
               </div>
             </div>
 
-            {/* Column 2 */}
             <div className="preview-col">
               <div className="preview-row">
                 <span className="preview-label">Venue:</span>
@@ -857,7 +931,6 @@ const CreateEvent = () => {
               </div>
             </div>
 
-            {/* Column 3 */}
             <div className="preview-col">
               <div className="preview-row-inline">
                 <div className="preview-row-mini">
@@ -884,9 +957,6 @@ const CreateEvent = () => {
           </div>
         </section>
 
-        {/* ============================================
-            SECTION 2: TICKET TYPES
-            ============================================ */}
         <section className="preview-section">
           <h2 className="preview-section-title">Ticket Types</h2>
 
@@ -918,14 +988,10 @@ const CreateEvent = () => {
           </div>
         </section>
 
-        {/* ============================================
-            SECTION 3: EVENT INFO
-            ============================================ */}
         <section className="preview-section">
           <h2 className="preview-section-title">Event Info</h2>
 
           <div className="preview-info-grid">
-            {/* Left: Organizer + Description */}
             <div className="preview-info-left">
               <div className="preview-row">
                 <span className="preview-label">Organizer:</span>
@@ -940,7 +1006,6 @@ const CreateEvent = () => {
               </div>
             </div>
 
-            {/* Right: Media / Photo */}
             <div className="preview-info-right">
               <span className="preview-label">Media / Photo:</span>
               {photos.length === 0 ? (
@@ -1000,7 +1065,6 @@ const CreateEvent = () => {
         </div>
 
         <div className="create-event-actions">
-          {/* PREVIEW FOOTER */}
           {isPreview && (
             <>
               <button
@@ -1032,7 +1096,6 @@ const CreateEvent = () => {
             </>
           )}
 
-          {/* NORMAL STEP FOOTER */}
           {!isPreview && (
             <>
               {currentStep > 1 && (
