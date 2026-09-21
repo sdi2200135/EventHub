@@ -17,7 +17,6 @@ const STEPS = [
 
 const MAX_DESCRIPTION = 150;
 const MAX_PHOTOS = 20;
-const OTHER_OPTION_VALUE = '__OTHER__';
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -49,8 +48,6 @@ const CreateEvent = () => {
   });
 
   const [newCategory, setNewCategory] = useState('');
-  const [showCustomCategory, setShowCustomCategory] = useState(false);
-  const [customCategory, setCustomCategory] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
@@ -100,11 +97,7 @@ const CreateEvent = () => {
   };
 
   const handleAddCategory = () => {
-    // Αν είναι στο "Other" mode, χρησιμοποιούμε το customCategory
-    const trimmed = showCustomCategory
-      ? customCategory.trim()
-      : newCategory.trim();
-
+    const trimmed = newCategory.trim();
     if (!trimmed) return;
     if (formData.categories.includes(trimmed)) {
       setError('Category already added');
@@ -114,11 +107,7 @@ const CreateEvent = () => {
       ...prev,
       categories: [...prev.categories, trimmed]
     }));
-
-    // Reset
     setNewCategory('');
-    setCustomCategory('');
-    setShowCustomCategory(false);
     setError('');
   };
 
@@ -127,18 +116,6 @@ const CreateEvent = () => {
       ...prev,
       categories: prev.categories.filter(c => c !== cat)
     }));
-  };
-
-  const handleCategorySelectChange = (e) => {
-    const value = e.target.value;
-    if (value === OTHER_OPTION_VALUE) {
-      setShowCustomCategory(true);
-      setNewCategory('');
-    } else {
-      setShowCustomCategory(false);
-      setCustomCategory('');
-      setNewCategory(value);
-    }
   };
 
   // ============================================
@@ -573,48 +550,26 @@ const CreateEvent = () => {
                 <label>Category:</label>
                 <div className="category-input-wrapper">
                   <select
-                    value={showCustomCategory ? OTHER_OPTION_VALUE : newCategory}
-                    onChange={handleCategorySelectChange}
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
                     className="category-select"
-                    disabled={loadingCategories}
+                    disabled={loadingCategories || selectableCategories.length === 0}
                   >
                     <option value="">
                       {loadingCategories
                         ? 'Loading categories...'
-                        : 'Select a category...'}
+                        : selectableCategories.length === 0
+                          ? 'All categories added'
+                          : 'Select a category...'}
                     </option>
                     {selectableCategories.map(cat => (
                       <option key={cat.id} value={cat.name}>
                         {cat.name}
                       </option>
                     ))}
-                    <option value={OTHER_OPTION_VALUE}>Other</option>
                   </select>
                 </div>
               </div>
-
-              {/* Custom category input - εμφανίζεται μόνο όταν επιλεχθεί "Other" */}
-              {showCustomCategory && (
-                <div className="form-row">
-                  <label></label>
-                  <div className="category-input-wrapper">
-                    <input
-                      type="text"
-                      value={customCategory}
-                      onChange={(e) => setCustomCategory(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddCategory();
-                        }
-                      }}
-                      placeholder="Type your custom category..."
-                      className="category-custom-input"
-                      autoFocus
-                    />
-                  </div>
-                </div>
-              )}
 
               {formData.categories.map((cat, idx) => (
                 <div key={idx} className="category-tag-row">
@@ -639,11 +594,7 @@ const CreateEvent = () => {
                   type="button"
                   className="btn-add-category"
                   onClick={handleAddCategory}
-                  disabled={
-                    showCustomCategory
-                      ? !customCategory.trim()
-                      : !newCategory.trim()
-                  }
+                  disabled={!newCategory.trim()}
                 >
                   Add Category
                 </button>

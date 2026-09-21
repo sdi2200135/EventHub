@@ -1327,29 +1327,3 @@
   width: 100%;
   position: relative;
 }
-
-/* ============================================
-   CUSTOM CATEGORY INPUT (για "Other")
-   ============================================ */
-.category-custom-input {
-  width: 100%;
-  padding: 0.55rem 0.85rem;
-  background: #1E1E1E;
-  color: #e0e0e0;
-  border: 1px solid #203855;
-  border-radius: 0.5rem;
-  font-size: 0.9rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.category-custom-input:focus {
-  border-color: #4a90d9;
-  box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.15);
-}
-
-.category-custom-input::placeholder {
-  color: #6c7a89;
-}
