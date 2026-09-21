@@ -104,7 +104,6 @@
 .results-label {
   font-size: 1.2rem;
   color: #FFFFFF;
-  text-decoration: underline;
 }
 
 /* ============================================
@@ -439,9 +438,15 @@
    RESULTS HEADER - page info
    ============================================ */
 .results-page-info {
+  display: inline-block;             /* ← για να πιάσει το text-decoration */
+  text-decoration: none;
   color: #6c7a89;
   font-size: 0.9rem;
   font-weight: 400;
+  margin-left: 1.5rem;               /* ← απόσταση από το «Results: N» */
+  padding-left: 1rem;
+  border-left: 1px solid #2A2A2A;
+  white-space: nowrap;
 }
 
 /* ============================================
@@ -746,6 +751,9 @@
 
   .results-page-info {
     display: block;
-    margin-top: 2px;
+    margin-top: 4px;
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
   }
 }
