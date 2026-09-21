@@ -279,7 +279,7 @@ const BookingPage = () => {
           You will receive a confirmation email shortly.
         </p>
         <div className="success-actions">
-          <Link to="/" className="btn-success">
+          <Link to="/homepage" className="btn-success">
             Return to Home
           </Link>
         </div>

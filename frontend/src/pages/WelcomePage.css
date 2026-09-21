@@ -1,0 +1,351 @@
+/* src/pages/WelcomePage.css */
+
+.welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: radial-gradient(circle at 50% 40%, #1a2942 0%, #121212 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  animation: welcomeFadeIn 0.5s ease-out;
+  user-select: none;
+}
+
+.welcome-overlay.leaving {
+  animation: welcomeFadeOut 0.4s ease-in forwards;
+  pointer-events: none;
+}
+
+/* ============================================
+   ANIMATED BACKGROUND ORBS
+   ============================================ */
+.welcome-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Orb 1 — μπλε, πάνω αριστερά */
+.welcome-orb-1 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(74, 144, 217, 0.55) 0%, transparent 70%);
+  top: -10%;
+  left: -5%;
+  animation: orbFloat1 18s ease-in-out infinite;
+}
+
+/* Orb 2 — μωβ, κάτω δεξιά */
+.welcome-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(162, 155, 254, 0.45) 0%, transparent 70%);
+  bottom: -15%;
+  right: -8%;
+  animation: orbFloat2 22s ease-in-out infinite;
+}
+
+/* Orb 3 — τυρκουάζ, κέντρο */
+.welcome-orb-3 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(26, 120, 180, 0.4) 0%, transparent 70%);
+  top: 40%;
+  left: 55%;
+  animation: orbFloat3 26s ease-in-out infinite;
+}
+
+/* Orb 4 — κίτρινο accent, κάτω αριστερά */
+.welcome-orb-4 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(250, 200, 80, 0.4) 0%, transparent 70%);
+  bottom: 10%;
+  left: 8%;
+  filter: blur(70px);
+  animation: orbFloat4 20s ease-in-out infinite;
+}
+
+/* ============================================
+   WATERMARK LOGO - καλύπτει όλο το background
+   ============================================ */
+.welcome-watermark {
+  position: absolute;
+  inset: 0;
+  background-image: url('/logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.1;              /* πολύ διακριτικό */
+  pointer-events: none;
+  z-index: 1;
+  /* Απαλό blur για πιο «watermark» αίσθηση */
+  filter: blur(1px);
+  animation: welcomeWatermarkIn 1s ease-out;
+}
+
+/* Διακοσμητικό glow πίσω από το κείμενο */
+.welcome-overlay::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(32, 56, 85, 0.55) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  animation: welcomePulse 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* ============================================
+   WELCOME CONTENT
+   ============================================ */
+.welcome-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+  animation: welcomeContentIn 0.8s ease-out 0.2s both;
+}
+
+.welcome-heading {
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 1px;
+  margin: 0 0 1.2rem 0;
+  line-height: 1.15;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+  animation: welcomeHeadingIn 0.9s ease-out 0.3s both;
+}
+
+.welcome-subtext {
+  font-size: 1.15rem;
+  color: #a0a8b8;
+  font-weight: 400;
+  letter-spacing: 0.6px;
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0;
+  animation: welcomeSubtextIn 0.9s ease-out 0.6s forwards;
+}
+
+/* ============================================
+   CLICK HINT - μικρό διακριτικό κείμενο
+   ============================================ */
+.welcome-hint {
+  font-size: 0.75rem;
+  color: #6c7a89;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 2.5rem 0 0 0;
+  opacity: 0.7;
+  animation: welcomeHintFloat 2.5s ease-in-out infinite;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.welcome-overlay:hover .welcome-hint {
+  color: #a0a8b8;
+  opacity: 1;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes welcomeFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes welcomeFadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes welcomeWatermarkIn {
+  from {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+  to {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+}
+
+@keyframes welcomeContentIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcomeHeadingIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcomeSubtextIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes welcomePulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.6; }
+  50%      { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+@keyframes welcomeHintFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* ============================================
+   ORB ANIMATIONS - απαλή κίνηση
+   ============================================ */
+@keyframes orbFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(120px, 80px) scale(1.1);
+  }
+  66% {
+    transform: translate(60px, 150px) scale(0.95);
+  }
+}
+
+@keyframes orbFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-150px, -100px) scale(1.15);
+  }
+  66% {
+    transform: translate(-80px, -180px) scale(0.9);
+  }
+}
+
+@keyframes orbFloat3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-200px, -120px) scale(1.2);
+  }
+}
+
+@keyframes orbFloat4 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(120px, -100px) scale(1.15);
+  }
+  66% {
+    transform: translate(60px, -160px) scale(0.9);
+  }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .welcome-heading {
+    font-size: 2.4rem;
+  }
+
+  .welcome-subtext {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .welcome-overlay::before {
+    width: 400px;
+    height: 400px;
+  }
+
+  .welcome-watermark {
+    opacity: 0.1;
+  }
+
+  .welcome-hint {
+    font-size: 0.7rem;
+    margin-top: 2rem;
+  }
+
+  /* Πιο ελαφριά orbs για tablets */
+  .welcome-orb {
+    filter: blur(60px);
+  }
+
+  .welcome-orb-1 { width: 300px; height: 300px; }
+  .welcome-orb-2 { width: 350px; height: 350px; }
+  .welcome-orb-3 { width: 250px; height: 250px; }
+  .welcome-orb-4 { width: 200px; height: 200px; }
+}
+
+@media (max-width: 480px) {
+  .welcome-heading {
+    font-size: 1.8rem;
+  }
+
+  .welcome-subtext {
+    font-size: 0.9rem;
+  }
+
+  .welcome-overlay::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .welcome-watermark {
+    opacity: 0.12;
+    background-size: 130%;
+  }
+
+  .welcome-hint {
+    font-size: 0.65rem;
+    letter-spacing: 1.2px;
+    margin-top: 1.5rem;
+  }
+
+  /* Ακόμα πιο ελαφριά orbs για κινητά */
+  .welcome-orb {
+    filter: blur(50px);
+    animation-duration: 30s;
+  }
+
+  .welcome-orb-1 { width: 220px; height: 220px; }
+  .welcome-orb-2 { width: 260px; height: 260px; }
+  .welcome-orb-3 { width: 180px; height: 180px; }
+  .welcome-orb-4 { width: 150px; height: 150px; }
+}

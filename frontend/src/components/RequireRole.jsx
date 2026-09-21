@@ -61,7 +61,7 @@ const RequireRole = ({ roles = [], children }) => {
 
   // Έλεγχος: ο ρόλος του χρήστη πρέπει να είναι στη λίστα
   if (roles.length > 0 && !roles.includes(userRole)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/homepage" replace />;
   }
 
   return children;
