@@ -5,7 +5,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import DeleteIcon from '@mui/icons-material/Delete';
+// import DeleteIcon from '@mui/icons-material/Delete';
 import './UserManagement.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -118,20 +118,20 @@ const UserManagement = () => {
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm('Delete this user permanently? This cannot be undone.')) return;
-    setActionLoading(true);
-    try {
-      await userService.deleteUser(userId);
-      setUsers(prev => prev.filter(u => u.id !== userId));
-      setSelectedUser(null);
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      alert('Failed to delete user.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  // const handleDelete = async (userId) => {
+  //   if (!window.confirm('Delete this user permanently? This cannot be undone.')) return;
+  //   setActionLoading(true);
+  //   try {
+  //     await userService.deleteUser(userId);
+  //     setUsers(prev => prev.filter(u => u.id !== userId));
+  //     setSelectedUser(null);
+  //   } catch (err) {
+  //     console.error('Error deleting user:', err);
+  //     alert('Failed to delete user.');
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
 
   const closeModal = () => {
     if (actionLoading) return;
@@ -336,7 +336,7 @@ const UserManagement = () => {
                 </>
               )}
 
-              {selectedUser.approval_status !== 'PENDING' && (
+              {/* {selectedUser.approval_status !== 'PENDING' && (
                 <button
                   className="btn-modal-delete"
                   onClick={() => handleDelete(selectedUser.id)}
@@ -344,7 +344,7 @@ const UserManagement = () => {
                 >
                   <DeleteIcon /> Delete
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>

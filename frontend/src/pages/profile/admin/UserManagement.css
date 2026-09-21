@@ -388,8 +388,8 @@
 
 .btn-modal-exit,
 .btn-modal-approve,
-.btn-modal-reject,
-.btn-modal-delete {
+.btn-modal-reject/*,
+.btn-modal-delete */{
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -433,7 +433,7 @@
   box-shadow: 0 4px 12px rgba(152, 24, 24, 0.4);
 }
 
-.btn-modal-delete {
+/* .btn-modal-delete {
   background: transparent;
   color: #e74c3c;
   border-color: rgba(231, 76, 60, 0.4);
@@ -442,19 +442,19 @@
 .btn-modal-delete:hover:not(:disabled) {
   background: rgba(231, 76, 60, 0.1);
   border-color: #e74c3c;
-}
+} */
 
 .btn-modal-exit svg,
 .btn-modal-approve svg,
-.btn-modal-reject svg,
-.btn-modal-delete svg {
+.btn-modal-reject svg/*,
+.btn-modal-delete svg */{
   font-size: 16px !important;
 }
 
 .btn-modal-exit:disabled,
 .btn-modal-approve:disabled,
-.btn-modal-reject:disabled,
-.btn-modal-delete:disabled {
+.btn-modal-reject:disabled/*,
+.btn-modal-delete:disabled */{
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -514,8 +514,8 @@
 
   .btn-modal-exit,
   .btn-modal-approve,
-  .btn-modal-reject,
-  .btn-modal-delete {
+  .btn-modal-reject/*,
+  .btn-modal-delete */{
     width: 100%;
     justify-content: center;
   }

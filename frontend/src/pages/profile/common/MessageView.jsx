@@ -24,9 +24,9 @@ const MessageView = () => {
         setMessage(response.data);
 
         // Σήμανση ως read αν είναι unread
-        if (!response.data.is_read) {
-          await messageService.markAsRead(id);
-        }
+        // if (!response.data.is_read) {
+        //   await messageService.markAsRead(id);
+        // }
 
         setError(null);
       } catch (err) {

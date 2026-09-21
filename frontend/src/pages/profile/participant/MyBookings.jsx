@@ -6,7 +6,7 @@ import EventIcon from '@mui/icons-material/Event';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import DeleteIcon from '@mui/icons-material/Delete';
+// import DeleteIcon from '@mui/icons-material/Delete';
 import './MyBookings.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -15,7 +15,7 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // 'all' | 'CONFIRMED' | 'PENDING' | 'CANCELLED'
-  const [cancellingId, setCancellingId] = useState(null);
+  // const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -35,21 +35,21 @@ const MyBookings = () => {
     }
   };
 
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
-    setCancellingId(bookingId);
-    try {
-      await bookingService.cancelBooking(bookingId);
-      setBookings(prev =>
-        prev.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b)
-      );
-    } catch (err) {
-      console.error('Error cancelling booking:', err);
-      alert('Failed to cancel booking. Please try again.');
-    } finally {
-      setCancellingId(null);
-    }
-  };
+  // const handleCancelBooking = async (bookingId) => {
+  //   if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+  //   setCancellingId(bookingId);
+  //   try {
+  //     await bookingService.cancelBooking(bookingId);
+  //     setBookings(prev =>
+  //       prev.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b)
+  //     );
+  //   } catch (err) {
+  //     console.error('Error cancelling booking:', err);
+  //     alert('Failed to cancel booking. Please try again.');
+  //   } finally {
+  //     setCancellingId(null);
+  //   }
+  // };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -240,17 +240,19 @@ const MyBookings = () => {
                   View Event
                 </Link>
 
-                {booking.status === 'CONFIRMED' && (
-                  <button
-                    className="my-bookings-btn-cancel"
-                    onClick={() => handleCancelBooking(booking.id)}
-                    disabled={cancellingId === booking.id}
-                    title="Cancel booking"
-                  >
-                    <DeleteIcon />
-                    {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
-                  </button>
-                )}
+                {booking.status === 'CONFIRMED'
+                //  && (
+                  // <button
+                  //   className="my-bookings-btn-cancel"
+                  //   onClick={() => handleCancelBooking(booking.id)}
+                  //   disabled={cancellingId === booking.id}
+                  //   title="Cancel booking"
+                  // >
+                  //   <DeleteIcon />
+                  //   {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
+                  // </button>
+                // )
+                }
               </div>
             </div>
           ))}

@@ -6,9 +6,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-import ReportIcon from '@mui/icons-material/Report';
-import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+// import ReportIcon from '@mui/icons-material/Report';
+// import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
+// import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import './common/Dashboard.css';
 import './common/MessagesPanel.css';
 import MyBookings from './participant/MyBookings';
@@ -80,7 +80,7 @@ const UserDashboard = ({ user }) => {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await messageService.getUnreadCount(user?.id);
+      const response = await messageService.getUnreadCount();
       setUnreadCount(response.data.count);
     } catch (error) {
       console.error('Error fetching unread count:', error);
@@ -109,13 +109,12 @@ const UserDashboard = ({ user }) => {
       setOpenedMessage(response.data);
       setReplyText('');
 
-      if (!response.data.is_read) {
-        await messageService.markAsRead(messageId);
-        setMessages(prev =>
-          prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
-        );
-        fetchUnreadCount();
-      }
+      // Ο backend κάνει auto-mark ως read στο GET /messages/{id}/
+      // Ενημερώνουμε τοπικά τη λίστα και το badge
+      setMessages(prev =>
+        prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
+      );
+      fetchUnreadCount();
     } catch (err) {
       console.error('Error fetching message:', err);
     } finally {
@@ -170,19 +169,11 @@ const UserDashboard = ({ user }) => {
   const handleDeleteSelected = async () => {
     if (selectedMessages.length === 0) return;
 
-    const isTrashFolder = activeFolder === 'trash';
-    const confirmMsg = isTrashFolder
-      ? `Permanently delete ${selectedMessages.length} message(s)? This cannot be undone.`
-      : `Move ${selectedMessages.length} message(s) to Trash?`;
-
+    const confirmMsg = `Delete ${selectedMessages.length} message(s)?`;
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      if (isTrashFolder) {
-        await Promise.all(selectedMessages.map(id => messageService.deleteMessage(id)));
-      } else {
-        await Promise.all(selectedMessages.map(id => messageService.moveToTrash(id)));
-      }
+      await Promise.all(selectedMessages.map(id => messageService.deleteMessage(id)));
       setSelectedMessages([]);
       fetchMessages();
       fetchUnreadCount();
@@ -195,45 +186,45 @@ const UserDashboard = ({ user }) => {
     }
   };
 
-  const handleMarkAsJunk = async (messageId) => {
-    try {
-      await messageService.markAsJunk(messageId);
-      setMessages(prev =>
-        prev.map(m => m.id === messageId ? { ...m, is_junk: true, is_read: true } : m)
-      );
-      handleCloseOpenedMessage();
-      fetchUnreadCount();
-    } catch (err) {
-      console.error('Error marking as junk:', err);
-      alert('Failed to mark message as junk.');
-    }
-  };
+  // const handleMarkAsJunk = async (messageId) => {
+  //   try {
+  //     await messageService.markAsJunk(messageId);
+  //     setMessages(prev =>
+  //       prev.map(m => m.id === messageId ? { ...m, is_junk: true, is_read: true } : m)
+  //     );
+  //     handleCloseOpenedMessage();
+  //     fetchUnreadCount();
+  //   } catch (err) {
+  //     console.error('Error marking as junk:', err);
+  //     alert('Failed to mark message as junk.');
+  //   }
+  // };
 
-  const handleUnmarkJunk = async (messageId) => {
-    try {
-      await messageService.unmarkJunk(messageId);
-      setMessages(prev =>
-        prev.map(m => m.id === messageId ? { ...m, is_junk: false } : m)
-      );
-      handleCloseOpenedMessage();
-    } catch (err) {
-      console.error('Error unmarking junk:', err);
-      alert('Failed to restore message.');
-    }
-  };
+  // const handleUnmarkJunk = async (messageId) => {
+  //   try {
+  //     await messageService.unmarkJunk(messageId);
+  //     setMessages(prev =>
+  //       prev.map(m => m.id === messageId ? { ...m, is_junk: false } : m)
+  //     );
+  //     handleCloseOpenedMessage();
+  //   } catch (err) {
+  //     console.error('Error unmarking junk:', err);
+  //     alert('Failed to restore message.');
+  //   }
+  // };
 
-  const handleRestoreFromTrash = async (messageId) => {
-    try {
-      await messageService.restoreFromTrash(messageId);
-      setMessages(prev =>
-        prev.map(m => m.id === messageId ? { ...m, is_trash: false } : m)
-      );
-      handleCloseOpenedMessage();
-    } catch (err) {
-      console.error('Error restoring from trash:', err);
-      alert('Failed to restore message.');
-    }
-  };
+  // const handleRestoreFromTrash = async (messageId) => {
+  //   try {
+  //     await messageService.restoreFromTrash(messageId);
+  //     setMessages(prev =>
+  //       prev.map(m => m.id === messageId ? { ...m, is_trash: false } : m)
+  //     );
+  //     handleCloseOpenedMessage();
+  //   } catch (err) {
+  //     console.error('Error restoring from trash:', err);
+  //     alert('Failed to restore message.');
+  //   }
+  // };
 
   const getFilteredMessages = () => {
     if (!user?.id) return [];
@@ -242,27 +233,27 @@ const UserDashboard = ({ user }) => {
     switch (activeFolder) {
       case 'incoming':
         filtered = filtered.filter(m =>
-          m.recipient_id === user.id && !m.is_trash && !m.is_draft && !m.is_junk
+          m.recipient_id === user.id /*&& !m.is_trash && !m.is_draft && !m.is_junk*/
         );
         break;
       case 'sent':
         filtered = filtered.filter(m =>
-          m.sender_id === user.id && !m.is_trash && !m.is_draft
+          m.sender_id === user.id /*&& !m.is_trash && !m.is_draft*/
         );
         break;
-      case 'drafts':
-        filtered = filtered.filter(m =>
-          m.is_draft === true && m.sender_id === user.id
-        );
-        break;
-      case 'junk':
-        filtered = filtered.filter(m =>
-          m.is_junk === true && m.recipient_id === user.id && !m.is_trash
-        );
-        break;
-      case 'trash':
-        filtered = filtered.filter(m => m.is_trash === true);
-        break;
+      // case 'drafts':
+      //   filtered = filtered.filter(m =>
+      //     m.is_draft === true && m.sender_id === user.id
+      //   );
+      //   break;
+      // case 'junk':
+      //   filtered = filtered.filter(m =>
+      //     m.is_junk === true && m.recipient_id === user.id && !m.is_trash
+      //   );
+      //   break;
+      // case 'trash':
+      //   filtered = filtered.filter(m => m.is_trash === true);
+      //   break;
       default:
         break;
     }
@@ -311,10 +302,10 @@ const UserDashboard = ({ user }) => {
             setReplyText={setReplyText}
             onSendReply={handleSendReply}
             sendingReply={sendingReply}
-            onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
-            onMarkAsJunk={handleMarkAsJunk}
-            onUnmarkJunk={handleUnmarkJunk}
-            onRestoreFromTrash={handleRestoreFromTrash}
+            // onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
+            // onMarkAsJunk={handleMarkAsJunk}
+            // onUnmarkJunk={handleUnmarkJunk}
+            // onRestoreFromTrash={handleRestoreFromTrash}
           />
         );
 
@@ -437,15 +428,15 @@ const MessagesLayout = ({
   selectedMessages, onSelectMessage, onSelectAll, onDeleteSelected,
   searchQuery, setSearchQuery, onNewMessage, onOpenMessage,
   openedMessage, loadingOpened, onCloseOpened,
-  replyText, setReplyText, onSendReply, sendingReply, onOpenDraft,
-  onMarkAsJunk, onUnmarkJunk, onRestoreFromTrash,
+  replyText, setReplyText, onSendReply, sendingReply, /*onOpenDraft,
+  onMarkAsJunk, onUnmarkJunk, onRestoreFromTrash,*/
 }) => {
   const folders = [
     { id: 'incoming', label: 'Inbox' },
     { id: 'sent', label: 'Sent' },
-    { id: 'drafts', label: 'Drafts' },
-    { id: 'junk', label: 'Junk' },
-    { id: 'trash', label: 'Trash' },
+    // { id: 'drafts', label: 'Drafts' },
+    // { id: 'junk', label: 'Junk' },
+    // { id: 'trash', label: 'Trash' },
   ];
 
   const formatDate = (dateString) => {
@@ -541,8 +532,8 @@ const MessagesLayout = ({
                 <div
                   className="msg-row-content"
                   onClick={() => {
-                    if (message.is_draft) onOpenDraft(message.id);
-                    else onOpenMessage(message.id);
+                    /*if (message.is_draft) onOpenDraft(message.id);
+                    else*/ onOpenMessage(message.id);
                   }}
                 >
                   <div className="msg-row-top">
@@ -579,7 +570,7 @@ const MessagesLayout = ({
               <div className="msg-detail-username">@{openedMessage.sender_username}</div>
             </div>
 
-            {activeFolder === 'incoming' && !openedMessage.is_junk && (
+            {/* {activeFolder === 'incoming' && !openedMessage.is_junk && (
               <button
                 className="msg-btn-action junk"
                 onClick={() => onMarkAsJunk(openedMessage.id)}
@@ -607,7 +598,7 @@ const MessagesLayout = ({
               >
                 <RestoreFromTrashIcon />
               </button>
-            )}
+            )} */}
 
             <button className="msg-btn-close-detail" onClick={onCloseOpened} title="Close">
               <CloseIcon />

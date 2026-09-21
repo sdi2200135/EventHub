@@ -1,7 +1,7 @@
 // src/pages/profile/organizer/ReservationsDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { eventService, bookingService } from '../../../services/api';
+import { eventService, /*bookingService*/ } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import './ReservationsDetails.css';
@@ -18,7 +18,7 @@ const ReservationsDetails = () => {
 
   // Modal state
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  // const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -82,46 +82,46 @@ const ReservationsDetails = () => {
   };
 
   const handleCloseModal = () => {
-    if (actionLoading) return;
+    // if (actionLoading) return;
     setSelectedBooking(null);
   };
 
-  const handleApprove = async () => {
-    if (!selectedBooking) return;
-    setActionLoading(true);
-    try {
-      await bookingService.approveBooking(selectedBooking.id);
-      // Update local state
-      setBookings(prev =>
-        prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CONFIRMED' } : b)
-      );
-      setSelectedBooking(null);
-    } catch (err) {
-      console.error('Error approving booking:', err);
-      alert('Failed to approve booking.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  // const handleApprove = async () => {
+  //   if (!selectedBooking) return;
+  //   setActionLoading(true);
+  //   try {
+  //     await bookingService.approveBooking(selectedBooking.id);
+  //     // Update local state
+  //     setBookings(prev =>
+  //       prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CONFIRMED' } : b)
+  //     );
+  //     setSelectedBooking(null);
+  //   } catch (err) {
+  //     console.error('Error approving booking:', err);
+  //     alert('Failed to approve booking.');
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
 
-  const handleReject = async () => {
-    if (!selectedBooking) return;
-    if (!window.confirm('Reject this booking? The tickets will be released back.')) return;
+  // const handleReject = async () => {
+  //   if (!selectedBooking) return;
+  //   if (!window.confirm('Reject this booking? The tickets will be released back.')) return;
 
-    setActionLoading(true);
-    try {
-      await bookingService.rejectBooking(selectedBooking.id);
-      setBookings(prev =>
-        prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CANCELLED' } : b)
-      );
-      setSelectedBooking(null);
-    } catch (err) {
-      console.error('Error rejecting booking:', err);
-      alert('Failed to reject booking.');
-    } finally {
-      setActionLoading(false);
-    }
-  };
+  //   setActionLoading(true);
+  //   try {
+  //     await bookingService.rejectBooking(selectedBooking.id);
+  //     setBookings(prev =>
+  //       prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CANCELLED' } : b)
+  //     );
+  //     setSelectedBooking(null);
+  //   } catch (err) {
+  //     console.error('Error rejecting booking:', err);
+  //     alert('Failed to reject booking.');
+  //   } finally {
+  //     setActionLoading(false);
+  //   }
+  // };
 
   // ============================================
   // LOADING
@@ -343,12 +343,12 @@ const ReservationsDetails = () => {
               <button
                 className="btn-modal-exit"
                 onClick={handleCloseModal}
-                disabled={actionLoading}
+                // disabled={actionLoading}
               >
                 Exit
               </button>
 
-              {selectedBooking.status === 'PENDING' && (
+              {/* {selectedBooking.status === 'PENDING' && (
                 <>
                   <button
                     className="btn-modal-approve"
@@ -365,7 +365,7 @@ const ReservationsDetails = () => {
                     {actionLoading ? 'Rejecting...' : 'Reject'}
                   </button>
                 </>
-              )}
+              )} */}
             </div>
           </div>
         </div>

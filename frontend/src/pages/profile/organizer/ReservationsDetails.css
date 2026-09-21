@@ -461,9 +461,9 @@
   padding: 16px 24px 24px;
 }
 
-.btn-modal-exit,
+.btn-modal-exit/*,
 .btn-modal-approve,
-.btn-modal-reject {
+.btn-modal-reject*/ {
   padding: 9px 26px;
   border-radius: 6px;
   font-size: 13px;
@@ -486,23 +486,23 @@
   border-color: #4A4A4A;
 }
 
-.btn-modal-approve {
+/* .btn-modal-approve {
   background: #1a782e;
   color: #ffffff;
   border-color: #1a782e;
-}
+} */
 
-.btn-modal-approve:hover:not(:disabled) {
+/* .btn-modal-approve:hover:not(:disabled) {
   background: #22963a;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4);
-}
+  box-shadow: 0 4px 12px rgba(26, 120, 46, 0.4); 
+}*/
 
-.btn-modal-reject {
+/* .btn-modal-reject {
   background: #981818;
   color: #ffffff;
   border-color: #981818;
-}
+} */
 
 .btn-modal-reject:hover:not(:disabled) {
   background: #b71c1c;
@@ -510,9 +510,9 @@
   box-shadow: 0 4px 12px rgba(152, 24, 24, 0.4);
 }
 
-.btn-modal-exit:disabled,
+.btn-modal-exit:disabled/*,
 .btn-modal-approve:disabled,
-.btn-modal-reject:disabled {
+.btn-modal-reject:disabled*/ {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
@@ -552,9 +552,9 @@
     padding: 16px 20px 20px;
   }
 
-  .btn-modal-exit,
+  .btn-modal-exit/*,
   .btn-modal-approve,
-  .btn-modal-reject {
+  .btn-modal-reject*/ {
     width: 100%;
   }
 }

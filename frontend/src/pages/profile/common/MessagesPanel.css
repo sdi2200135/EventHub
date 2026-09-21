@@ -519,7 +519,7 @@
 /* ============================================
    MESSAGE ACTION BUTTONS (Junk / Restore)
    ============================================ */
-.msg-btn-action {
+/* .msg-btn-action {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -534,37 +534,37 @@
 
 .msg-btn-action svg {
   font-size: 20px !important;
-}
+} */
 
 /* Junk - κίτρινο */
-.msg-btn-action.junk {
+/* .msg-btn-action.junk {
   color: #a0a0b8;
 }
 
 .msg-btn-action.junk:hover {
   background: rgba(243, 156, 18, 0.15);
   color: #f39c12;
-}
+} */
 
 /* Unjunk - πράσινο */
-.msg-btn-action.unjunk {
+/* .msg-btn-action.unjunk {
   color: #a0a0b8;
 }
 
 .msg-btn-action.unjunk:hover {
   background: rgba(46, 204, 113, 0.15);
   color: #2ecc71;
-}
+} */
 
 /* Restore - μπλε */
-.msg-btn-action.restore {
+/* .msg-btn-action.restore {
   color: #a0a0b8;
 }
 
 .msg-btn-action.restore:hover {
   background: rgba(74, 144, 217, 0.15);
   color: #4a90d9;
-}
+} */
 
 /* ============================================
    RESPONSIVE
@@ -645,7 +645,7 @@
     max-width: 95%;
   }
 
-  .msg-btn-action svg {
+  /* .msg-btn-action svg {
     font-size: 18px !important;
-  }
+  } */
 }
