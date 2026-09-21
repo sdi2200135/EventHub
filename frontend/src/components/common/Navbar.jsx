@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messageService } from '../../services/api';
 import './Navbar.css';
+import logoImg from '../../../public/logo.png';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -75,8 +76,8 @@ const Navbar = () => {
       <div className="container">
         {/* LOGO */}
         <div className="logo-wrapper">
-          <Link to="/" className="logo">
-            <span>Event</span>ize
+          <Link to="/homepage" className="logo">
+            <img src={logoImg} alt="Eventize" className="logo-img" />
           </Link>
         </div>
 
@@ -84,6 +85,16 @@ const Navbar = () => {
         <div className="nav-right">
           <NavLink
             to="/"
+            end
+            className={({ isActive }) =>
+              isActive ? 'nav-link active' : 'nav-link'
+            }
+          >
+            Welcome Page
+          </NavLink>
+
+          <NavLink
+            to="/homepage"
             className={({ isActive }) =>
               isActive ? 'nav-link active' : 'nav-link'
             }

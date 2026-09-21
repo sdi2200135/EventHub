@@ -7,8 +7,27 @@
   background: #121212;
   border-top: 1px solid #1a1a2a;
   padding: 2rem 0;
-  margin-top: 3rem;
+  margin-top: auto;      /* ✅ σπρώχνει τον footer στον πάτο της σελίδας */
   text-align: center;
   color: #6c7a89;
   font-size: 0.85rem;
+  width: 100%;
+}
+
+/* ============================================
+   RESPONSIVE - FOOTER
+   ============================================ */
+@media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 1rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1.25rem 0.85rem;
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
 }
