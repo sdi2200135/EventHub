@@ -121,7 +121,7 @@ def cancel_event_bookings(*, event):
 
 def get_booking_queryset(user): #returns the queryset of bookings that a user can view
     # join the attendee in the same query, the serializer shows his name for every booking
-    qs = Booking.objects.select_related('attendee')
+    qs = Booking.objects.select_related('attendee','event','ticket_type')
     if user.is_admin: #admin can see them all
         return qs
     return qs.filter(  #attendee can see his own, organizer can see the ones in the events he organizes

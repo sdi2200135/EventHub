@@ -19,12 +19,19 @@ class BookingSerializer(serializers.ModelSerializer):
     attendee = UserPublicSerializer(read_only=True)
     total_cost = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     status = serializers.CharField(read_only=True)
+    event_title = serializers.CharField(source='event.title', read_only=True)
+    event_date = serializers.DateTimeField(source='event.start_datetime', read_only=True)
+    venue = serializers.CharField(source='event.venue', read_only=True)
+    city = serializers.CharField(source='event.city', read_only=True)
+    ticket_type_name = serializers.CharField(source='ticket_type.name', read_only=True)
 
     class Meta:
         model = Booking
         fields = [
             'id', 'booking_id', 'event', 'ticket_type', 'attendee',
             'number_of_tickets', 'total_cost', 'status', 'created_at',
+            'event_title', 'event_date', 'venue', 'city', 'ticket_type_name',
+
         ]
 
     def validate(self, attrs):

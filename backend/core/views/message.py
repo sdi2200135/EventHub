@@ -65,8 +65,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     # there is an unread message so inform the user
     @action(detail=False, methods=['get'])
     def unread_summary(self, request):
-        has_unread = Message.objects.filter(
+        count = Message.objects.filter(
             receiver=request.user, is_read=False, deleted_by_receiver=False
-        ).exists()
-        return Response({'has_unread': has_unread})
+        ).count()
+        return Response({'has_unread': count > 0, 'count': count})
 

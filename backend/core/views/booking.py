@@ -69,3 +69,14 @@ class BookingViewSet(viewsets.ModelViewSet):
 
     def destroy(self,requests,*args,**kwargs):
         return Response({'detail':'Bookings cannot be withdrawn. They are cancelled only if the organiser cancels the event.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    # endpoint my bookings
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        qs = self.filter_queryset(
+            Booking.objects.filter(attendee=request.user).select_related('attendee','event', 'ticket_type')
+        )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            return self.get_paginated_response(self.get_serializer(page, many=True).data)
+        return Response(self.get_serializer(qs, many=True).data)
