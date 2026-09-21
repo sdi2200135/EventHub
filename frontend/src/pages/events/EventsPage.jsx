@@ -10,7 +10,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import './EventsPage.css';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 30;
 
 const EventsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -317,8 +317,11 @@ const EventsPage = () => {
     return null;
   };
 
-  const getPrimaryCategory = (event) => {
-    if (event.categories && event.categories.length > 0) return event.categories[0];
+  // ✅ ΑΛΛΑΓΗ: επιστρέφει όλες τις κατηγορίες χωρισμένες με κόμμα
+  const getCategoriesText = (event) => {
+    if (event.categories && event.categories.length > 0) {
+      return event.categories.join(', ');
+    }
     return 'Event';
   };
 
@@ -514,7 +517,7 @@ const EventsPage = () => {
             <div className="events-grid">
               {paginatedEvents.map((event) => {
                 const availability = getAvailabilityStatus(event);
-                const primaryCategory = getPrimaryCategory(event);
+                const categoriesText = getCategoriesText(event);
                 const photo = getEventPhoto(event);
                 const availabilityColor = getAvailabilityColor(availability);
                 const availabilityLabel = getAvailabilityLabel(availability);
@@ -539,7 +542,7 @@ const EventsPage = () => {
 
                         <p className="event-info">
                           <span className="info-label">Category: </span>
-                          <span className="info-value">{primaryCategory}</span>
+                          <span className="info-value">{categoriesText}</span>
                         </p>
 
                         <p className="event-info">

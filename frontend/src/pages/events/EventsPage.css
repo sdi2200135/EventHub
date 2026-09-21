@@ -275,11 +275,16 @@
   line-height: 1.3;
 }
 
+/* ✅ ΑΛΛΑΓΗ: line-clamp 2 για να μη χαλάει το layout αν έχει πολλές κατηγορίες */
 .event-card .event-body .event-info {
   font-size: 0.75rem;
   margin-bottom: 0.15rem;
   color: #B0B0B0;
   width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .event-card .event-body .event-info .info-label {
@@ -438,12 +443,12 @@
    RESULTS HEADER - page info
    ============================================ */
 .results-page-info {
-  display: inline-block;             /* ← για να πιάσει το text-decoration */
+  display: inline-block;
   text-decoration: none;
   color: #6c7a89;
   font-size: 0.9rem;
   font-weight: 400;
-  margin-left: 1.5rem;               /* ← απόσταση από το «Results: N» */
+  margin-left: 1.5rem;
   padding-left: 1rem;
   border-left: 1px solid #2A2A2A;
   white-space: nowrap;
