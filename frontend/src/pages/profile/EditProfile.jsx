@@ -1,5 +1,5 @@
 // src/pages/profile/EditProfile.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/api';
@@ -25,6 +25,35 @@ const EditProfile = () => {
     confirm_password: ''
   });
 
+  // ============================================
+  // PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
+  // ============================================
+  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]+$/;
+
+  const passwordChecks = useMemo(() => {
+    const pwd = formData.password || '';
+    return {
+      length: pwd.length >= 8,
+      english: pwd.length > 0 && ALLOWED_PASSWORD_REGEX.test(pwd),
+      letter: /[A-Za-z]/.test(pwd),
+      number: /\d/.test(pwd),
+      symbol: /[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]/.test(pwd),
+    };
+  }, [formData.password]);
+
+  const isPasswordValid =
+    passwordChecks.length &&
+    passwordChecks.english &&
+    passwordChecks.letter &&
+    passwordChecks.number &&
+    passwordChecks.symbol;
+
+  // Το password είναι "ενεργό" μόνο αν ο χρήστης έχει γράψει κάτι
+  const isChangingPassword = formData.password.length > 0;
+
+  // ============================================
+  // LOAD USER DATA
+  // ============================================
   useEffect(() => {
     if (user) {
       setFormData({
@@ -52,9 +81,16 @@ const EditProfile = () => {
     setError('');
     setSuccess(false);
 
-    if (formData.password && formData.password !== formData.confirm_password) {
-      setError('Passwords do not match');
-      return;
+    // ---- Password validation ----
+    if (isChangingPassword) {
+      if (!isPasswordValid) {
+        setError('Password does not meet all the requirements.');
+        return;
+      }
+      if (formData.password !== formData.confirm_password) {
+        setError('Passwords do not match');
+        return;
+      }
     }
 
     setLoading(true);
@@ -71,7 +107,7 @@ const EditProfile = () => {
         afm: formData.afm,
       };
 
-      if (formData.password) {
+      if (isChangingPassword) {
         updateData.password = formData.password;
       }
 
@@ -106,6 +142,14 @@ const EditProfile = () => {
   const handleCancel = () => {
     navigate('/profile');
   };
+
+  // Helper για rendering requirement
+  const Requirement = ({ ok, children }) => (
+    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
+      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
+      {children}
+    </li>
+  );
 
   return (
     <div className="edit-profile-page">
@@ -257,7 +301,29 @@ const EditProfile = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder=""
+                    autoComplete="new-password"
                   />
+
+                  {/* Password requirements - live, κλείνει όταν είναι valid */}
+                  {isChangingPassword && !isPasswordValid && (
+                    <ul className="pwd-requirements">
+                      <Requirement ok={passwordChecks.length}>
+                        At least 8 characters
+                      </Requirement>
+                      <Requirement ok={passwordChecks.english}>
+                        Only English characters (no Greek/other)
+                      </Requirement>
+                      <Requirement ok={passwordChecks.letter}>
+                        At least 1 letter (A-Z, a-z)
+                      </Requirement>
+                      <Requirement ok={passwordChecks.number}>
+                        At least 1 number (0-9)
+                      </Requirement>
+                      <Requirement ok={passwordChecks.symbol}>
+                        At least 1 symbol (!@#$%^&*...)
+                      </Requirement>
+                    </ul>
+                  )}
                 </div>
 
                 <div className="edit-profile-form-group">
@@ -269,7 +335,12 @@ const EditProfile = () => {
                     value={formData.confirm_password}
                     onChange={handleChange}
                     placeholder=""
+                    autoComplete="new-password"
                   />
+                  {formData.confirm_password.length > 0 &&
+                    formData.password !== formData.confirm_password && (
+                      <span className="pwd-mismatch">Passwords do not match</span>
+                    )}
                 </div>
               </div>
 
@@ -285,7 +356,7 @@ const EditProfile = () => {
                 <button
                   type="submit"
                   className="edit-profile-btn-save"
-                  disabled={loading}
+                  disabled={loading || (isChangingPassword && !isPasswordValid)}
                 >
                   {loading ? 'Saving...' : 'Save Changes'}
                 </button>

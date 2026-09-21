@@ -261,3 +261,58 @@
     width: 100%;
   }
 }
+
+/* ============================================
+   PASSWORD REQUIREMENTS (EditProfile)
+   ============================================ */
+.pwd-requirements {
+  list-style: none;
+  padding: 0.5rem 0.6rem;
+  margin-top: 0.4rem;
+  background: #181818;
+  border: 1px solid #2A2A2A;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: opacity 0.25s ease, max-height 0.3s ease,
+              padding 0.3s ease, margin 0.3s ease, border-width 0.3s ease;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.pwd-req {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: #6c7a89;
+  transition: color 0.2s ease;
+}
+
+.pwd-req-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.pwd-req.ok {
+  color: #2ecc71;
+}
+
+.pwd-req.ok .pwd-req-icon {
+  color: #2ecc71;
+}
+
+/* Mismatch μήνυμα κάτω από το confirm password */
+.pwd-mismatch {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #e74c3c;
+}
