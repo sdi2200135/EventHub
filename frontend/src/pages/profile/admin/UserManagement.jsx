@@ -5,9 +5,22 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-// import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
 import './UserManagement.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
+
+// Helper: κατεβάζει string ως αρχείο
+const downloadFile = (data, filename, mime) => {
+  const blob = new Blob([data], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -17,10 +30,8 @@ const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  // ============================================
-  // ΦΟΡΤΩΣΗ ΧΡΗΣΤΩΝ
-  // ============================================
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -118,23 +129,27 @@ const UserManagement = () => {
     }
   };
 
-  // const handleDelete = async (userId) => {
-  //   if (!window.confirm('Delete this user permanently? This cannot be undone.')) return;
-  //   setActionLoading(true);
-  //   try {
-  //     await userService.deleteUser(userId);
-  //     setUsers(prev => prev.filter(u => u.id !== userId));
-  //     setSelectedUser(null);
-  //   } catch (err) {
-  //     console.error('Error deleting user:', err);
-  //     alert('Failed to delete user.');
-  //   } finally {
-  //     setActionLoading(false);
-  //   }
-  // };
+  // ============================================
+  // EXPORT — events που δημιούργησε ο user
+  // ============================================
+  const handleExportUserEvents = async (format) => {
+    if (!selectedUser) return;
+    setExporting(true);
+    try {
+      const response = await userService.exportEvents(format, selectedUser.id);
+      const mime = format === 'xml' ? 'application/xml' : 'application/json';
+      const filename = `events_${selectedUser.username}.${format}`;
+      downloadFile(response.data, filename, mime);
+    } catch (err) {
+      console.error('Export user events failed:', err);
+      alert('Export failed. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const closeModal = () => {
-    if (actionLoading) return;
+    if (actionLoading || exporting) return;
     setSelectedUser(null);
   };
 
@@ -161,9 +176,6 @@ const UserManagement = () => {
     return (f + l).toUpperCase() || u.username?.charAt(0).toUpperCase() || 'U';
   };
 
-  // ============================================
-  // LOADING / ERROR
-  // ============================================
   if (loading) {
     return <LoadingSpinner message="Loading users..." />;
   }
@@ -177,12 +189,10 @@ const UserManagement = () => {
     );
   }
 
-  // ============================================
-  // RENDER
-  // ============================================
+  const isBusy = actionLoading || exporting;
+
   return (
     <div className="um-layout">
-      {/* Στήλη 1: Filters */}
       <aside className="um-sidebar">
         {filters.map(f => (
           <button
@@ -196,9 +206,7 @@ const UserManagement = () => {
         ))}
       </aside>
 
-      {/* Στήλη 2: Users List */}
       <div className="um-content">
-        {/* Toolbar */}
         <div className="um-toolbar">
           <div className="search-wrapper">
             <SearchIcon className="search-icon" />
@@ -212,7 +220,6 @@ const UserManagement = () => {
           </div>
         </div>
 
-        {/* List */}
         {filteredUsers.length === 0 ? (
           <div className="um-empty">
             <p>No users found.</p>
@@ -251,13 +258,9 @@ const UserManagement = () => {
         )}
       </div>
 
-      {/* ============================================
-          USER DETAILS MODAL
-          ============================================ */}
       {selectedUser && (
         <div className="um-modal-overlay" onClick={closeModal}>
           <div className="um-modal" onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
             <div className="um-modal-header">
               <div className="um-modal-avatar">
                 {getInitials(selectedUser)}
@@ -266,12 +269,11 @@ const UserManagement = () => {
                 <h3>{selectedUser.first_name} {selectedUser.last_name}</h3>
                 <p>@{selectedUser.username} • {getRoleLabel(selectedUser)}</p>
               </div>
-              <button className="btn-close-modal" onClick={closeModal} disabled={actionLoading}>
+              <button className="btn-close-modal" onClick={closeModal} disabled={isBusy}>
                 <CloseIcon />
               </button>
             </div>
 
-            {/* Body */}
             <div className="um-modal-body">
               <div className="um-modal-row">
                 <span className="um-modal-label">Email:</span>
@@ -307,44 +309,54 @@ const UserManagement = () => {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="um-modal-footer">
               <button
                 className="btn-modal-exit"
                 onClick={closeModal}
-                disabled={actionLoading}
+                disabled={isBusy}
               >
                 Close
               </button>
+
+              {selectedUser.approval_status === 'APPROVED' && (
+                <>
+                  <button
+                    className="btn-modal-export"
+                    onClick={() => handleExportUserEvents('xml')}
+                    disabled={isBusy}
+                    title="Export this user's events as XML"
+                  >
+                    <DownloadIcon /> {exporting ? '...' : 'XML'}
+                  </button>
+                  <button
+                    className="btn-modal-export"
+                    onClick={() => handleExportUserEvents('json')}
+                    disabled={isBusy}
+                    title="Export this user's events as JSON"
+                  >
+                    <DownloadIcon /> {exporting ? '...' : 'JSON'}
+                  </button>
+                </>
+              )}
 
               {selectedUser.approval_status === 'PENDING' && (
                 <>
                   <button
                     className="btn-modal-approve"
                     onClick={() => handleApprove(selectedUser.id)}
-                    disabled={actionLoading}
+                    disabled={isBusy}
                   >
                     <CheckCircleIcon /> {actionLoading ? '...' : 'Approve'}
                   </button>
                   <button
                     className="btn-modal-reject"
                     onClick={() => handleReject(selectedUser.id)}
-                    disabled={actionLoading}
+                    disabled={isBusy}
                   >
                     <CancelIcon /> {actionLoading ? '...' : 'Reject'}
                   </button>
                 </>
               )}
-
-              {/* {selectedUser.approval_status !== 'PENDING' && (
-                <button
-                  className="btn-modal-delete"
-                  onClick={() => handleDelete(selectedUser.id)}
-                  disabled={actionLoading}
-                >
-                  <DeleteIcon /> Delete
-                </button>
-              )} */}
             </div>
           </div>
         </div>

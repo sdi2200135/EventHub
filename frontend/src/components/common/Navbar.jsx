@@ -66,6 +66,13 @@ const Navbar = () => {
     return user?.username?.charAt(0)?.toUpperCase() || 'U';
   };
 
+  const isAdmin =
+    user?.is_staff ||
+    user?.is_superuser ||
+    user?.role === 'ADMIN';
+
+  const profileTarget = isAdmin ? '/profile?tab=users' : '/profile';
+
   const formatBadge = (n) => {
     if (n > 99) return '99+';
     return n;
@@ -117,7 +124,7 @@ const Navbar = () => {
             <>
               {/* Profile Button with Avatar + Badge */}
               <NavLink
-                to="/profile"
+                to={profileTarget}
                 className={({ isActive }) =>
                   isActive ? 'profile-btn active' : 'profile-btn'
                 }

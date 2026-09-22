@@ -1,43 +1,56 @@
 // src/pages/profile/admin/AdminDashboard.jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import '../common/Dashboard.css';
 
 import UserManagement from './UserManagement';
 import AdminEvents from './AdminEvents';
-import ExportData from './ExportData';
+
+const VALID_TABS = ['personal', 'users', 'events'];
 
 const AdminDashboard = ({ user }) => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('personal');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'personal';
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (VALID_TABS.includes(tab) && tab !== activeTab) {
+      setActiveTab(tab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   return (
     <div className="admin-dashboard">
       <div className="profile-tabs">
         <button
           className={`profile-tab ${activeTab === 'personal' ? 'active' : ''}`}
-          onClick={() => setActiveTab('personal')}
+          onClick={() => handleTabChange('personal')}
         >
           Personal Info
         </button>
         <button
           className={`profile-tab ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
+          onClick={() => handleTabChange('users')}
         >
           User Management
         </button>
         <button
           className={`profile-tab ${activeTab === 'events' ? 'active' : ''}`}
-          onClick={() => setActiveTab('events')}
+          onClick={() => handleTabChange('events')}
         >
           Events
-        </button>
-        <button
-          className={`profile-tab ${activeTab === 'export' ? 'active' : ''}`}
-          onClick={() => setActiveTab('export')}
-        >
-          Export Data
         </button>
       </div>
 
@@ -45,7 +58,6 @@ const AdminDashboard = ({ user }) => {
         {activeTab === 'personal' && <PersonalInfoTab user={user} navigate={navigate} />}
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'events' && <AdminEvents />}
-        {activeTab === 'export' && <ExportData />}
       </div>
     </div>
   );

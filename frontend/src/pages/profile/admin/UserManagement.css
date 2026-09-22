@@ -520,3 +520,32 @@
     justify-content: center;
   }
 }
+
+.um-modal-footer .btn-modal-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border: 1px solid #3A3A3A;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.um-modal-footer .btn-modal-export:hover:not(:disabled) {
+  background: #3A3A3A;
+  border-color: #4A4A4A;
+}
+
+.um-modal-footer .btn-modal-export svg {
+  font-size: 16px !important;
+}
+
+.um-modal-footer .btn-modal-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

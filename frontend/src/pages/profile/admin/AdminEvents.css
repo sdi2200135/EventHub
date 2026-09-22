@@ -2,9 +2,8 @@
 
 .ae-layout {
   display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 20px;
-  min-height: 500px;
+  grid-template-columns: 200px 1fr 200px;
+  gap: 24px;
 }
 
 /* ============================================
@@ -159,11 +158,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.ae-item-organizer {
-  color: #6c7a89;
-  font-style: italic;
 }
 
 /* ============================================
@@ -644,5 +638,92 @@
   .ae-cancel-modal .btn-modal-confirm-cancel {
     width: 100%;
     justify-content: center;
+  }
+}
+
+.ae-export-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 16px;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 10px;
+  align-self: start;
+  position: sticky;
+  top: 20px;
+}
+
+.ae-export-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ae-export-subtitle {
+  font-size: 12px;
+  color: #a0a0b8;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.ae-export-count {
+  color: #6c7a89;
+}
+
+.ae-export-panel .btn-export {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #2A2A2A;
+  color: #e0e0e0;
+  border: 1px solid #3A3A3A;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ae-export-panel .btn-export:hover:not(:disabled) {
+  background: #3A3A3A;
+  border-color: #4A4A4A;
+}
+
+.ae-export-panel .btn-export svg {
+  font-size: 16px !important;
+}
+
+.ae-export-panel .btn-export:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .ae-layout {
+    grid-template-columns: 180px 1fr;
+  }
+
+  .ae-export-panel {
+    grid-column: 1 / -1;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .ae-export-panel .ae-export-title,
+  .ae-export-panel .ae-export-subtitle {
+    margin: 0;
+  }
+
+  .ae-export-panel .btn-export {
+    padding: 8px 14px;
   }
 }
