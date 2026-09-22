@@ -20,14 +20,12 @@ const BookingPage = () => {
   const getBookingData = () => {
     const ticketId = searchParams.get('ticketId');
     const quantity = searchParams.get('quantity');
-    const seats = searchParams.get('seats');
 
     if (ticketId) {
       const data = {
         eventId: id,
         ticketId: ticketId,
         quantity: parseInt(quantity) || 1,
-        seats: seats || '',
         timestamp: Date.now()
       };
       localStorage.setItem('bookingData', JSON.stringify(data));
@@ -53,7 +51,6 @@ const BookingPage = () => {
     eventId: id,
     ticketId: null,
     quantity: 1,
-    seats: '',
   });
 
   const [event, setEvent] = useState(null);
@@ -62,6 +59,7 @@ const BookingPage = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   // ============================================
   // 2. ΕΛΕΓΧΟΣ AUTHENTICATION
@@ -107,11 +105,22 @@ const BookingPage = () => {
           return;
         }
 
+        if (new Date(ev.start_datetime) <= new Date()) {
+          setError('This event has already started. Bookings are closed.');
+          setEvent(ev);
+          setLoading(false);
+          return;
+        }
         setEvent(ev);
 
         const foundTicket = ev.ticket_types?.find(
           t => t.id === parseInt(bookingData.ticketId)
         );
+        if (!foundTicket) {
+          setError('The selected ticket type is not available for this event.');
+          setLoading(false);
+          return;
+        }
         setTicket(foundTicket);
         setError(null);
       } catch (err) {
@@ -166,12 +175,12 @@ const BookingPage = () => {
 
     // Guard: τελευταίος έλεγχος πριν το POST
     if (!event || event.status !== 'PUBLISHED') {
-      setError('This event is no longer available for booking.');
+      setSubmitError('This event is no longer available for booking.');
       return;
     }
 
     if ((event.available_capacity ?? 0) <= 0) {
-      setError('This event is sold out.');
+      setSubmitError('This event is sold out.');
       return;
     }
 
@@ -184,7 +193,6 @@ const BookingPage = () => {
       `Event:    ${event.title}`,
       `Ticket:   ${ticket?.name || 'N/A'}`,
       `Quantity: ${bookingData.quantity}`,
-      bookingData.seats ? `Seats:    ${bookingData.seats}` : null,
       `Total:    $${getTotalCost().toFixed(2)}`,
       '',
       'This action CANNOT be undone after submission.'
@@ -195,7 +203,7 @@ const BookingPage = () => {
     }
 
     setSubmitting(true);
-    setError(null);
+    setSubmitError(null);
 
     try {
       const bookingPayload = {
@@ -204,22 +212,18 @@ const BookingPage = () => {
         number_of_tickets: bookingData.quantity,
       };
       
-      console.log('Submitting booking:', bookingPayload);
+      await bookingService.createBooking(bookingPayload);
       
-      const response = await bookingService.createBooking(bookingPayload);
-      console.log('Booking response:', response.data);
-
       clearBookingData();
       setSuccess(true);
       
-      // Μετά από 3 δευτερόλεπτα πάει στην αρχική σελίδα
+      // after 3 seconds go to my bookings
       setTimeout(() => {
-        navigate('/homepage');
+        navigate('/profile?tab=bookings');
       }, 3000);
     } catch (err) {
       console.error('Booking error:', err);
-      setError(err.message || 'Failed to complete booking. Please try again.');
-
+      setSubmitError(err.message || 'Failed to complete booking. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -272,8 +276,8 @@ const BookingPage = () => {
         <h2>Booking Confirmed! 🎉</h2>
         <p>Your tickets have been reserved successfully.</p>
         <div className="success-actions">
-          <Link to="/homepage" className="btn-success">
-            Return to Home
+          <Link to="/profile?tab=bookings" className="btn-success">
+            View My Bookings
           </Link>
         </div>
       </div>
@@ -341,12 +345,6 @@ const BookingPage = () => {
               <span className="ticket-label">Quantity</span>
               <span className="ticket-value">{bookingData.quantity}</span>
             </div>
-            {bookingData.seats && (
-              <div className="ticket-row">
-                <span className="ticket-label">Seats</span>
-                <span className="ticket-value">{bookingData.seats}</span>
-              </div>
-            )}
             <div className="ticket-row">
               <span className="ticket-label">Price per ticket</span>
               <span className="ticket-value">${ticket?.price?.toFixed(2) || '0.00'}</span>
@@ -368,7 +366,7 @@ const BookingPage = () => {
           >
             {submitting ? 'Processing...' : 'Confirm Booking'}
           </button>
-          {error && <p className="booking-error-message">{error}</p>}
+          {submitError && <p className="booking-error-message">{submitError}</p>}
         </div>
 
         <p className="booking-terms">

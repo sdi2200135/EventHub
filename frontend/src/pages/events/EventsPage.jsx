@@ -1,5 +1,5 @@
 // src/pages/events/EventsPage.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import  { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { eventService, categoryService } from '../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
@@ -49,122 +49,41 @@ const EventsPage = () => {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // ============================================
-  // ΦΟΡΤΩΣΗ ΔΕΔΟΜΕΝΩΝ
+  // LOAD DATA
   // ============================================
+  // the categories are needed once, for the dropdown
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [eventsRes, categoriesRes] = await Promise.all([
-          eventService.getEvents(),
-          categoryService.getCategories(),
-        ]);
-        setEvents(eventsRes.data || []);
-        setCategories(categoriesRes.data || []);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    categoryService.getCategories()
+      .then(({ data }) => setCategories(data))
+      .catch((err) => console.error('Error fetching categories:', err));
   }, []);
 
-  // ============================================
-  // ΥΠΟΛΟΓΙΣΜΟΣ ΕΛΑΧΙΣΤΗΣ ΤΙΜΗΣ EVENT
-  // ============================================
-  const getMinPrice = (event) => {
-    if (!event.ticket_types || event.ticket_types.length === 0) return 0;
-    return Math.min(...event.ticket_types.map(t => Number(t.price) || 0));
-  };
+  // the backend does the searching, the filtering and the paging (requirement 8)
+  useEffect(() => {
+    const params = { page: currentPage };
+    if (filters.category) params.category = filters.category;   // category id
+    if (filters.region) params.city = filters.region;
+    if (filters.dateFrom) params.start_after = `${filters.dateFrom}T00:00:00`;
+    if (filters.dateTo) params.start_before = `${filters.dateTo}T23:59:59`;
+    if (filters.priceMin !== '') params.min_price = filters.priceMin;
+    if (filters.priceMax !== '') params.max_price = filters.priceMax;
+    if (filters.search) params.search = filters.search;
 
-  // ============================================
-  // ΕΦΑΡΜΟΓΗ ΦΙΛΤΡΩΝ (useMemo για performance)
-  // ============================================
-  const filteredEvents = useMemo(() => {
-    let filtered = [...events];
+    setLoading(true);
+    eventService.getEvents(params)
+      .then(({ data, count }) => { setEvents(data); setTotalCount(count); })
+      .catch((err) => console.error('Error fetching events:', err))
+      .finally(() => setLoading(false));
+  }, [filters, currentPage]);
 
-    // ---- Category ----
-    if (filters.category) {
-      filtered = filtered.filter(e =>
-        e.categories && e.categories.includes(filters.category)
-      );
-    }
-
-    // ---- Region ----
-    if (filters.region) {
-      filtered = filtered.filter(e =>
-        e.city && e.city.toLowerCase().includes(filters.region.toLowerCase())
-      );
-    }
-
-    // ---- Date Range (overlap logic) ----
-    // Ένα event ταιριάζει αν το [start_datetime, end_datetime] του
-    // επικαλύπτεται με το [dateFrom, dateTo] του φίλτρου.
-    // Αν δοθεί μόνο μία μέρα (dateFrom === dateTo), αυτό σημαίνει ότι
-    // η μέρα πέφτει μέσα στη διάρκεια του event.
-    if (filters.dateFrom || filters.dateTo) {
-      const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
-      if (from) from.setHours(0, 0, 0, 0);
-
-      const to = filters.dateTo ? new Date(filters.dateTo) : null;
-      if (to) to.setHours(23, 59, 59, 999);
-
-      filtered = filtered.filter(e => {
-        const eStart = new Date(e.start_datetime);
-        const eEnd = e.end_datetime ? new Date(e.end_datetime) : eStart;
-
-        // Το event πρέπει να τελειώνει μετά την αρχή του query
-        if (from && eEnd < from) return false;
-        // και να ξεκινάει πριν το τέλος του query
-        if (to && eStart > to) return false;
-
-        return true;
-      });
-    }
-
-    // ---- Price Range ----
-    if (filters.priceMin !== '' || filters.priceMax !== '') {
-      const min = filters.priceMin !== '' ? Number(filters.priceMin) : 0;
-      const max = filters.priceMax !== '' ? Number(filters.priceMax) : Infinity;
-      filtered = filtered.filter(e => {
-        const eventMinPrice = getMinPrice(e);
-        return eventMinPrice >= min && eventMinPrice <= max;
-      });
-    }
-
-    // ---- Free Text Search ----
-    if (filters.search) {
-      const q = filters.search.toLowerCase();
-      filtered = filtered.filter(e =>
-        e.title?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q) ||
-        e.categories?.some(cat => cat.toLowerCase().includes(q)) ||
-        e.city?.toLowerCase().includes(q) ||
-        e.venue?.toLowerCase().includes(q)
-      );
-    }
-
-    // Sort by views
-    filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
-
-    return filtered;
-  }, [events, filters]);
 
   // ============================================
   // PAGINATION
   // ============================================
-  const totalPages = Math.ceil(filteredEvents.length / ITEMS_PER_PAGE);
-  const paginatedEvents = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredEvents.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredEvents, currentPage]);
-
-  // Reset page όταν αλλάζουν τα φίλτρα
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   // Scroll στο top όταν αλλάζει σελίδα
   const handlePageChange = (page) => {
@@ -188,14 +107,20 @@ const EventsPage = () => {
   const handleDraftChange = (key, value) => {
     setDraftFilters(prev => ({ ...prev, [key]: value }));
   };
+  
+  // the picker gives local midnight; toISOString() would move it a day back
+  const toDateString = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
   const handleApplyFilters = () => {
     const newFilters = {
       ...draftFilters,
-      dateFrom: draftDateFrom ? draftDateFrom.toISOString().split('T')[0] : '',
-      dateTo: draftDateTo ? draftDateTo.toISOString().split('T')[0] : '',
+      dateFrom: draftDateFrom ? toDateString(draftDateFrom) : '',
+      dateTo: draftDateTo ? toDateString(draftDateTo) : '',
+
     };
     setFilters(newFilters);
+    setCurrentPage(1);
     setSelectedDateFrom(draftDateFrom);
     setSelectedDateTo(draftDateTo);
 
@@ -251,7 +176,7 @@ const EventsPage = () => {
     e.preventDefault();
     const newFilters = { ...filters, search: searchInput };
     setFilters(newFilters);
-
+    setCurrentPage(1);
     const params = new URLSearchParams();
     Object.keys(newFilters).forEach(k => {
       if (newFilters[k]) params.append(k, newFilters[k]);
@@ -265,7 +190,7 @@ const EventsPage = () => {
   const removeFilter = (key) => {
     const newFilters = { ...filters, [key]: '' };
     setFilters(newFilters);
-
+    setCurrentPage(1);
     if (key === 'search') setSearchInput('');
     if (key === 'dateFrom') setSelectedDateFrom(null);
     if (key === 'dateTo') setSelectedDateTo(null);
@@ -277,10 +202,11 @@ const EventsPage = () => {
     setSearchParams(params);
   };
 
-  // Ξεχωριστό helper για να καθαρίζει και dateFrom και dateTo μαζί
+  // helper function to clean the date from and date to
   const removeDateFilter = () => {
     const newFilters = { ...filters, dateFrom: '', dateTo: '' };
     setFilters(newFilters);
+    setCurrentPage(1); 
     setSelectedDateFrom(null);
     setSelectedDateTo(null);
 
@@ -346,8 +272,11 @@ const EventsPage = () => {
   };
 
   const getEventPhoto = (event) => {
-    if (event.photos && event.photos.length > 0) return event.photos[0].image;
-    return null;
+    if (event.cover_photo) 
+      return event.cover_photo;
+    if (event.photos && event.photos.length > 0) 
+      return event.photos[0].image;
+
   };
 
   const getCategoriesText = (event) => {
@@ -474,8 +403,8 @@ const EventsPage = () => {
         <div className="results-header">
           <div className="results-info">
             <span className="results-label">
-              Results: {filteredEvents.length}
-              {filteredEvents.length > ITEMS_PER_PAGE && (
+              Results: {totalCount}
+              {totalCount > ITEMS_PER_PAGE && (
                 <span className="results-page-info">
                   {' '}· Page {currentPage} of {totalPages}
                 </span>
@@ -494,7 +423,7 @@ const EventsPage = () => {
           <div className="active-filters">
             {filters.category && (
               <span className="filter-tag">
-                Category: {filters.category}
+                Category: {categories.find(c => String(c.id) === String(filters.category))?.name || filters.category}
                 <CloseIcon className="remove-filter" onClick={() => removeFilter('category')} />
               </span>
             )}
@@ -565,14 +494,14 @@ const EventsPage = () => {
         {/* Results */}
         {loading ? (
           <LoadingSpinner message="Loading events..." />
-        ) : filteredEvents.length === 0 ? (
-          <div className="empty-state">
-            <p>No events found matching your criteria.</p>
-          </div>
+            ) : events.length === 0 ? (
+            <div className="empty-state">
+              <p>No events found matching your criteria.</p>
+            </div>
         ) : (
           <>
             <div className="events-grid">
-              {paginatedEvents.map((event) => {
+              {events.map((event) => { 
                 const availability = getAvailabilityStatus(event);
                 const categoriesText = getCategoriesText(event);
                 const photo = getEventPhoto(event);
@@ -659,7 +588,8 @@ const EventsPage = () => {
                 >
                   <option value="">All Categories</option>
                   {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    
                   ))}
                 </select>
               </div>

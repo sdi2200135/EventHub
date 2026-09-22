@@ -14,7 +14,8 @@ from decimal import ROUND_HALF_UP, Decimal
 
 # serializer in order to list many events in grid 
 class EventListSerializer(serializers.ModelSerializer):
-    
+
+    organizer_username = serializers.CharField(source='organizer.username', read_only=True)
     available_capacity = serializers.IntegerField(read_only=True)
     min_price = serializers.SerializerMethodField()
     categories = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
@@ -24,7 +25,7 @@ class EventListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'event_id', 'title', 'event_type', 'venue', 'city', 'country',
             'start_datetime', 'end_datetime', 'capacity', 'status',
-            'available_capacity', 'min_price', 'categories', 'cover_photo'
+            'available_capacity', 'min_price', 'categories', 'cover_photo', 'organizer_username'
         ]
 
     def get_min_price(self, obj):

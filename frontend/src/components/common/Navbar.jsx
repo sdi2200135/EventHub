@@ -22,7 +22,7 @@ const Navbar = () => {
 
     const fetchUnread = async () => {
       try {
-        const response = await messageService.getUnreadCount(user.id);
+        const response = await messageService.getUnreadCount();
         setUnreadCount(response.data.count || 0);
       } catch (err) {
         console.error('Error fetching unread count:', err);
@@ -43,7 +43,7 @@ const Navbar = () => {
         const response = await messageService.getUnreadCount(user.id);
         setUnreadCount(response.data.count || 0);
       } catch (err) {
-        // Αγνόησέ το
+        /* ignore */
       }
     }, 20000);
 

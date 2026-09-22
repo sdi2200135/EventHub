@@ -372,6 +372,10 @@ const AdminEvents = () => {
               <div className="ae-modal-section">
                 <h4>Event Info</h4>
                 <div className="ae-modal-row">
+                  <span className="ae-modal-label">Organizer:</span>
+                  <span className="ae-modal-value">{selectedEvent.organizer_username || '—'}</span>
+                </div>
+                <div className="ae-modal-row">
                   <span className="ae-modal-label">Type:</span>
                   <span className="ae-modal-value">{selectedEvent.event_type || '—'}</span>
                 </div>

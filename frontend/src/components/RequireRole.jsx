@@ -1,5 +1,4 @@
 // src/components/RequireRole.jsx
-import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
@@ -49,10 +48,8 @@ const RequireRole = ({ roles = [], children }) => {
   // ============================================
   // Προσδιορισμός ρόλου χρήστη (2 ρόλοι μόνο)
   // ============================================
-  const isAdmin =
-    user?.is_staff ||
-    user?.is_superuser ||
-    user?.role === 'ADMIN';
+
+  const isAdmin = Boolean(user?.is_staff);
 
   const userRole = isAdmin ? 'ADMIN' : 'USER';
 

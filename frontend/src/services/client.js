@@ -90,8 +90,11 @@ api.interceptors.response.use(
       return api(original);
     } catch (refreshError) {
       // refresh token expired, or the admin rejected the account meanwhile
-      sessionStorage.removeItem('access_token');
-      sessionStorage.removeItem('refresh_token');
+      if (refreshError.response) {
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('refresh_token');
+        window.dispatchEvent(new Event('auth-expired'));
+      }
       return reject(refreshError);
     }
   }

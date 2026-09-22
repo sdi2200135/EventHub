@@ -1,5 +1,5 @@
 // src/components/BookTicket.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
@@ -32,6 +32,8 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
 
   const isEventBookable =
     event.status === 'PUBLISHED' &&
+    // backend doesn't allow purchase ticket after start time
+    new Date(event.start_datetime) > new Date() &&
     (event.available_capacity ?? 0) > 0;
 
   if (!isEventBookable) {
@@ -45,14 +47,8 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
       return;
     }
 
-    console.log('🚀 Booking Data:', {
-      eventId: event.id,
-      ticketId: selectedTicket,
-      quantity: quantity,
-    });
-
     navigate(
-      `/events/details/${event.id}/booking?ticketId=${selectedTicket}&quantity=${quantity}&seats=`
+      `/events/details/${event.id}/booking?ticketId=${selectedTicket}&quantity=${quantity}`
     );
     onClose();
   };
@@ -78,12 +74,7 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
     'VVIP': { color: '#8e44ad', description: 'Ultimate VIP experience with all-access pass' }
   };
 
-  const getTicketColor = (name) => {
-    const config = Object.values(ticketTypesConfig).find(
-      (config, index) => Object.keys(ticketTypesConfig)[index] === name
-    );
-    return config?.color || '#6c7a89';
-  };
+  const getTicketColor = (name) => ticketTypesConfig[name]?.color || '#6c7a89';
 
   const hexToRgb = (hex) => {
     if (!hex) return '108, 122, 137';

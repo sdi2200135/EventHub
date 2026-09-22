@@ -1,12 +1,11 @@
 // src/pages/profile/participant/MyBookings.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingService } from '../../../services/api';
 import EventIcon from '@mui/icons-material/Event';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-// import DeleteIcon from '@mui/icons-material/Delete';
 import './MyBookings.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -15,7 +14,6 @@ const MyBookings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); // 'all' | 'CONFIRMED' | 'PENDING' | 'CANCELLED'
-  // const [cancellingId, setCancellingId] = useState(null);
 
   useEffect(() => {
     fetchBookings();
@@ -34,22 +32,6 @@ const MyBookings = () => {
       setLoading(false);
     }
   };
-
-  // const handleCancelBooking = async (bookingId) => {
-  //   if (!window.confirm('Are you sure you want to cancel this booking?')) return;
-  //   setCancellingId(bookingId);
-  //   try {
-  //     await bookingService.cancelBooking(bookingId);
-  //     setBookings(prev =>
-  //       prev.map(b => b.id === bookingId ? { ...b, status: 'CANCELLED' } : b)
-  //     );
-  //   } catch (err) {
-  //     console.error('Error cancelling booking:', err);
-  //     alert('Failed to cancel booking. Please try again.');
-  //   } finally {
-  //     setCancellingId(null);
-  //   }
-  // };
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -203,56 +185,46 @@ const MyBookings = () => {
                     <span>{booking.venue}, {booking.city}</span>
                   </div>
                 </div>
-
                 <div className="my-bookings-details-row">
                   <div className="my-bookings-detail">
                     <span className="my-bookings-detail-label">Tickets:</span>
-                    <span className="my-bookings-detail-value">{booking.quantity}</span>
+                    <span className="my-bookings-detail-value">{booking.number_of_tickets}</span>
                   </div>
                   <div className="my-bookings-detail">
                     <span className="my-bookings-detail-label">Total:</span>
                     <span className="my-bookings-detail-value total">
-                      ${booking.total_price?.toFixed(2) || '0.00'}
+                      ${Number(booking.total_cost).toFixed(2)}
                     </span>
                   </div>
                   <div className="my-bookings-detail">
                     <span className="my-bookings-detail-label">Booked:</span>
                     <span className="my-bookings-detail-value">
-                      {formatShortDate(booking.booking_date)}
+                      {formatShortDate(booking.created_at)}
                     </span>
                   </div>
-                  {booking.seats && (
-                    <div className="my-bookings-detail">
-                      <span className="my-bookings-detail-label">Seats:</span>
-                      <span className="my-bookings-detail-value">{booking.seats}</span>
-                    </div>
-                  )}
+                  <div className="my-bookings-detail">
+                    <span className="my-bookings-detail-label">Type:</span>
+                    <span className="my-bookings-detail-value">{booking.ticket_type_name}</span>
+                  </div>
+
                 </div>
               </div>
-
+              
               {/* Right: Actions */}
               <div className="my-bookings-card-actions">
                 <Link
-                  to={`/events/details/${booking.event_id}`}
+                  to={`/events/details/${booking.event}`}
                   className="my-bookings-btn-view"
                 >
                   <EventIcon />
                   View Event
                 </Link>
-
-                {booking.status === 'CONFIRMED'
-                //  && (
-                  // <button
-                  //   className="my-bookings-btn-cancel"
-                  //   onClick={() => handleCancelBooking(booking.id)}
-                  //   disabled={cancellingId === booking.id}
-                  //   title="Cancel booking"
-                  // >
-                  //   <DeleteIcon />
-                  //   {cancellingId === booking.id ? 'Cancelling...' : 'Cancel'}
-                  // </button>
-                // )
-                }
+                <Link
+                  to={`/profile/messages/new?event=${booking.event}`}
+                  className="my-bookings-btn-view"
+                >
+                  Message organizer
+                </Link>
               </div>
             </div>
           ))}

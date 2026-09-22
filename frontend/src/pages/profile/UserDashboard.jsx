@@ -21,7 +21,7 @@ const TABS = [
   { id: 'personal',     label: 'Personal Info' },
   { id: 'messages',     label: 'Messages',     showBadge: true },
   { id: 'bookings',     label: 'My Bookings' },
-  { id: 'events',       label: 'Events' },
+  { id: 'events',       label: 'My Events' },
   { id: 'reservations', label: 'Reservations' },
 ];
 

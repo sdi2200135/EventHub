@@ -1,7 +1,8 @@
 // src/pages/events/EventDetails.jsx
-import React, { useEffect, useState, useRef } from 'react';
+import  { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { eventService } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ArrowRightAltIcon from '@mui/icons-material/ArrowRightAlt';
@@ -24,6 +25,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 const EventDetails = () => {
   const { id } = useParams();
+  const { user, isAuthenticated } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,6 +133,8 @@ const EventDetails = () => {
     if (!ev) return false;
     if (ev.status !== 'PUBLISHED') return false;
     if ((ev.available_capacity ?? 0) <= 0) return false;
+    if (new Date(ev.start_datetime) <= new Date()) return false;
+
     const hasAvailableTicket = (ev.ticket_types || []).some(t => (t.available ?? 0) > 0);
     return hasAvailableTicket;
   };
@@ -142,8 +146,12 @@ const EventDetails = () => {
       case 'COMPLETED': return 'This event has already taken place.';
       case 'CANCELLED': return 'This event has been cancelled.';
       case 'PUBLISHED':
-        if ((ev.available_capacity ?? 0) <= 0) return 'This event is sold out.';
+        if ((ev.available_capacity ?? 0) <= 0) 
+          return 'This event is sold out.';
+        if (new Date(ev.start_datetime) <= new Date()) 
+          return 'This event has already started.';
         return 'No tickets available.';
+
       default: return 'Bookings are not available.';
     }
   };
@@ -389,31 +397,30 @@ const EventDetails = () => {
                   <div className="organizer-detail-column">
                     <h4>Contact Information</h4>
                     <div className="organizer-detail-item">
+                      <span className="detail-label">Name</span>
+                      <span className="detail-value">
+                        {event.organizer?.first_name} {event.organizer?.last_name}
+                      </span>
+                    </div>
+                    <div className="organizer-detail-item">
                       <span className="detail-label">Email</span>
-                      <span className="detail-value">{event.organizer?.email || 'N/A'}</span>
-                    </div>
-                    <div className="organizer-detail-item">
-                      <span className="detail-label">Phone</span>
-                      <span className="detail-value">{event.organizer?.phone || 'N/A'}</span>
-                    </div>
-                    <div className="organizer-detail-item">
-                      <span className="detail-label">Tax Registration Number</span>
-                      <span className="detail-value">{event.organizer?.afm || 'N/A'}</span>
+                      <span className="detail-value">{event.organizer?.email || '—'}</span>
                     </div>
                   </div>
 
                   <div className="organizer-detail-column">
-                    <h4>Location Details</h4>
-                    <div className="organizer-detail-item">
-                      <span className="detail-label">Location</span>
-                      <span className="detail-value">
-                        {event.organizer?.city || event.organizer?.location || 'N/A'}
-                      </span>
-                    </div>
-                    <div className="organizer-detail-item">
-                      <span className="detail-label">Address</span>
-                      <span className="detail-value">{event.organizer?.address || 'N/A'}</span>
-                    </div>
+                    <h4>Message</h4>
+                    <p className="organizer-contact-note">
+                      Attendees can message the organizer about this event after booking.
+                    </p>
+                    {isAuthenticated && user?.id !== event.organizer?.id && (
+                      <Link
+                        to={`/profile/messages/new?event=${event.id}`}
+                        className="btn-message-organizer"
+                      >
+                        Message organizer
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

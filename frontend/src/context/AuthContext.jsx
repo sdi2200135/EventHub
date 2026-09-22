@@ -38,6 +38,13 @@ export const AuthProvider = ({ children }) => {
       .finally(() => setLoading(false));
   }, []);
 
+  // the refresh token expired: the api client tells us, so the ui stops showing us as logged in
+  useEffect(() => {
+    const onExpired = () => { setUser(null); setIsAuthenticated(false); };
+    window.addEventListener('auth-expired', onExpired);
+    return () => window.removeEventListener('auth-expired', onExpired);
+  }, []);
+
 
   const login = async (username, password) => {
     try {

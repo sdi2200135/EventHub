@@ -1,5 +1,5 @@
 // src/pages/HomePage.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';  
 import { useAuth } from '../context/AuthContext';
 import { eventService, categoryService } from '../services/api';
@@ -134,10 +134,8 @@ const HomePage = () => {
   };
 
   const getEventPhoto = (event) => {
-    if (event.photos && event.photos.length > 0) {
-      return event.photos[0].image;
-    }
-    return null;
+    // endpoind sends image 0 as cover photo
+      return event.cover_photo || event.photos?.[0]?.image || null
   };
 
   const getCategoriesText = (event) => {

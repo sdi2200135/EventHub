@@ -11,7 +11,7 @@ class UserPublicSerializer(serializers.ModelSerializer):
     """info about what anyone can see"""
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name']
+        fields = ['id', 'username', 'first_name', 'last_name','email']
 
 class UserSerializer(serializers.ModelSerializer):
     """user's account info"""
