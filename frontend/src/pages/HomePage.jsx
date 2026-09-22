@@ -13,7 +13,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 const HomePage = () => {
   const { user, isAuthenticated } = useAuth();
-  const navigate = useNavigate();  // ← Πρόσθεσε αυτό
+  const navigate = useNavigate();  
   const [categories, setCategories] = useState([]);
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -87,9 +87,12 @@ const HomePage = () => {
       params.append('region', searchFilters.region);
     }
     if (selectedDate) {
-      // Μορφοποίηση της ημερομηνίας σε YYYY-MM-DD
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      params.append('date', dateStr);
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${d}`;
+      params.append('dateFrom', dateStr);
+      params.append('dateTo', dateStr);
     }
     
     // Πλοήγηση στη σελίδα Events με τα φίλτρα
@@ -137,9 +140,9 @@ const HomePage = () => {
     return null;
   };
 
-  const getPrimaryCategory = (event) => {
+  const getCategoriesText = (event) => {
     if (event.categories && event.categories.length > 0) {
-      return event.categories[0];
+      return event.categories.join(', ');
     }
     return 'Event';
   };
@@ -171,16 +174,13 @@ const HomePage = () => {
                   <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
-              <select
+              <input
+                type="text"
+                placeholder="Region"
                 value={searchFilters.region}
                 onChange={(e) => setSearchFilters({...searchFilters, region: e.target.value})}
-              >
-                <option value="">Region</option>
-                <option value="Athens">Athens</option>
-                <option value="Thessaloniki">Thessaloniki</option>
-                <option value="OAKA">OAKA</option>
-                <option value="Patras">Patras</option>
-              </select>
+                className="region-input"
+              />
               <DatePicker
                 selected={selectedDate}
                 onChange={(date) => setSelectedDate(date)}
@@ -248,7 +248,7 @@ const HomePage = () => {
           <div className="events-grid">
             {filteredEvents.map((event) => {
               const availability = getAvailabilityStatus(event);
-              const primaryCategory = getPrimaryCategory(event);
+              const categoriesText = getCategoriesText(event);
               const photo = getEventPhoto(event);
               const availabilityColor = getAvailabilityColor(availability);
               const availabilityLabel = getAvailabilityLabel(availability);
@@ -281,7 +281,7 @@ const HomePage = () => {
                       {/* Category: Στοιχείο */}
                       <p className="event-info">
                         <span className="info-label">Category: </span>
-                        <span className="info-value">{primaryCategory}</span>
+                        <span className="info-value">{categoriesText}</span>
                       </p>
 
                       {/* REGION: Στοιχείο */}

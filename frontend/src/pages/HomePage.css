@@ -91,6 +91,31 @@
 }
 
 /* ============================================
+   REGION TEXT INPUT
+   ============================================ */
+.hero-search .region-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 0;
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  background: transparent;
+  outline: none;
+  border-right: 1px solid #B6AEAE;
+  font-family: inherit;
+}
+
+.hero-search .region-input:focus {
+  background: transparent;
+}
+
+.hero-search .region-input::placeholder {
+  color: #6c7a89;
+}
+
+/* ============================================
    DATE PICKER
    ============================================ */
 .react-datepicker-wrapper {
@@ -391,7 +416,6 @@
   font-weight: 700;
   margin-bottom: 0.3rem;
   color: #e0e0e0;
-  /* ΑΦΑΙΡΕΣΗ ΤΩΝ ΠΕΡΙΟΡΙΣΜΩΝ ΓΙΑ ΝΑ ΚΑΝΕΙ WORD-WRAP */
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -519,7 +543,8 @@
     flex-wrap: wrap;
   }
 
-  .hero-search select {
+  .hero-search select,
+  .hero-search .region-input {
     border-right: none;
     border-bottom: 1px solid #B6AEAE;
     min-width: 100%;

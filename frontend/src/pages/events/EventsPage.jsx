@@ -99,16 +99,29 @@ const EventsPage = () => {
       );
     }
 
-    // ---- Date Range ----
-    if (filters.dateFrom) {
-      const from = new Date(filters.dateFrom);
-      from.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(e => new Date(e.start_datetime) >= from);
-    }
-    if (filters.dateTo) {
-      const to = new Date(filters.dateTo);
-      to.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(e => new Date(e.start_datetime) <= to);
+    // ---- Date Range (overlap logic) ----
+    // Ένα event ταιριάζει αν το [start_datetime, end_datetime] του
+    // επικαλύπτεται με το [dateFrom, dateTo] του φίλτρου.
+    // Αν δοθεί μόνο μία μέρα (dateFrom === dateTo), αυτό σημαίνει ότι
+    // η μέρα πέφτει μέσα στη διάρκεια του event.
+    if (filters.dateFrom || filters.dateTo) {
+      const from = filters.dateFrom ? new Date(filters.dateFrom) : null;
+      if (from) from.setHours(0, 0, 0, 0);
+
+      const to = filters.dateTo ? new Date(filters.dateTo) : null;
+      if (to) to.setHours(23, 59, 59, 999);
+
+      filtered = filtered.filter(e => {
+        const eStart = new Date(e.start_datetime);
+        const eEnd = e.end_datetime ? new Date(e.end_datetime) : eStart;
+
+        // Το event πρέπει να τελειώνει μετά την αρχή του query
+        if (from && eEnd < from) return false;
+        // και να ξεκινάει πριν το τέλος του query
+        if (to && eStart > to) return false;
+
+        return true;
+      });
     }
 
     // ---- Price Range ----
@@ -220,7 +233,6 @@ const EventsPage = () => {
   const handleClearFromDrawer = () => {
     const empty = {
       category: '',
-      region: '',
       dateFrom: '',
       dateTo: '',
       priceMin: '',
@@ -265,14 +277,35 @@ const EventsPage = () => {
     setSearchParams(params);
   };
 
+  // Ξεχωριστό helper για να καθαρίζει και dateFrom και dateTo μαζί
+  const removeDateFilter = () => {
+    const newFilters = { ...filters, dateFrom: '', dateTo: '' };
+    setFilters(newFilters);
+    setSelectedDateFrom(null);
+    setSelectedDateTo(null);
+
+    const params = new URLSearchParams();
+    Object.keys(newFilters).forEach(k => {
+      if (newFilters[k]) params.append(k, newFilters[k]);
+    });
+    setSearchParams(params);
+  };
+
   // Μέτρημα ενεργών φίλτρων (για το badge)
+  // Αν dateFrom === dateTo μετράει ως 1 (single date), αλλιώς 2
+  const hasSingleDate =
+    filters.dateFrom && filters.dateTo && filters.dateFrom === filters.dateTo;
+
   const activeFilterCount = [
     filters.category,
     filters.region,
-    filters.dateFrom,
-    filters.dateTo,
     filters.priceMin,
     filters.priceMax,
+    hasSingleDate
+      ? 'date'
+      : [filters.dateFrom, filters.dateTo].filter(Boolean).length > 0
+        ? 'dates'
+        : null,
   ].filter(Boolean).length;
 
   // ============================================
@@ -317,7 +350,6 @@ const EventsPage = () => {
     return null;
   };
 
-  // ✅ ΑΛΛΑΓΗ: επιστρέφει όλες τις κατηγορίες χωρισμένες με κόμμα
   const getCategoriesText = (event) => {
     if (event.categories && event.categories.length > 0) {
       return event.categories.join(', ');
@@ -466,24 +498,49 @@ const EventsPage = () => {
                 <CloseIcon className="remove-filter" onClick={() => removeFilter('category')} />
               </span>
             )}
+
             {filters.region && (
               <span className="filter-tag">
                 Region: {filters.region}
-                <CloseIcon className="remove-filter" onClick={() => removeFilter('region')} />
+                <CloseIcon
+                  className="remove-filter"
+                  onClick={() => removeFilter('region')}
+                />
               </span>
             )}
-            {filters.dateFrom && (
+
+            {/* Date — αν είναι ίδια μέρα, ένα tag. Αλλιώς From/To ξεχωριστά */}
+            {hasSingleDate ? (
               <span className="filter-tag">
-                From: {new Date(filters.dateFrom).toLocaleDateString()}
-                <CloseIcon className="remove-filter" onClick={() => removeFilter('dateFrom')} />
+                Date: {new Date(filters.dateFrom).toLocaleDateString()}
+                <CloseIcon
+                  className="remove-filter"
+                  onClick={removeDateFilter}
+                />
               </span>
+            ) : (
+              <>
+                {filters.dateFrom && (
+                  <span className="filter-tag">
+                    From: {new Date(filters.dateFrom).toLocaleDateString()}
+                    <CloseIcon
+                      className="remove-filter"
+                      onClick={() => removeFilter('dateFrom')}
+                    />
+                  </span>
+                )}
+                {filters.dateTo && (
+                  <span className="filter-tag">
+                    To: {new Date(filters.dateTo).toLocaleDateString()}
+                    <CloseIcon
+                      className="remove-filter"
+                      onClick={() => removeFilter('dateTo')}
+                    />
+                  </span>
+                )}
+              </>
             )}
-            {filters.dateTo && (
-              <span className="filter-tag">
-                To: {new Date(filters.dateTo).toLocaleDateString()}
-                <CloseIcon className="remove-filter" onClick={() => removeFilter('dateTo')} />
-              </span>
-            )}
+
             {filters.priceMin !== '' && (
               <span className="filter-tag">
                 Min: ${filters.priceMin}
@@ -604,22 +661,6 @@ const EventsPage = () => {
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
-                </select>
-              </div>
-
-              {/* Region */}
-              <div className="filter-group">
-                <label className="filter-group-label">Region</label>
-                <select
-                  value={draftFilters.region}
-                  onChange={(e) => handleDraftChange('region', e.target.value)}
-                  className="filter-select"
-                >
-                  <option value="">All Regions</option>
-                  <option value="Athens">Athens</option>
-                  <option value="Thessaloniki">Thessaloniki</option>
-                  <option value="OAKA">OAKA</option>
-                  <option value="Patras">Patras</option>
                 </select>
               </div>
 
