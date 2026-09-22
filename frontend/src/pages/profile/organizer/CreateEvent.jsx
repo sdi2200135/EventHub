@@ -18,6 +18,38 @@ const STEPS = [
 const MAX_DESCRIPTION = 150;
 const MAX_PHOTOS = 20;
 
+// Πρέπει να ταιριάζουν με τα choices του backend model
+const EVENT_TYPES = [
+  { value: 'CONCERT',    label: 'Concert' },
+  { value: 'SEMINAR',    label: 'Seminar' },
+  { value: 'THEATER',    label: 'Theater' },
+  { value: 'CONFERENCE', label: 'Conference' },
+  { value: 'SPORTS',     label: 'Sports' },
+  { value: 'OTHER',      label: 'Other' },
+];
+
+// Helper: μετατρέπει το key (π.χ. 'CONCERT') σε label (π.χ. 'Concert')
+const getEventTypeLabel = (value) =>
+  EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
+
+// "2025-06-15T20:30" → { date: "2025-06-15", hour: "20", minute: "30" }
+const splitDateTime = (value) => {
+  if (!value) return { date: '', hour: '', minute: '' };
+  const [date, time] = value.split('T');
+  const [hour = '', minute = ''] = (time || '').split(':');
+  return { date: date || '', hour, minute: minute.slice(0, 2) };
+};
+
+// { date, hour, minute } → "2025-06-15T20:30"
+const joinDateTime = (date, hour, minute) => {
+  if (!date || !hour || !minute) return '';
+  return `${date}T${hour}:${minute}`;
+};
+
+// Options για τα dropdowns (24h format)
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
 const CreateEvent = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -32,7 +64,6 @@ const CreateEvent = () => {
   // STEP 1: EVENT DETAILS STATE
   // ============================================
   const [formData, setFormData] = useState({
-    event_id: '',
     title: '',
     event_type: '',
     venue: '',
@@ -94,6 +125,18 @@ const CreateEvent = () => {
   const handleCapacityChange = (e) => {
     const value = parseInt(e.target.value) || 0;
     setFormData(prev => ({ ...prev, capacity: value }));
+  };
+
+  // Split date + hour + minute handler
+  const handleDateTimeChange = (field, part, value) => {
+    setFormData(prev => {
+      const current = splitDateTime(prev[field]);
+      const updated = { ...current, [part]: value };
+      return {
+        ...prev,
+        [field]: joinDateTime(updated.date, updated.hour, updated.minute)
+      };
+    });
   };
 
   const handleAddCategory = () => {
@@ -204,8 +247,16 @@ const CreateEvent = () => {
     if (!formData.country.trim()) return 'Country is required';
     if (!formData.capacity || formData.capacity <= 0) return 'Capacity must be > 0';
     if (formData.categories.length === 0) return 'Add at least one category';
-    if (!formData.start_datetime) return 'Start date is required';
-    if (!formData.end_datetime) return 'End date is required';
+
+    const startParts = splitDateTime(formData.start_datetime);
+    const endParts = splitDateTime(formData.end_datetime);
+
+    if (!startParts.date || !startParts.hour || !startParts.minute) {
+      return 'Start date and time are required';
+    }
+    if (!endParts.date || !endParts.hour || !endParts.minute) {
+      return 'End date and time are required';
+    }
     if (new Date(formData.start_datetime) >= new Date(formData.end_datetime)) {
       return 'End date must be after start date';
     }
@@ -375,30 +426,30 @@ const CreateEvent = () => {
   };
 
   // ============================================
-  // FORMAT HELPERS
+  // FORMAT HELPERS — 24h format, ανεξαρτήτως locale
   // ============================================
   const formatDateTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '—';
-    return date.toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) + ' ' + date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
   // ============================================
   // RENDER STEP 1
   // ============================================
   const renderStep1 = () => {
-    // Κατηγορίες που δεν έχουν ήδη προστεθεί
     const selectableCategories = availableCategories.filter(
       cat => !formData.categories.includes(cat.name)
     );
+
+    const startParts = splitDateTime(formData.start_datetime);
+    const endParts = splitDateTime(formData.end_datetime);
 
     return (
       <div className="step-content">
@@ -406,17 +457,6 @@ const CreateEvent = () => {
 
         <div className="step-grid">
           <div className="step-column">
-            <div className="form-row">
-              <label>ID:</label>
-              <input
-                type="text"
-                name="event_id"
-                value={formData.event_id || 'Auto-generated'}
-                disabled
-                className="input-disabled"
-              />
-            </div>
-
             <div className="form-row">
               <label>Title:</label>
               <input
@@ -430,13 +470,19 @@ const CreateEvent = () => {
 
             <div className="form-row">
               <label>Type:</label>
-              <input
-                type="text"
+              <select
                 name="event_type"
                 value={formData.event_type}
                 onChange={handleChange}
-                placeholder="Type"
-              />
+                className="category-select"
+              >
+                <option value="">Select event type...</option>
+                {EVENT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-row">
@@ -522,26 +568,72 @@ const CreateEvent = () => {
             <div className="datetime-section">
               <div className="datetime-label">Date and Time:</div>
 
+              {/* START */}
               <div className="form-row date-row">
                 <label>START:</label>
-                <input
-                  type="datetime-local"
-                  name="start_datetime"
-                  value={formData.start_datetime}
-                  onChange={handleChange}
-                  className="datetime-input"
-                />
+                <div className="datetime-split">
+                  <input
+                    type="date"
+                    value={startParts.date}
+                    onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)}
+                    className="datetime-input"
+                  />
+                  <select
+                    value={startParts.hour}
+                    onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)}
+                    className="datetime-input datetime-select"
+                  >
+                    <option value="">--</option>
+                    {HOURS.map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="datetime-colon">:</span>
+                  <select
+                    value={startParts.minute}
+                    onChange={(e) => handleDateTimeChange('start_datetime', 'minute', e.target.value)}
+                    className="datetime-input datetime-select"
+                  >
+                    <option value="">--</option>
+                    {MINUTES.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
+              {/* END */}
               <div className="form-row date-row">
                 <label>END:</label>
-                <input
-                  type="datetime-local"
-                  name="end_datetime"
-                  value={formData.end_datetime}
-                  onChange={handleChange}
-                  className="datetime-input"
-                />
+                <div className="datetime-split">
+                  <input
+                    type="date"
+                    value={endParts.date}
+                    onChange={(e) => handleDateTimeChange('end_datetime', 'date', e.target.value)}
+                    className="datetime-input"
+                  />
+                  <select
+                    value={endParts.hour}
+                    onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)}
+                    className="datetime-input datetime-select"
+                  >
+                    <option value="">--</option>
+                    {HOURS.map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="datetime-colon">:</span>
+                  <select
+                    value={endParts.minute}
+                    onChange={(e) => handleDateTimeChange('end_datetime', 'minute', e.target.value)}
+                    className="datetime-input datetime-select"
+                  >
+                    <option value="">--</option>
+                    {MINUTES.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -838,16 +930,14 @@ const CreateEvent = () => {
           <div className="preview-details-grid">
             <div className="preview-col">
               <div className="preview-row">
-                <span className="preview-label">ID:</span>
-                <span className="preview-value">{formData.event_id || 'Default'}</span>
-              </div>
-              <div className="preview-row">
                 <span className="preview-label">Title:</span>
                 <span className="preview-value">{formData.title || '—'}</span>
               </div>
               <div className="preview-row">
                 <span className="preview-label">Type:</span>
-                <span className="preview-value">{formData.event_type || '—'}</span>
+                <span className="preview-value">
+                  {getEventTypeLabel(formData.event_type)}
+                </span>
               </div>
               <div className="preview-row">
                 <span className="preview-label">Capacity:</span>

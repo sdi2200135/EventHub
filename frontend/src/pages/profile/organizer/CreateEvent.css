@@ -1327,3 +1327,65 @@
   width: 100%;
   position: relative;
 }
+
+/* ============================================
+   DATETIME SPLIT (date + hour + minute dropdowns)
+   ============================================ */
+.datetime-split {
+  display: grid;
+  grid-template-columns: 1.5fr 0.8fr auto 0.8fr;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.datetime-split input,
+.datetime-split select {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.datetime-select {
+  background: transparent;
+  border: 1px solid #4a4a5a;
+  border-radius: 6px;
+  padding: 10px 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  cursor: pointer;
+  color-scheme: dark;
+  text-align: center;
+  text-align-last: center;
+}
+
+.datetime-select:focus {
+  border-color: #4a90d9;
+}
+
+.datetime-select option {
+  background: #1E1E1E;
+  color: #e0e0e0;
+}
+
+.datetime-colon {
+  color: #a0a0b8;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  padding: 0 2px;
+}
+
+@media (max-width: 480px) {
+  .datetime-split {
+    grid-template-columns: 1fr 1fr;
+  }
+  .datetime-split input {
+    grid-column: 1 / -1;
+  }
+  .datetime-colon {
+    display: none;
+  }
+}
