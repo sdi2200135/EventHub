@@ -215,7 +215,7 @@ const BookingPage = () => {
       
       // Μετά από 3 δευτερόλεπτα πάει στην αρχική σελίδα
       setTimeout(() => {
-        navigate('/');
+        navigate('/homepage');
       }, 3000);
     } catch (err) {
       console.error('Booking error:', err);

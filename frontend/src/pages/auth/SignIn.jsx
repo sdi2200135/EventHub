@@ -13,7 +13,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const redirectUrl = searchParams.get('redirect') || '/';
+  const redirectUrl = searchParams.get('redirect') || '/homepage';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

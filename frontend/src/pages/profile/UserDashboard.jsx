@@ -6,9 +6,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import SearchIcon from '@mui/icons-material/Search';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-// import ReportIcon from '@mui/icons-material/Report';
-// import MoveToInboxIcon from '@mui/icons-material/MoveToInbox';
-// import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import './common/Dashboard.css';
 import './common/MessagesPanel.css';
 import MyBookings from './participant/MyBookings';
@@ -302,10 +299,6 @@ const UserDashboard = ({ user }) => {
             setReplyText={setReplyText}
             onSendReply={handleSendReply}
             sendingReply={sendingReply}
-            // onOpenDraft={(id) => navigate(`/profile/messages/new?draftId=${id}`)}
-            // onMarkAsJunk={handleMarkAsJunk}
-            // onUnmarkJunk={handleUnmarkJunk}
-            // onRestoreFromTrash={handleRestoreFromTrash}
           />
         );
 
