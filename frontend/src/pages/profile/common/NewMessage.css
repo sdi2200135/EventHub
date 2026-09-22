@@ -129,6 +129,24 @@
   padding: 8px 0;
 }
 
+.new-message-form-row select {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.new-message-form-row select:disabled {
+  color: #6c7a89;
+  cursor: not-allowed;
+}
+
 .new-message-form-row input::placeholder,
 .new-message-form-row textarea::placeholder {
   color: #6c7a89;

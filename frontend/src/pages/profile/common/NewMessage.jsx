@@ -1,12 +1,11 @@
 // src/pages/profile/common/NewMessage.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { messageService } from '../../../services/api';
+import { bookingService, eventService, messageService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
-import SaveIcon from '@mui/icons-material/Save';
 import './NewMessage.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -15,254 +14,99 @@ const NewMessage = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
-  const replyToId = searchParams.get('replyTo');
-  const forwardId = searchParams.get('forward');
-  const draftIdParam = searchParams.get('draftId');
-
-  const [mode, setMode] = useState('new');
-  const [recipient, setRecipient] = useState('');
-  const [subject, setSubject] = useState('');
+  // every option is one event: { value, label, mine }
+  // mine = i organise it, so i also have to choose the attendee
+  const [options, setOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(true);
+  const [eventValue, setEventValue] = useState(searchParams.get('event') || '');
+  const [attendees, setAttendees] = useState([]);
+  const [attendeeValue, setAttendeeValue] = useState(searchParams.get('attendee') || '');
   const [body, setBody] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [savingDraft, setSavingDraft] = useState(false);
-  const [loadingOriginal, setLoadingOriginal] = useState(false);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(null); // 'sent' | 'draft' | null
-  const [recipients, setRecipients] = useState([]);
-  const [draftId, setDraftId] = useState(null);
+  const [sent, setSent] = useState(false);
 
-  // ============================================
-  // 1. ΦΟΡΤΩΣΗ ΠΑΡΑΛΗΠΤΩΝ
-  // ============================================
+  const selected = options.find((o) => o.value === eventValue);
+
+  // the events i can write about: the ones i booked (i write to the organizer)
+  // and the ones i organise (i write to one of my attendees)
   useEffect(() => {
-    const fetchRecipients = async () => {
+    const load = async () => {
       try {
-        const response = await messageService.getRecipients(user?.id);
-        setRecipients(response.data || []);
+        const [bookings, mine] = await Promise.all([
+          bookingService.getMyBookings(),
+          eventService.getOrganizerEvents(user.id),
+        ]);
+        // a booking that was never confirmed does not count
+        const booked = bookings.data
+          .filter((b) => b.status !== 'PENDING')
+          .map((b) => ({ value: String(b.event), label: `${b.event_title} — to the organizer`, mine: false }));
+        const organised = mine.data
+          .map((e) => ({ value: String(e.id), label: `${e.title} — to an attendee`, mine: true }));
+        // one entry per event
+        const unique = [...booked, ...organised]
+          .filter((o, i, all) => all.findIndex((x) => x.value === o.value) === i)
+          .sort((a, b) => a.label.localeCompare(b.label));
+        setOptions(unique);
       } catch (err) {
-        console.error('Error fetching recipients:', err);
+        setError(err.message || 'Could not load your events.');
+      } finally {
+        setLoadingOptions(false);
       }
     };
-    if (user?.id) {
-      fetchRecipients();
+    load();
+  }, [user.id]);
+
+  // for my own events i also need the list of people who booked
+  useEffect(() => {
+    const event = options.find((o) => o.value === eventValue);
+    if (!event?.mine) {
+      return;
     }
-  }, [user?.id]);
-
-  // ============================================
-  // 2. REPLY MODE
-  // ============================================
-  useEffect(() => {
-    const loadReply = async () => {
-      if (!replyToId) return;
-      setMode('reply');
-      setLoadingOriginal(true);
+    const loadAttendees = async () => {
       try {
-        const response = await messageService.getMessage(replyToId);
-        const original = response.data;
-        setRecipient(original.sender_username || '');
-        setSubject(
-          original.subject?.startsWith('Re:')
-            ? original.subject
-            : `Re: ${original.subject || ''}`
-        );
-        setBody(
-          `\n\n--- Original message ---\nFrom: ${original.sender_name} (@${original.sender_username})\nDate: ${formatDate(original.created_at)}\n\n${original.body}`
-        );
+        const { data } = await eventService.getEventBookings(event.value);
+        const people = [];
+        for (const booking of data) {
+          if (booking.status !== 'PENDING' && !people.some((p) => p.id === booking.attendee.id)) {
+            people.push({ id: booking.attendee.id, username: booking.attendee.username });
+          }
+        }
+        setAttendees(people);
       } catch (err) {
-        console.error('Error loading reply target:', err);
-        setError('Could not load the original message.');
-      } finally {
-        setLoadingOriginal(false);
+        setError(err.message || 'Could not load the attendees of this event.');
       }
     };
-    loadReply();
-  }, [replyToId]);
+    loadAttendees();
+  }, [eventValue, options]);
 
-  // ============================================
-  // 3. FORWARD MODE
-  // ============================================
-  useEffect(() => {
-    const loadForward = async () => {
-      if (!forwardId) return;
-      setMode('forward');
-      setLoadingOriginal(true);
-      try {
-        const response = await messageService.getMessage(forwardId);
-        const original = response.data;
-        setRecipient('');
-        setSubject(
-          original.subject?.startsWith('Fwd:')
-            ? original.subject
-            : `Fwd: ${original.subject || ''}`
-        );
-        setBody(
-          `\n\n--- Forwarded message ---\nFrom: ${original.sender_name} (@${original.sender_username})\nDate: ${formatDate(original.created_at)}\nSubject: ${original.subject || '(no subject)'}\n\n${original.body}`
-        );
-      } catch (err) {
-        console.error('Error loading forward target:', err);
-        setError('Could not load the message to forward.');
-      } finally {
-        setLoadingOriginal(false);
-      }
-    };
-    loadForward();
-  }, [forwardId]);
+  const handleCancel = () => navigate('/profile?tab=messages');
 
-  // ============================================
-  // 4. DRAFT EDIT MODE
-  // ============================================
-  useEffect(() => {
-    const loadDraft = async () => {
-      if (!draftIdParam) return;
-      setMode('draft-edit');
-      setLoadingOriginal(true);
-      try {
-        const response = await messageService.getMessage(draftIdParam);
-        const draft = response.data;
-        setDraftId(draft.id);
-        setRecipient(draft.recipient_username || '');
-        setSubject(draft.subject || '');
-        setBody(draft.body || '');
-      } catch (err) {
-        console.error('Error loading draft:', err);
-        setError('Could not load the draft.');
-      } finally {
-        setLoadingOriginal(false);
-      }
-    };
-    loadDraft();
-  }, [draftIdParam]);
-
-  // ============================================
-  // HELPERS
-  // ============================================
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getTitle = () => {
-    switch (mode) {
-      case 'reply': return 'Reply to Message';
-      case 'forward': return 'Forward Message';
-      case 'draft-edit': return 'Edit Draft';
-      default: return 'New Message';
-    }
-  };
-
-  // ============================================
-  // SUBMIT (Send)
-  // ============================================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (!recipient.trim()) {
-      setError('Please choose a recipient.');
-      return;
-    }
-    if (!body.trim()) {
-      setError('Please write a message.');
-      return;
-    }
-
-    const foundRecipient = recipients.find(
-      r => r.username.toLowerCase() === recipient.trim().toLowerCase()
-    );
-
-    // ---- ΑΥΣΤΗΡΟ VALIDATION ----
-    // Σε mode 'new' ή 'forward', ο recipient πρέπει να είναι στη λίστα.
-    // Στο 'reply' επιτρέπεται πάντα (απαντάς σε όποιον σου έστειλε).
-    // Στο 'draft-edit' αν ο recipient δεν είναι valid, το επιτρέπουμε (κρατάει historical draft).
-    if ((mode === 'new' || mode === 'forward') && !foundRecipient) {
-      setError('You can only message users you have an active booking with.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await messageService.createMessage({
-        draftId: draftId,
-        sender_id: user?.id,
-        sender_username: user?.username,
-        sender_name:
-          `${user?.first_name || ''} ${user?.last_name || ''}`.trim() ||
-          user?.username,
-        recipient_username: recipient.trim(),
-        recipient_id: foundRecipient?.id || null,
-        subject: subject.trim() || '(no subject)',
-        body: body.trim(),
-      });
-      setSuccess('sent');
-      setTimeout(() => {
-        navigate('/profile?tab=messages');
-      }, 1500);
-    } catch (err) {
-      console.error('Error sending message:', err);
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.message ||
-        'Failed to send message. Please try again.';
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ============================================
-  // SAVE AS DRAFT
-  // ============================================
-  const handleSaveDraft = async () => {
-    const foundRecipient = recipients.find(
-      r => r.username.toLowerCase() === recipient.trim().toLowerCase()
-    );
-
-    setSavingDraft(true);
+    setSending(true);
     setError('');
     try {
-      const response = await messageService.saveDraft({
-        draftId: draftId,
-        sender_id: user?.id,
-        sender_username: user?.username,
-        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || user?.username,
-        recipient_username: recipient.trim(),
-        recipient_id: foundRecipient?.id || null,
-        subject: subject.trim(),
+      await messageService.sendNewMessage({
+        event: Number(eventValue),
+        // only an organizer sends the attendee; an attendee writes to the organizer
+        attendee: selected?.mine ? Number(attendeeValue) : undefined,
         body: body.trim(),
       });
-      setDraftId(response.data.id);
-      setSuccess('draft');
-      setTimeout(() => {
-        navigate('/profile?tab=messages');
-      }, 1200);
+      setSent(true);
+      setTimeout(() => navigate('/profile?tab=messages'), 1200);
     } catch (err) {
-      console.error('Error saving draft:', err);
-      setError('Failed to save draft. Please try again.');
+      setError(err.message || 'Failed to send the message.');
     } finally {
-      setSavingDraft(false);
+      setSending(false);
     }
   };
 
-  const handleCancel = () => {
-    navigate('/profile?tab=messages');
-  };
-
-  // ============================================
-  // RENDER
-  // ============================================
-  if (loadingOriginal) {
+  if (loadingOptions) {
     return (
       <div className="new-message-page">
         <div className="new-message-container">
-          <LoadingSpinner message="Loading message..." />
+          <LoadingSpinner message="Loading your events..." />
         </div>
       </div>
     );
@@ -275,43 +119,28 @@ const NewMessage = () => {
           <button className="btn-back" onClick={handleCancel}>
             <ArrowBackIcon />
           </button>
-          <h1>{getTitle()}</h1>
-          <button
-            className="btn-close"
-            onClick={handleCancel}
-            title="Close"
-          >
+          <h1>New Message</h1>
+          <button className="btn-close" onClick={handleCancel} title="Close">
             <CloseIcon />
           </button>
         </div>
 
-        {success === 'sent' && (
+        {sent && (
           <div className="new-message-success">
             ✅ Message sent successfully! Redirecting...
           </div>
         )}
 
-        {success === 'draft' && (
-          <div className="new-message-success">
-            💾 Draft saved! Redirecting...
-          </div>
-        )}
+        {error && <div className="new-message-error">{error}</div>}
 
-        {error && (
-          <div className="new-message-error">
-            {error}
-          </div>
-        )}
-
-        {/* Warning όταν δεν υπάρχουν recipients */}
-        {recipients.length === 0 && mode === 'new' && !loadingOriginal && (
+        {options.length === 0 && (
           <div className="new-message-warning">
             <span className="warning-icon">⚠️</span>
             <div>
-              <strong>No recipients available</strong>
+              <strong>Nobody to write to yet</strong>
               <p>
-                You can only send messages to users you have an active booking with.
-                Book an event first to start a conversation.
+                You can message the organizer of an event you have booked, or an attendee
+                of an event you organise. Book an event first to start a conversation.
               </p>
             </div>
           </div>
@@ -319,46 +148,38 @@ const NewMessage = () => {
 
         <form className="new-message-form" onSubmit={handleSubmit}>
           <div className="new-message-form-row">
-            <label htmlFor="recipient">To:</label>
-            <input
-              type="text"
-              id="recipient"
-              list="recipients-list"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder={
-                recipients.length === 0 && mode === 'new'
-                  ? 'No available recipients'
-                  : 'Type or select a username...'
-              }
-              autoComplete="off"
-              disabled={
-                loading ||
-                savingDraft ||
-                success ||
-                (recipients.length === 0 && mode === 'new')
-              }
-            />
-            <datalist id="recipients-list">
-              {recipients.map(r => (
-                <option key={r.id} value={r.username}>
-                  {r.name} ({r.role})
-                </option>
+            <label htmlFor="event">About:</label>
+            <select
+              id="event"
+              value={eventValue}
+              onChange={(e) => { setEventValue(e.target.value); setAttendeeValue(''); setAttendees([]); }}
+              disabled={sending || sent || options.length === 0}
+            >
+              <option value="">Choose an event...</option>
+              {options.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
-            </datalist>
+            </select>
           </div>
 
-          <div className="new-message-form-row">
-            <label htmlFor="subject">Subject:</label>
-            <input
-              type="text"
-              id="subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder="(no subject)"
-              disabled={loading || savingDraft || success}
-            />
-          </div>
+          {selected?.mine && (
+            <div className="new-message-form-row">
+              <label htmlFor="attendee">To:</label>
+              <select
+                id="attendee"
+                value={attendeeValue}
+                onChange={(e) => setAttendeeValue(e.target.value)}
+                disabled={sending || sent || attendees.length === 0}
+              >
+                <option value="">
+                  {attendees.length === 0 ? 'Nobody has booked this event yet' : 'Choose an attendee...'}
+                </option>
+                {attendees.map((p) => (
+                  <option key={p.id} value={p.id}>{p.username}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="new-message-form-row new-message-body-row">
             <label htmlFor="body">Message:</label>
@@ -368,7 +189,8 @@ const NewMessage = () => {
               onChange={(e) => setBody(e.target.value)}
               placeholder="Write your message..."
               rows={12}
-              disabled={loading || savingDraft || success}
+              maxLength={2048}
+              disabled={sending || sent}
             />
           </div>
 
@@ -377,38 +199,23 @@ const NewMessage = () => {
               type="button"
               className="new-message-btn-cancel"
               onClick={handleCancel}
-              disabled={loading || savingDraft}
+              disabled={sending}
             >
               Cancel
-            </button>
-            <button
-              type="button"
-              className="new-message-btn-save-draft"
-              onClick={handleSaveDraft}
-              disabled={
-                loading ||
-                savingDraft ||
-                success ||
-                (recipients.length === 0 && mode === 'new')
-              }
-            >
-              <SaveIcon />
-              {savingDraft ? 'Saving...' : 'Save as Draft'}
             </button>
             <button
               type="submit"
               className="new-message-btn-send"
               disabled={
-                loading ||
-                savingDraft ||
-                success ||
+                sending ||
+                sent ||
+                !eventValue ||
                 !body.trim() ||
-                !recipient.trim() ||
-                (recipients.length === 0 && mode === 'new')
+                (selected?.mine && !attendeeValue)
               }
             >
               <SendIcon />
-              {loading ? 'Sending...' : 'Send'}
+              {sending ? 'Sending...' : 'Send'}
             </button>
           </div>
         </form>

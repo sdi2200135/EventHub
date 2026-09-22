@@ -1,5 +1,5 @@
 // src/pages/profile/UserDashboard.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef} from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { messageService } from '../../services/api';
 import EditIcon from '@mui/icons-material/Edit';
@@ -12,6 +12,7 @@ import MyBookings from './participant/MyBookings';
 import MyEvents from './organizer/MyEvents';
 import Reservations from './organizer/Reservations';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
 // ============================================
 // TABS — όλα ορατά σε όλους, με σταθερή σειρά
@@ -65,6 +66,7 @@ const UserDashboard = ({ user }) => {
   const [selectedMessages, setSelectedMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [openedMessage, setOpenedMessage] = useState(null);
+  const [thread, setThread] = useState([]);
   const [loadingOpened, setLoadingOpened] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
@@ -84,10 +86,14 @@ const UserDashboard = ({ user }) => {
     }
   };
 
+  // the folder decides which list we load; both come newest first
   const fetchMessages = async () => {
     setLoadingMessages(true);
+    setSelectedMessages([]);
     try {
-      const response = await messageService.getMyMessages();
+      const response = activeFolder === 'incoming'
+        ? await messageService.getInbox()
+        : await messageService.getSent();
       setMessages(response.data);
     } catch (error) {
       console.error('Error fetching messages:', error);
@@ -99,53 +105,55 @@ const UserDashboard = ({ user }) => {
   // ============================================
   // 3. MESSAGES HANDLERS
   // ============================================
-  const handleOpenMessage = async (messageId) => {
+  // open the conversation of the clicked message on the right and mark it as read
+  const handleOpenMessage = async (message) => {
+    setOpenedMessage(message);
+    setReplyText('');
+    setLoadingOpened(true);
     try {
-      setLoadingOpened(true);
-      const response = await messageService.getMessage(messageId);
-      setOpenedMessage(response.data);
-      setReplyText('');
-
-      // Ο backend κάνει auto-mark ως read στο GET /messages/{id}/
-      // Ενημερώνουμε τοπικά τη λίστα και το badge
-      setMessages(prev =>
-        prev.map(m => m.id === messageId ? { ...m, is_read: true } : m)
-      );
+      // mark first, so the conversation comes back already read
+      await messageService.markConversationRead(message.conversation);
+      const { data } = await messageService.getConversation(message.conversation);
+      setThread(data);
+      // the rows i received in this conversation stop being bold
+      setMessages((prev) => prev.map((m) =>
+        m.conversation === message.conversation && m.receiver === user.id ? { ...m, is_read: true } : m
+      ));
       fetchUnreadCount();
     } catch (err) {
-      console.error('Error fetching message:', err);
+      console.error('Error opening conversation:', err);
     } finally {
       setLoadingOpened(false);
     }
   };
 
+
   const handleCloseOpenedMessage = () => {
     setOpenedMessage(null);
+    setThread([]);
     setReplyText('');
   };
 
+  // reply inside the open conversation; the new bubble appears at the bottom
   const handleSendReply = async () => {
     if (!replyText.trim() || !openedMessage) return;
     setSendingReply(true);
     try {
-      await messageService.createMessage({
-        sender_id: user?.id,
-        sender_username: user?.username,
-        sender_name: `${user?.first_name || ''} ${user?.last_name || ''}`.trim(),
-        recipient: openedMessage.sender_username,
-        recipient_username: openedMessage.sender_username,
-        recipient_id: openedMessage.sender_id,
-        subject: `Re: ${openedMessage.subject || ''}`,
+      const { data } = await messageService.sendMessage({
+        conversation: openedMessage.conversation,
         body: replyText.trim(),
       });
+      setThread((prev) => [...prev, data]);
       setReplyText('');
+      // in Sent the new message must also appear in the list
+      if (activeFolder === 'sent') fetchMessages();
     } catch (err) {
-      console.error('Error sending reply:', err);
-      alert('Failed to send reply. Please try again.');
+      alert(err.message || 'Failed to send reply. Please try again.');
     } finally {
       setSendingReply(false);
     }
   };
+
 
   const handleSelectMessage = (messageId) => {
     setSelectedMessages(prev =>
@@ -170,101 +178,41 @@ const UserDashboard = ({ user }) => {
     if (!window.confirm(confirmMsg)) return;
 
     try {
-      await Promise.all(selectedMessages.map(id => messageService.deleteMessage(id)));
-      setSelectedMessages([]);
+      await Promise.all(selectedMessages.map((id) => messageService.deleteMessage(id)));
+      // the deleted ones also leave the open conversation
+      setThread((prev) => prev.filter((m) => !selectedMessages.includes(m.id)));
       fetchMessages();
       fetchUnreadCount();
-      if (openedMessage && selectedMessages.includes(openedMessage.id)) {
-        handleCloseOpenedMessage();
-      }
     } catch (err) {
-      console.error('Error deleting messages:', err);
-      alert('Failed to delete messages.');
+      alert(err.message || 'Failed to delete messages.');
     }
   };
 
-  // const handleMarkAsJunk = async (messageId) => {
-  //   try {
-  //     await messageService.markAsJunk(messageId);
-  //     setMessages(prev =>
-  //       prev.map(m => m.id === messageId ? { ...m, is_junk: true, is_read: true } : m)
-  //     );
-  //     handleCloseOpenedMessage();
-  //     fetchUnreadCount();
-  //   } catch (err) {
-  //     console.error('Error marking as junk:', err);
-  //     alert('Failed to mark message as junk.');
-  //   }
-  // };
+  // delete the opened conversation only for me
+  const handleDeleteConversation = async () => {
+    const warning = 'Delete this conversation?\n\n'
+      + 'It will be deleted only for you, with all its messages. '
+      + 'The other person keeps their copy, and if they write again the conversation comes back.';
+    if (!openedMessage || !window.confirm(warning)) return;
+    try {
+      await messageService.deleteConversation(openedMessage.conversation);
+      handleCloseOpenedMessage();
+      fetchMessages();
+      fetchUnreadCount();
+    } catch (err) {
+      alert(err.message || 'Failed to delete the conversation.');
+    }
+  };
 
-  // const handleUnmarkJunk = async (messageId) => {
-  //   try {
-  //     await messageService.unmarkJunk(messageId);
-  //     setMessages(prev =>
-  //       prev.map(m => m.id === messageId ? { ...m, is_junk: false } : m)
-  //     );
-  //     handleCloseOpenedMessage();
-  //   } catch (err) {
-  //     console.error('Error unmarking junk:', err);
-  //     alert('Failed to restore message.');
-  //   }
-  // };
-
-  // const handleRestoreFromTrash = async (messageId) => {
-  //   try {
-  //     await messageService.restoreFromTrash(messageId);
-  //     setMessages(prev =>
-  //       prev.map(m => m.id === messageId ? { ...m, is_trash: false } : m)
-  //     );
-  //     handleCloseOpenedMessage();
-  //   } catch (err) {
-  //     console.error('Error restoring from trash:', err);
-  //     alert('Failed to restore message.');
-  //   }
-  // };
-
+  // the backend already separates into inbox / sent
+  //  here  only search by the other person's name and the event title
   const getFilteredMessages = () => {
-    if (!user?.id) return [];
-    let filtered = [...messages];
-
-    switch (activeFolder) {
-      case 'incoming':
-        filtered = filtered.filter(m =>
-          m.recipient_id === user.id /*&& !m.is_trash && !m.is_draft && !m.is_junk*/
-        );
-        break;
-      case 'sent':
-        filtered = filtered.filter(m =>
-          m.sender_id === user.id /*&& !m.is_trash && !m.is_draft*/
-        );
-        break;
-      // case 'drafts':
-      //   filtered = filtered.filter(m =>
-      //     m.is_draft === true && m.sender_id === user.id
-      //   );
-      //   break;
-      // case 'junk':
-      //   filtered = filtered.filter(m =>
-      //     m.is_junk === true && m.recipient_id === user.id && !m.is_trash
-      //   );
-      //   break;
-      // case 'trash':
-      //   filtered = filtered.filter(m => m.is_trash === true);
-      //   break;
-      default:
-        break;
-    }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(m =>
-        m.subject?.toLowerCase().includes(query) ||
-        m.body?.toLowerCase().includes(query) ||
-        m.sender_name?.toLowerCase().includes(query)
-      );
-    }
-
-    return filtered;
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return messages;
+    return messages.filter((m) => {
+      const otherName = m.sender === user.id ? m.receiver_username : m.sender_username;
+      return [otherName, m.event_title].some((text) => text?.toLowerCase().includes(query));
+    });
   };
 
   const filteredMessages = getFilteredMessages();
@@ -299,6 +247,10 @@ const UserDashboard = ({ user }) => {
             setReplyText={setReplyText}
             onSendReply={handleSendReply}
             sendingReply={sendingReply}
+            user={user}
+            thread={thread}
+            onDeleteConversation={handleDeleteConversation}
+
           />
         );
 
@@ -359,9 +311,12 @@ const PersonalInfoTab = ({ user, navigate }) => {
       <div className="profile-content">
         <div className="profile-photo-wrapper">
           <div className="profile-photo">
-            <span>Photo</span>
+            {user?.first_name && user?.last_name
+              ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
+              : user?.username?.charAt(0)?.toUpperCase() || 'U'}
           </div>
         </div>
+
 
         <div className="profile-info-grid">
           <div className="dashboard-info-column">
@@ -417,19 +372,16 @@ const PersonalInfoTab = ({ user, navigate }) => {
 // MESSAGES LAYOUT (3 στήλες)
 // ============================================
 const MessagesLayout = ({
-  messages, loading, activeFolder, setActiveFolder,
+  user, messages, loading, activeFolder, setActiveFolder,
   selectedMessages, onSelectMessage, onSelectAll, onDeleteSelected,
   searchQuery, setSearchQuery, onNewMessage, onOpenMessage,
-  openedMessage, loadingOpened, onCloseOpened,
-  replyText, setReplyText, onSendReply, sendingReply, /*onOpenDraft,
-  onMarkAsJunk, onUnmarkJunk, onRestoreFromTrash,*/
+  openedMessage, thread, loadingOpened, onCloseOpened, onDeleteConversation,
+  replyText, setReplyText, onSendReply, sendingReply,
 }) => {
+
   const folders = [
     { id: 'incoming', label: 'Inbox' },
     { id: 'sent', label: 'Sent' },
-    // { id: 'drafts', label: 'Drafts' },
-    // { id: 'junk', label: 'Junk' },
-    // { id: 'trash', label: 'Trash' },
   ];
 
   const formatDate = (dateString) => {
@@ -448,6 +400,17 @@ const MessagesLayout = ({
     return colors[(id || 0) % colors.length];
   };
 
+  // in inbox the other person is the sender, in sent the receiver
+  const other = (m) => (m.sender === user.id
+    ? { id: m.receiver, name: m.receiver_username }
+    : { id: m.sender, name: m.sender_username });
+
+  // when a conversation opens or a reply is sent, scroll down to the newest message
+  const bodyRef = useRef(null);
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [thread]);
   return (
     <div className={`msg-layout ${openedMessage ? 'with-opened' : ''}`}>
       <aside className="msg-sidebar">
@@ -484,7 +447,7 @@ const MessagesLayout = ({
             <SearchIcon className="msg-search-icon" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search by name or event"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="msg-search"
@@ -499,13 +462,13 @@ const MessagesLayout = ({
         {loading ? (
           <LoadingSpinner message="Loading messages..." />
         ) : messages.length === 0 ? (
-          <p className="msg-empty">No messages in {activeFolder}.</p>
+          <p className="msg-empty">No messages in {activeFolder === 'incoming' ? 'Inbox' : 'Sent'}.</p>
         ) : (
           <div className="msg-list">
             {messages.map(message => (
               <div
                 key={message.id}
-                className={`msg-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${!message.is_read ? 'unread' : ''} ${openedMessage?.id === message.id ? 'opened' : ''}`}
+                className={`msg-row ${selectedMessages.includes(message.id) ? 'selected' : ''} ${activeFolder === 'incoming' && !message.is_read ? 'unread' : ''} ${openedMessage?.id === message.id ? 'opened' : ''}`}
               >
                 <label className="msg-checkbox-wrapper" onClick={(e) => e.stopPropagation()}>
                   <input
@@ -517,25 +480,24 @@ const MessagesLayout = ({
 
                 <div
                   className="msg-row-avatar"
-                  style={{ background: getAvatarColor(message.sender_id) }}
+                  style={{ background: getAvatarColor(other(message).id) }}
                 >
-                  {getInitial(message.sender_name)}
+                  {getInitial(other(message).name)}
                 </div>
 
                 <div
                   className="msg-row-content"
                   onClick={() => {
-                    /*if (message.is_draft) onOpenDraft(message.id);
-                    else*/ onOpenMessage(message.id);
+                     onOpenMessage(message);
                   }}
                 >
                   <div className="msg-row-top">
-                    <span className="msg-row-sender">{message.sender_name}</span>
+                    <span className="msg-row-sender">{activeFolder === 'sent' ? 'To: ' : ''}{other(message).name}</span>
                     <span className="msg-row-date">{formatDate(message.created_at)}</span>
                   </div>
                   <div className="msg-row-bottom">
                     <span className="msg-row-title">
-                      {message.subject || '(no subject)'}
+                      {message.event_title}
                     </span>
                   </div>
                   <div className="msg-row-preview">
@@ -554,68 +516,43 @@ const MessagesLayout = ({
           <div className="msg-detail-header">
             <div
               className="msg-detail-avatar"
-              style={{ background: getAvatarColor(openedMessage.sender_id) }}
+              style={{ background: getAvatarColor(other(openedMessage).id) }}
             >
-              {getInitial(openedMessage.sender_name)}
+              {getInitial(other(openedMessage).name)}
             </div>
             <div className="msg-detail-info">
-              <div className="msg-detail-name">{openedMessage.sender_name}</div>
-              <div className="msg-detail-username">@{openedMessage.sender_username}</div>
+              <div className="msg-detail-name">{other(openedMessage).name}</div>
+              <div className="msg-detail-username">{openedMessage.event_title}</div>
             </div>
 
-            {/* {activeFolder === 'incoming' && !openedMessage.is_junk && (
-              <button
-                className="msg-btn-action junk"
-                onClick={() => onMarkAsJunk(openedMessage.id)}
-                title="Mark as Junk"
-              >
-                <ReportIcon />
-              </button>
-            )}
-
-            {activeFolder === 'junk' && (
-              <button
-                className="msg-btn-action unjunk"
-                onClick={() => onUnmarkJunk(openedMessage.id)}
-                title="Not Junk"
-              >
-                <MoveToInboxIcon />
-              </button>
-            )}
-
-            {activeFolder === 'trash' && (
-              <button
-                className="msg-btn-action restore"
-                onClick={() => onRestoreFromTrash(openedMessage.id)}
-                title="Restore"
-              >
-                <RestoreFromTrashIcon />
-              </button>
-            )} */}
+            <button
+              className="msg-btn-close-detail"
+              onClick={onDeleteConversation}
+              title="Delete conversation"
+            >
+              <DeleteOutlineIcon />
+            </button>
 
             <button className="msg-btn-close-detail" onClick={onCloseOpened} title="Close">
               <CloseIcon />
             </button>
           </div>
 
-          <div className="msg-detail-subject">
-            {openedMessage.subject || '(no subject)'}
-          </div>
-          <div className="msg-detail-date">
-            {formatDate(openedMessage.created_at)}
-          </div>
-
           {loadingOpened ? (
             <div className="msg-detail-loading">Loading...</div>
           ) : (
             <>
-              <div className="msg-detail-body">
-                <div className="msg-bubble incoming">
-                  <div className="msg-bubble-text">{openedMessage.body}</div>
-                  <div className="msg-bubble-time">
-                    {formatDate(openedMessage.created_at)}
+              {/* the whole conversation: my messages on the right, theirs on the left */}
+              <div className="msg-detail-body" ref={bodyRef}>
+                {thread.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`msg-bubble ${m.sender === user.id ? 'outgoing' : 'incoming'}`}
+                  >
+                    <div className="msg-bubble-text">{m.body}</div>
+                    <div className="msg-bubble-time">{formatDate(m.created_at)}</div>
                   </div>
-                </div>
+                ))}
               </div>
 
               <div className="msg-reply-box">
@@ -642,5 +579,6 @@ const MessagesLayout = ({
     </div>
   );
 };
+
 
 export default UserDashboard;

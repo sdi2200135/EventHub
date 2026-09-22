@@ -33,7 +33,7 @@ const Navbar = () => {
   }, [isAuthenticated, user?.id, location.pathname]);
 
   // ============================================
-  // 2. AUTO-REFRESH κάθε 30 δευτερόλεπτα
+  // 2. AUTO-REFRESH every 20 seconds
   // ============================================
   useEffect(() => {
     if (!isAuthenticated || !user?.id) return;
@@ -45,10 +45,17 @@ const Navbar = () => {
       } catch (err) {
         // Αγνόησέ το
       }
-    }, 30000);
+    }, 20000);
 
     return () => clearInterval(interval);
   }, [isAuthenticated, user?.id]);
+
+    // the dashboard tells us the new number as soon as a conversation is read
+  useEffect(() => {
+    const onUnreadChanged = (e) => setUnreadCount(e.detail);
+    window.addEventListener('unread-changed', onUnreadChanged);
+    return () => window.removeEventListener('unread-changed', onUnreadChanged);
+  }, []);
 
   const isSignInPage = location.pathname === '/signin';
   const isForgotPwdPage = location.pathname === '/signin/forgot-password';

@@ -382,20 +382,6 @@
   font-size: 20px !important;
 }
 
-/* Subject */
-.msg-detail-subject {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
-  padding-bottom: 4px;
-}
-
-.msg-detail-date {
-  font-size: 12px;
-  color: #6c7a89;
-  margin-top: -8px;
-}
-
 /* Body - Chat bubble */
 .msg-detail-body {
   display: flex;
@@ -443,6 +429,20 @@
   align-self: flex-start;
 }
 
+/* my own messages: right side, green */
+.msg-bubble.outgoing {
+  align-self: flex-end;
+}
+
+.msg-bubble.outgoing .msg-bubble-text {
+  background: #1a782e;
+  color: #ffffff;
+  border-top-right-radius: 4px;
+}
+
+.msg-bubble.outgoing .msg-bubble-time {
+  align-self: flex-end;
+}
 /* Loading */
 .msg-detail-loading {
   text-align: center;

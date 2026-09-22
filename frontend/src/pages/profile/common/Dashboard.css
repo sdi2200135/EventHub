@@ -133,15 +133,18 @@
 .profile-photo {
   width: 180px;
   height: 180px;
-  background: #d3d3d3;
-  border-radius: 4px;
+  background: #203855;
+  border: 2px solid #4a7a9f;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
-  font-size: 20px;
-  font-weight: 400;
+  color: #ffffff;
+  font-size: 56px;
+  font-weight: 700;
+  letter-spacing: 2px;
 }
+
 
 /* Info Grid - 2 columns */
 .profile-info-grid {
@@ -191,7 +194,7 @@
   .profile-photo {
     width: 140px;
     height: 140px;
-    font-size: 18px;
+    font-size: 44px;
   }
 
   .profile-info-grid {

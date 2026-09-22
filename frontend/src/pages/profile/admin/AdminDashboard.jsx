@@ -76,10 +76,11 @@ const PersonalInfoTab = ({ user, navigate }) => {
       <div className="profile-content">
         <div className="profile-photo-wrapper">
           <div className="profile-photo">
-            <span>Photo</span>
+            {user?.first_name && user?.last_name
+              ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`.toUpperCase()
+              : user?.username?.charAt(0)?.toUpperCase() || 'U'}
           </div>
         </div>
-
         <div className="profile-info-grid">
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">

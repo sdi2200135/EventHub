@@ -5,11 +5,9 @@ from rest_framework.exceptions import PermissionDenied
 from core.models import Booking
 from core.services.booking import (
     create_booking,
-    confirm_booking,
     SoldOutError,
     EventNotActiveError,
     TicketTypeMismatchError,
-    BookingNotPendingError
 )
 from .user import UserPublicSerializer
 

@@ -1,11 +1,11 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import  { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services/api';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 const AuthContext = createContext();
 
+// the hook lives next to its provider; fast refresh just reloads this file in full
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -16,83 +16,38 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  // only wait for /auth/me/ when a token survived the page refresh
+  const [loading, setLoading] = useState(() => !!sessionStorage.getItem('access_token'));
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // on start (e.g. after a page refresh) restore the user from the saved token
   useEffect(() => {
-    const token = sessionStorage.getItem('access_token');
-    if (token) {
-      loadUser();
-    } else {
-      setLoading(false);
-    }
+    if (!sessionStorage.getItem('access_token')) return;
+    authService.getProfile()
+      .then((response) => {
+        setUser(response.data);
+        setIsAuthenticated(true);
+      })
+      .catch((error) => {
+        // token expired and could not be refreshed, or the account was rejected
+        console.error('Error loading user:', error);
+        sessionStorage.removeItem('access_token');
+        sessionStorage.removeItem('refresh_token');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  const loadUser = async () => {
-    try {
-      // ============================================
-      // MOCK MODE: Διάβασε τον user από sessionStorage
-      // ============================================
-      // Χωρίς αυτό, το getProfile() επιστρέφει πάντα τον
-      // hardcoded participant του MockData, με αποτέλεσμα ο
-      // organizer/admin να χάνει τον ρόλο του μετά από refresh.
-      if (USE_MOCK) {
-        const savedUser = sessionStorage.getItem('mock_user');
-        if (savedUser) {
-          try {
-            const parsed = JSON.parse(savedUser);
-            setUser(parsed);
-            setIsAuthenticated(true);
-            setLoading(false);
-            return;
-          } catch (e) {
-            console.error('Error parsing mock_user:', e);
-            // Πέφτει στο getProfile() ως fallback
-          }
-        }
-      }
-
-      const response = await authService.getProfile();
-      setUser(response.data);
-      setIsAuthenticated(true);
-    } catch (error) {
-      console.error('Error loading user:', error);
-      sessionStorage.removeItem('access_token');
-      sessionStorage.removeItem('refresh_token');
-      sessionStorage.removeItem('mock_user');
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const login = async (username, password) => {
     try {
       const response = await authService.login({ username, password });
-      const { access, refresh, user } = response.data;
-
-      sessionStorage.setItem('access_token', access);
-      sessionStorage.setItem('refresh_token', refresh);
-
-      // ============================================
-      // MOCK MODE: Αποθήκευσε τον user στο sessionStorage
-      // ============================================
-      if (USE_MOCK) {
-        sessionStorage.setItem('mock_user', JSON.stringify(user));
-      }
+      const { user } = response.data;
 
       setUser(user);
       setIsAuthenticated(true);
 
-      // Ενημέρωση του last_login μέσω API call
-      try {
-        await authService.updateLastLogin();
-      } catch (e) {
-        console.log('Could not update last_login:', e);
-      }
-
-      return { success: true };
+      return { success: true, user };
     } catch (error) {
       const message =
         error.response?.data?.detail ||
@@ -120,7 +75,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('refresh_token');
-    sessionStorage.removeItem('mock_user');
     setUser(null);
     setIsAuthenticated(false);
   };
@@ -133,7 +87,6 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    loadUser
   };
 
   return (

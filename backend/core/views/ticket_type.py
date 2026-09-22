@@ -132,14 +132,14 @@ class TicketTypeViewSet(viewsets.ModelViewSet):
             for ticket_data in ticket_types_data:
                 serializer = TicketTypeSerializer(data=ticket_data, context={'event': event, 'request': request})
                 if not serializer.is_valid():
-                    errors.append({'data': ticket_data, 'error': serializer.errors})
+                    errors.append({'error': serializer.errors, 'data': ticket_data})
                     continue
                 try:
                     # this calls the create of serializer
                     serializer.save()
                     results.append(serializer.data)
                 except APIException as e:
-                    errors.append({'data': ticket_data, 'error': e.detail})
+                    errors.append({'error': e.detail, 'data': ticket_data})
 
             if errors:
                 # all or nothing: in case of error undo all the changes u did on ticket types and try again

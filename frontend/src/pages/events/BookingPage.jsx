@@ -1,5 +1,5 @@
 // src/pages/events/BookingPage.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { eventService, bookingService } from '../../services/api';
@@ -49,7 +49,7 @@ const BookingPage = () => {
     return null;
   };
 
-  const [bookingData, setBookingData] = useState(() => getBookingData() || {
+  const [bookingData]  = useState(() => getBookingData() || {
     eventId: id,
     ticketId: null,
     quantity: 1,
@@ -201,8 +201,7 @@ const BookingPage = () => {
       const bookingPayload = {
         event: parseInt(bookingData.eventId),
         ticket_type: parseInt(bookingData.ticketId),
-        quantity: bookingData.quantity,
-        seats: bookingData.seats || '',
+        number_of_tickets: bookingData.quantity,
       };
       
       console.log('Submitting booking:', bookingPayload);
@@ -219,11 +218,8 @@ const BookingPage = () => {
       }, 3000);
     } catch (err) {
       console.error('Booking error:', err);
-      const errorMsg = err.response?.data?.error || 
-                       err.response?.data?.detail || 
-                       err.response?.data?.message ||
-                       'Failed to complete booking. Please try again.';
-      setError(errorMsg);
+      setError(err.message || 'Failed to complete booking. Please try again.');
+
     } finally {
       setSubmitting(false);
     }
@@ -275,9 +271,6 @@ const BookingPage = () => {
         <CheckCircleIcon className="success-icon" />
         <h2>Booking Confirmed! 🎉</h2>
         <p>Your tickets have been reserved successfully.</p>
-        <p className="success-detail">
-          You will receive a confirmation email shortly.
-        </p>
         <div className="success-actions">
           <Link to="/homepage" className="btn-success">
             Return to Home

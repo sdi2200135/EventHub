@@ -31,7 +31,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             is_read=False, deleted_by_receiver=False,
         )
         # return only conversations  the user is part of
-        return Conversation.objects.filter(
+        return Conversation.objects.select_related('organizer', 'attendee', 'event').filter(
             Q(organizer=user, deleted_by_organizer=False) | Q(attendee=user, deleted_by_attendee=False)
         ).annotate(has_unread_flag=Exists(unread))
 

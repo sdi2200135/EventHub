@@ -16,7 +16,6 @@ import EventDetails from './pages/events/EventDetails';
 import BookingPage from './pages/events/BookingPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import EditProfile from './pages/profile/EditProfile';
-import MessageView from './pages/profile/common/MessageView';
 import NewMessage from './pages/profile/common/NewMessage';
 import CreateEvent from './pages/profile/organizer/CreateEvent';
 import EventDetailsOrganizer from './pages/profile/organizer/EventDetailsOrganizer';
@@ -84,14 +83,7 @@ function App() {
                         </RequireRole>
                       }
                     />
-                    <Route
-                      path="/profile/messages/:id"
-                      element={
-                        <RequireRole roles={['USER']}>
-                          <MessageView />
-                        </RequireRole>
-                      }
-                    />
+
 
                     {/* ORGANIZER */}
                     <Route

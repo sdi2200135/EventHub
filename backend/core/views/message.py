@@ -19,7 +19,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Message.objects.filter(
+        return Message.objects.select_related('sender', 'receiver', 'conversation__event').filter(
             Q(sender=user, deleted_by_sender=False) | Q(receiver=user, deleted_by_receiver=False)
         ).order_by('created_at')
 
@@ -47,7 +47,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     # received emails 
     @action(detail=False, methods=['get'])
     def inbox(self, request):
-        qs = Message.objects.filter(receiver=request.user, deleted_by_receiver=False)
+        qs = Message.objects.select_related('sender', 'receiver', 'conversation__event').filter(receiver=request.user, deleted_by_receiver=False)
         if request.query_params.get('unread') == 'true':
             qs = qs.filter(is_read=False)
         page = self.paginate_queryset(qs)
@@ -57,7 +57,7 @@ class MessageViewSet(viewsets.ModelViewSet):
     # sent messages
     @action(detail=False, methods=['get'])
     def sent(self, request):
-        qs = Message.objects.filter(sender=request.user, deleted_by_sender=False)
+        qs = Message.objects.select_related('sender', 'receiver', 'conversation__event').filter(sender=request.user, deleted_by_sender=False)
         page = self.paginate_queryset(qs)
         serializer = self.get_serializer(page or qs, many=True)
         return self.get_paginated_response(serializer.data) if page is not None else Response(serializer.data)

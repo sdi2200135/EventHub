@@ -6,14 +6,18 @@ from core.models import Conversation, Event, User
 class ConversationSerializer(serializers.ModelSerializer):
     
     organizer = serializers.PrimaryKeyRelatedField(read_only=True)
-    attendee = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False)
+    attendee = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(),required=False,allow_null=True)
+    organizer_username = serializers.CharField(source='organizer.username', read_only=True)
+    attendee_username = serializers.CharField(source='attendee.username', read_only=True)
     event = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), required=True)
     has_unread = serializers.SerializerMethodField()
+    event_title = serializers.CharField(source='event.title',read_only = True)
 
     class Meta:
         model = Conversation
         fields = [
-            'id', 'organizer', 'attendee', 'event', 'created_at', 'has_unread',
+            'id', 'organizer', 'attendee', 'event', 'created_at', 'has_unread', 'event_title',
+            'attendee_username','organizer_username'
         ]
         # remove constraint from model for uniqueness, as it creates a problem in attendee
         # as it makes 'attendee' to be sent and cannot be derived from request.ueser
@@ -39,16 +43,16 @@ class ConversationSerializer(serializers.ModelSerializer):
         # check that only organizers or people with bookings can start a convo
 
         # if the user has a booking
-        if event.bookings.filter(attendee=request.user).exists():
+        if event.bookings.filter(attendee=request.user).exclude(status='PENDING').exists():
             attrs['attendee_id'] = request.user.id
 
         # if the user is the organizer
         elif event.organizer_id == request.user.id:
             attendee_id = request.data.get('attendee')
             if attendee_id is None:
-                raise serializers.ValidationError({'attendee': 'Specify with whom u want to to start a conversation with.'})
+                raise serializers.ValidationError({'attendee': 'Choose the attendee you want to message.'})
 
-            if not event.bookings.filter(attendee=attendee_id).exists():
+            if not event.bookings.filter(attendee=attendee_id).exclude(status='PENDING').exists():
                 raise serializers.ValidationError({'attendee': 'This user does not have a booking on this event.'})
             # get attendee id
             attrs['attendee_id'] = attendee_id

@@ -78,7 +78,7 @@ def update_ticket_type(*, ticket_type_id, user, **validated_data):
     # check if the amount of tickets the user is trying to reduce is more than the reserved tickets
     new_quantity = validated_data.get('quantity')
     if new_quantity is not None and new_quantity < ticket_type.reserved:
-        raise ReservedTicketsError(f"Cannot reduce quantity to {new_quantity}."
+        raise ReservedTicketsError(f"Cannot reduce quantity to {new_quantity}. "
                                    f"There are already {ticket_type.reserved} reserved tickets.")
 
     # if the quantity changes we have to check the total capacity
@@ -137,7 +137,7 @@ def reserve_tickets(*, ticket_type_id, quantity):
     # check availability
     if ticket_type.available < quantity:
         from core.services.booking import SoldOutError  #import is here to avoid circular import
-        raise SoldOutError(f"Not enough tickets available."
+        raise SoldOutError(f"Not enough tickets available. "
                            f"Requested: {quantity}, Available: {ticket_type.available}")
 
     ticket_type.reserved += quantity

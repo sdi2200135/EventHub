@@ -13,7 +13,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const redirectUrl = searchParams.get('redirect') || '/homepage';
+  const redirectUrl = searchParams.get('redirect') ;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,8 +23,10 @@ const SignIn = () => {
     try {
       const result = await login(username, password);
       if (result.success) {
-        navigate(redirectUrl);
-      } else {
+        // the admin is navigated to user management while the rest on home page
+        navigate(redirectUrl || (result.user?.is_staff ? '/profile?tab=users' : '/homepage'));
+      }
+      else {
         setError(result.error || 'Invalid username or password');
       }
     } catch (err) {

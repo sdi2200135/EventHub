@@ -44,7 +44,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
     
     if not event.is_active: #check event is active
         raise EventNotActiveError(
-            f"Event '{event.title}' is not active."
+            f"Event '{event.title}' is not active. "
             f"Status: {event.status}, Start: {event.start_datetime}"
         )
 
@@ -59,7 +59,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
 
     if ticket_type.available < number_of_tickets: #check availability
         raise SoldOutError(
-            f"Not enough tickets available."
+            f"Not enough tickets available. "
             f"Requested: {number_of_tickets}, Available: {ticket_type.available}"
         )
 
@@ -87,14 +87,14 @@ def confirm_booking(*, booking_id,event_id, user):
 
     if booking.status != Booking.BookingStatus.PENDING: #check status of booking is PENDING
         raise BookingNotPendingError(
-            f"Cannot confirm booking with status '{booking.status}'."
+            f"Cannot confirm booking with status '{booking.status}'. "
             "Only PENDING bookings can be confirmed."
         )
     
     # check for the active event status
     if not event.is_active: 
         raise EventNotActiveError(
-            f"Event '{event.title}' is not active."
+            f"Event '{event.title}' is not active. "
             f"Status: {event.status}, Start: {event.start_datetime}"
         )
     # the final reservation of ticket takes place after the confirmation of booking
