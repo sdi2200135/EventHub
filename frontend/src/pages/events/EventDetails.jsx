@@ -102,6 +102,28 @@ const EventDetails = () => {
     });
   };
 
+  // 24h format ανεξαρτήτως locale
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '—';
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+  };
+
+  // Επιστρέφει το κείμενο των κατηγοριών — υποστηρίζει strings και objects {id, name}
+  const getCategoriesText = (ev) => {
+    if (!ev?.categories || ev.categories.length === 0) return null;
+    return ev.categories
+      .map(c => (typeof c === 'string' ? c : c.name))
+      .filter(Boolean)
+      .join(', ');
+  };
+
   // ============================================
   // BOOKING ELIGIBILITY
   // ============================================
@@ -172,10 +194,12 @@ const EventDetails = () => {
     );
   }
 
+  const categoriesText = getCategoriesText(event);
+
   return (
     <div className="event-details-page">
       <div className="event-details-container">
-        {/* ΑΡΙΣΤΕΡΗ ΣΤΗΛΗ: Εικόνα + When + Where */}
+        {/* ΑΡΙΣΤΕΡΗ ΣΤΗΛΗ: Εικόνα + Category + When + Where */}
         <div className="event-left-column">
           <div className="event-image-wrapper">
             {photos.length > 0 ? (
@@ -231,6 +255,13 @@ const EventDetails = () => {
           </div>
 
           <div className="event-meta-info">
+            {categoriesText && (
+              <div className="meta-item">
+                <span className="meta-label">Category</span>
+                <ArrowRightAltIcon className="arrow-icon-small" />
+                <span className="meta-value">{categoriesText}</span>
+              </div>
+            )}
             <div className="meta-item">
               <span className="meta-label">Where</span>
               <ArrowRightAltIcon className="arrow-icon-small" />
@@ -282,6 +313,54 @@ const EventDetails = () => {
             {/* Description Tab */}
             {activeTab === 'description' && (
               <div className="tab-panel description-panel">
+                {/* Event Info List — 2 στήλες */}
+                <div className="event-info-list">
+                  <div className="info-list-item">
+                    <span className="info-list-label">Category</span>
+                    <span className="info-list-value">{categoriesText || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Type</span>
+                    <span className="info-list-value">{event.event_type || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Venue</span>
+                    <span className="info-list-value">{event.venue || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Address</span>
+                    <span className="info-list-value">{event.address || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">City</span>
+                    <span className="info-list-value">{event.city || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Country</span>
+                    <span className="info-list-value">{event.country || '—'}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Starts</span>
+                    <span className="info-list-value">{formatDateTime(event.start_datetime)}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Ends</span>
+                    <span className="info-list-value">{formatDateTime(event.end_datetime)}</span>
+                  </div>
+
+                  <div className="info-list-item">
+                    <span className="info-list-label">Capacity</span>
+                    <span className="info-list-value">{event.capacity ?? '—'}</span>
+                  </div>
+                </div>
+
                 <div className="event-description">
                   <p>{event.description || 'No description available.'}</p>
                 </div>
@@ -297,20 +376,16 @@ const EventDetails = () => {
             {/* Organizer Tab - ΧΩΡΙΣ STATS */}
             {activeTab === 'organizer' && (
               <div className="tab-panel organizer-panel">
-                <div className="organizer-info">
-                  <div className="organizer-avatar">
-                    {event.organizer?.first_name?.charAt(0) || 'O'}
-                  </div>
-                  <div className="organizer-details">
-                    <h3>{event.organizer?.first_name} {event.organizer?.last_name}</h3>
-                    <p className="organizer-username">@{event.organizer?.username}</p>
-                    <p className="organizer-bio">Event Organizer</p>
-                  </div>
+                {/* Όνομα χωρίς avatar */}
+                <div className="organizer-header">
+                  <h3 className="organizer-name">
+                    {event.organizer?.first_name} {event.organizer?.last_name}
+                  </h3>
+                  <p className="organizer-username">@{event.organizer?.username}</p>
                 </div>
 
                 {/* Δύο στήλες με πληροφορίες organizer */}
                 <div className="organizer-details-grid">
-                  {/* Στήλη 1: Email, Phone, Tax Registration Number */}
                   <div className="organizer-detail-column">
                     <h4>Contact Information</h4>
                     <div className="organizer-detail-item">
@@ -327,12 +402,13 @@ const EventDetails = () => {
                     </div>
                   </div>
 
-                  {/* Στήλη 2: Location, Address */}
                   <div className="organizer-detail-column">
                     <h4>Location Details</h4>
                     <div className="organizer-detail-item">
                       <span className="detail-label">Location</span>
-                      <span className="detail-value">{event.organizer?.city || event.organizer?.location || 'N/A'}</span>
+                      <span className="detail-value">
+                        {event.organizer?.city || event.organizer?.location || 'N/A'}
+                      </span>
                     </div>
                     <div className="organizer-detail-item">
                       <span className="detail-label">Address</span>
