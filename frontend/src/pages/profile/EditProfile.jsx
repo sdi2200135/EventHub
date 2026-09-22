@@ -97,14 +97,11 @@ const EditProfile = () => {
 
     try {
       const updateData = {
-        username: formData.username,
         first_name: formData.first_name,
         last_name: formData.last_name,
-        email: formData.email,
         phone: formData.phone,
         address: formData.address,
         city: formData.city,
-        afm: formData.afm,
       };
 
       if (isChangingPassword) {
@@ -175,17 +172,7 @@ const EditProfile = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="edit-profile-form-layout">
-            {/* Photo */}
-            <div className="edit-profile-photo-section">
-              <div className="edit-profile-photo-large">
-                <span>Photo</span>
-              </div>
-              <button type="button" className="edit-profile-btn-change-photo">
-                Change Photo
-              </button>
-            </div>
-
-            {/* Middle Column: Personal Info */}
+            {/* LEFT COLUMN: Personal Info */}
             <div className="edit-profile-fields-section">
               <div className="edit-profile-form-group">
                 <label htmlFor="username">Username:</label>
@@ -194,9 +181,9 @@ const EditProfile = () => {
                   id="username"
                   name="username"
                   value={formData.username}
-                  onChange={handleChange}
+                  disabled
+                  className="input-disabled"
                   placeholder="Username"
-                  required
                 />
               </div>
 
@@ -233,12 +220,15 @@ const EditProfile = () => {
                   id="email"
                   name="email"
                   value={formData.email}
-                  onChange={handleChange}
+                  disabled
+                  className="input-disabled"
                   placeholder="Email"
-                  required
                 />
               </div>
+            </div>
 
+            {/* CENTER COLUMN: Contact & Location */}
+            <div className="edit-profile-fields-section">
               <div className="edit-profile-form-group">
                 <label htmlFor="phone">Phone Number:</label>
                 <input
@@ -282,13 +272,14 @@ const EditProfile = () => {
                   id="afm"
                   name="afm"
                   value={formData.afm}
-                  onChange={handleChange}
+                  disabled
+                  className="input-disabled"
                   placeholder="Tax Registration Number"
                 />
               </div>
             </div>
 
-            {/* Right Column: Password & Actions */}
+            {/* RIGHT COLUMN: Password & Actions */}
             <div className="edit-profile-actions-section">
               <div className="edit-profile-password-section">
                 <h4>Change Password</h4>

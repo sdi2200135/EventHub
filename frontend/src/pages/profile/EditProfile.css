@@ -67,50 +67,12 @@
   font-size: 14px;
 }
 
-/* Form Layout */
+/* Form Layout — 3 ίσες στήλες */
 .edit-profile-form-layout {
   display: grid;
-  grid-template-columns: 200px 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
   align-items: start;
-}
-
-/* Photo Section */
-.edit-profile-photo-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.edit-profile-photo-large {
-  width: 180px;
-  height: 180px;
-  background: #d3d3d3;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 20px;
-  font-weight: 400;
-}
-
-.edit-profile-btn-change-photo {
-  background: transparent;
-  border: 1px solid #4a4a5a;
-  color: #e0e0e0;
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.edit-profile-btn-change-photo:hover {
-  background: #2A2A2A;
-  border-color: #6c7a89;
 }
 
 /* Fields Section */
@@ -151,6 +113,18 @@
 
 .edit-profile-form-group input::placeholder {
   color: #6c7a89;
+}
+
+/* Disabled fields — αχνό κείμενο, μη επεξεργάσιμα */
+.edit-profile-form-group input.input-disabled {
+  color: #6c7a89;           /* αχνό γκρι για το κείμενο */
+  background: #171717;      /* ελαφρώς πιο σκούρο background */
+  border-color: #232323;
+  cursor: not-allowed;
+}
+
+.edit-profile-form-group input.input-disabled:focus {
+  border-color: #232323;    /* χωρίς focus highlight */
 }
 
 /* Password Section */
@@ -224,16 +198,9 @@
     gap: 32px;
   }
 
-  .edit-profile-photo-section {
+  /* Το password section πάει κάτω από τα δύο columns, full width */
+  .edit-profile-actions-section {
     grid-column: 1 / -1;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 24px;
-  }
-
-  .edit-profile-photo-large {
-    width: 140px;
-    height: 140px;
   }
 }
 
@@ -247,9 +214,8 @@
     gap: 32px;
   }
 
-  .edit-profile-photo-section {
-    flex-direction: column;
-    align-items: flex-start;
+  .edit-profile-actions-section {
+    grid-column: auto;
   }
 
   .edit-profile-form-buttons {
