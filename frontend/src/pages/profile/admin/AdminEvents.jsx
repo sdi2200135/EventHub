@@ -59,22 +59,75 @@ const filterJsonByStatus = (jsonString, status) => {
   return JSON.stringify({ Events: filtered }, null, 2);
 };
 
+// Robust categories: strings ή objects {id, name, slug}
+const getCategoriesText = (ev) => {
+  if (!ev?.categories || ev.categories.length === 0) return '—';
+  const result = ev.categories
+    .map(c => {
+      if (typeof c === 'string') return c;
+      if (typeof c === 'number') return String(c);
+      return c?.name || c?.category_name || c?.category?.name || c?.label || null;
+    })
+    .filter(Boolean)
+    .join(', ');
+  return result || '—';
+};
+
+// Robust organizer username
+const getOrganizerUsername = (ev) => {
+  if (!ev?.organizer) return '—';
+  if (typeof ev.organizer === 'string') return ev.organizer;
+  return ev.organizer.username || '—';
+};
+
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('day'); // 'day' | 'name'
+  const [sortBy, setSortBy] = useState('day');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+
+  // Bookings του ανοιχτού event (το list endpoint δεν τα φέρνει)
+  const [selectedEventBookings, setSelectedEventBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  // Fetch bookings όταν ανοίγει το modal
+  useEffect(() => {
+    if (!selectedEvent) {
+      setSelectedEventBookings([]);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchBookings = async () => {
+      setLoadingBookings(true);
+      try {
+        const res = await eventService.getEventBookings(selectedEvent.id);
+        if (!cancelled) {
+          const list = res.data?.results || res.data || [];
+          setSelectedEventBookings(list);
+        }
+      } catch (err) {
+        console.error('Failed to load bookings:', err);
+        if (!cancelled) setSelectedEventBookings([]);
+      } finally {
+        if (!cancelled) setLoadingBookings(false);
+      }
+    };
+
+    fetchBookings();
+    return () => { cancelled = true; };
+  }, [selectedEvent]);
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -153,7 +206,7 @@ const AdminEvents = () => {
   };
 
   // ============================================
-  // EXPORT — όλα τα events από backend, φιλτράρουμε client-side ανά status
+  // EXPORT
   // ============================================
   const handleExportEvents = async (format) => {
     setExporting(true);
@@ -256,9 +309,10 @@ const AdminEvents = () => {
     });
   };
 
-  const getActiveBookingsCount = (ev) => {
-    return ev.bookings?.filter(b => b.status !== 'CANCELLED').length || 0;
-  };
+  // Count active bookings από το state των fetched bookings
+  const activeBookingsCount = selectedEventBookings.filter(
+    b => b.status !== 'CANCELLED'
+  ).length;
 
   const canDelete = (ev) => ev.status === 'DRAFT' || !ev.bookings?.length;
   const canCancel = (ev) => ev.status !== 'CANCELLED' && ev.status !== 'COMPLETED';
@@ -306,7 +360,6 @@ const AdminEvents = () => {
             />
           </div>
 
-          {/* Sort dropdown */}
           <div className="ae-sort-wrapper">
             <span className="ae-sort-label">Sort by :</span>
             <select
@@ -406,7 +459,9 @@ const AdminEvents = () => {
                 <h4>Event Info</h4>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Organizer:</span>
-                  <span className="ae-modal-value">{selectedEvent.organizer_username || '—'}</span>
+                  <span className="ae-modal-value">
+                    {getOrganizerUsername(selectedEvent)}
+                  </span>
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Type:</span>
@@ -415,7 +470,7 @@ const AdminEvents = () => {
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Categories:</span>
                   <span className="ae-modal-value">
-                    {selectedEvent.categories?.join(', ') || '—'}
+                    {getCategoriesText(selectedEvent)}
                   </span>
                 </div>
                 <div className="ae-modal-row">
@@ -437,7 +492,7 @@ const AdminEvents = () => {
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Bookings:</span>
                   <span className="ae-modal-value">
-                    {getActiveBookingsCount(selectedEvent)} active
+                    {loadingBookings ? 'Loading...' : `${activeBookingsCount} active`}
                   </span>
                 </div>
               </div>
@@ -505,10 +560,10 @@ const AdminEvents = () => {
                 purposes.
               </p>
 
-              {getActiveBookingsCount(selectedEvent) > 0 ? (
+              {activeBookingsCount > 0 ? (
                 <p className="ae-cancel-no-attendees">
                   📩 A notification will be automatically sent by the system to all{' '}
-                  <strong>{getActiveBookingsCount(selectedEvent)}</strong> attendees
+                  <strong>{activeBookingsCount}</strong> attendees
                   with active bookings.
                 </p>
               ) : (
