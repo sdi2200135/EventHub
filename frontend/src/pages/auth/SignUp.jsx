@@ -372,7 +372,7 @@ const SignUp = () => {
             </div>
 
             <div className="auth-form-group">
-              <label htmlFor="afm">Tax Number (TRN) * (9 digits)</label>
+              <label htmlFor="afm">Tax Number (AFM) * (9 digits)</label>
               <input
                 type="text"
                 id="afm"
