@@ -762,3 +762,28 @@
     border-left: none;
   }
 }
+
+/* ============================================
+   FILTER TEXT INPUT (Region)
+   ============================================ */
+.filter-text-input {
+  background: #1a1a1a;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.filter-text-input:focus {
+  border-color: #203855;
+}
+
+.filter-text-input::placeholder {
+  color: #6c7a89;
+}

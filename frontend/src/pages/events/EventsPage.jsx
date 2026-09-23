@@ -158,6 +158,7 @@ const EventsPage = () => {
   const handleClearFromDrawer = () => {
     const empty = {
       category: '',
+      region: '',
       dateFrom: '',
       dateTo: '',
       priceMin: '',
@@ -592,6 +593,18 @@ const EventsPage = () => {
                     
                   ))}
                 </select>
+              </div>
+
+              {/* Region */}
+              <div className="filter-group">
+                <label className="filter-group-label">Region</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Athens"
+                  value={draftFilters.region}
+                  onChange={(e) => handleDraftChange('region', e.target.value)}
+                  className="filter-text-input"
+                />
               </div>
 
               {/* Date Range */}
