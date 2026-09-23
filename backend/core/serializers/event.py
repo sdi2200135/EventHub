@@ -78,6 +78,8 @@ class EventWriteSerializer(serializers.ModelSerializer):
             'start_datetime', 'end_datetime', 'capacity', 'status', 'categories',
         ]
         read_only_fields = ['id', 'event_id', 'status']
+        extra_kwargs = {'description': {'max_length': 4096}}
+
 
     def validate(self, attrs):
 

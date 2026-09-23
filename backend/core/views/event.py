@@ -130,7 +130,7 @@ class EventViewSet(viewsets.ModelViewSet):
             
             event.status = Event.EventStatus.PUBLISHED
             event.save(update_fields=['status'])
-        return Response(EventDetailSerializer(event).data)
+        return Response(EventDetailSerializer(event, context={'request': request}).data)
 
     # on cancellation of event we cancel bookings and we keep everything no delete so we can trace the attendees
     @action(detail=True, methods=['post'], permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])
@@ -162,7 +162,7 @@ class EventViewSet(viewsets.ModelViewSet):
                     body=f'The event "{event.title}" scheduled for {timezone.localtime(event.start_datetime):%d-%m-%Y, %H:%M} has been cancelled. We will contact you afterwards for more info.',
                 )
 
-        return Response(EventDetailSerializer(event).data)
+        return Response(EventDetailSerializer(event, context={'request': request}).data)
 
     # add photos on publishing an event
     @action(detail=True, methods=['post'], url_path='photos', permission_classes=[IsApprovedUser, IsEventOwnerOrReadOnly])

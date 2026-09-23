@@ -17,7 +17,7 @@ const STEPS = [
   { id: 3, label: 'Photos & Description' },
 ];
 
-const MAX_DESCRIPTION = 150;
+const MAX_DESCRIPTION = 4096; // limit of description field
 const MAX_PHOTOS = 20;
 
 const EVENT_TYPES = [
@@ -278,6 +278,12 @@ const CreateEvent = () => {
     return null;
   };
 
+  const validateStep3 = () => {
+    if(description.length > MAX_DESCRIPTION)
+      return `Description has to be shorter. The max number of characters is: ${MAX_DESCRIPTION} .`;
+    return null;
+  }
+
   const handleNext = () => {
     setError('');
     if (currentStep === 1) {
@@ -293,6 +299,8 @@ const CreateEvent = () => {
       return;
     }
     if (currentStep === 3) {
+      const err = validateStep3();
+      if (err){ setError(err); return; }
       setIsPreview(true);
       return;
     }
