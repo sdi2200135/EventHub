@@ -126,6 +126,7 @@
   gap: 8px;
   overflow-y: auto;
   max-height: 550px;
+  overflow-x: hidden;
 }
 
 .ae-item {

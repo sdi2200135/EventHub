@@ -197,6 +197,7 @@
   gap: 8px;
   overflow-y: auto;
   max-height: 550px;
+  overflow-x: hidden;
 }
 
 .event-item {
@@ -211,7 +212,9 @@
   transition: all 0.2s ease;
   position: relative;
 }
-
+.event-item:hover .event-item-title {
+  color: #ffffff;
+}
 .event-item:hover {
   background: #333;
   border-color: #203855;
@@ -392,7 +395,7 @@
    NON-DELETABLE EVENT ITEMS
    ============================================ */
 .event-item.not-deletable {
-  opacity: 0.55;
+  opacity: 1;
   cursor: pointer;
 }
 
