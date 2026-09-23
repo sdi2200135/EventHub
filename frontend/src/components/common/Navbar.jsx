@@ -96,15 +96,29 @@ const Navbar = () => {
 
         {/* Menu */}
         <div className="nav-right">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              isActive ? 'nav-link active' : 'nav-link'
-            }
-          >
-            Welcome Page
-          </NavLink>
+          {!isAuthenticated && (
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                isActive ? 'nav-link active' : 'nav-link'
+              }
+            >
+              Welcome Page
+            </NavLink>
+          )}
+
+          {isAuthenticated && (
+            <NavLink
+              to="/recommendations"
+              end
+              className={({ isActive }) =>
+                isActive ? 'nav-link active' : 'nav-link'
+              }
+            >
+              Recommended Events
+            </NavLink>
+          )}
 
           <NavLink
             to="/homepage"

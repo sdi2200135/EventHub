@@ -10,8 +10,8 @@ import './App.css';
 import WelcomePage from './pages/WelcomePage';
 import HomePage from './pages/HomePage';
 import SignIn from './pages/auth/SignIn';
-// import ForgotPwd from './pages/auth/ForgotPwd';
 import SignUp from './pages/auth/SignUp';
+import RecommendationsPage from './pages/events/RecommendationsPage';
 import EventsPage from './pages/events/EventsPage';
 import EventDetails from './pages/events/EventDetails';
 import BookingPage from './pages/events/BookingPage';
@@ -49,6 +49,7 @@ const PageTitle = () => {
     else if (path === '/signin') title = 'Sign In';
     else if (path === '/signup') title = 'Sign Up';
     else if (path === '/') title = 'Welcome';
+    else if (path === '/recommendations') title = 'For You';
 
 
     document.title = title === 'EventHub' ? 'EventHub' : `${title} · EventHub`;
@@ -81,12 +82,19 @@ function App() {
                     {/* PUBLIC */}
                     <Route path="/homepage" element={<HomePage />} />
                     <Route path="/signin" element={<SignIn />} />
-                    {/* <Route path="/signin/forgot-password" element={<ForgotPwd />} /> */}
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/events" element={<EventsPage />} />
                     <Route path="/events/details/:id" element={<EventDetails />} />
 
                     {/* AUTHENTICATED */}
+                    <Route
+                      path="/recommendations"
+                      element={
+                        <RequireRole roles={['USER']}>
+                          <RecommendationsPage />
+                        </RequireRole>
+                      }
+                    />
                     <Route
                       path="/events/details/:id/booking"
                       element={
