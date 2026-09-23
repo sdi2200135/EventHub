@@ -99,7 +99,7 @@ const SignUp = () => {
 
     // Validation: AFM - ακριβώς 9 ψηφία
     if (!/^\d{9}$/.test(formData.afm)) {
-      setError('Tax Number (TRN) must be exactly 9 digits.');
+      setError('Tax Number (AFM) must be exactly 9 digits.');
       setLoading(false);
       return;
     }
