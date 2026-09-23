@@ -300,7 +300,7 @@ const EventDetails = () => {
               className={`tab-btn ${activeTab === 'description' ? 'active' : ''}`}
               onClick={() => setActiveTab('description')}
             >
-              Description
+              Information
             </button>
             <button
               className={`tab-btn ${activeTab === 'organizer' ? 'active' : ''}`}
@@ -369,8 +369,11 @@ const EventDetails = () => {
                   </div>
                 </div>
 
-                <div className="event-description">
-                  <p>{event.description || 'No description available.'}</p>
+                <div className="event-description-box">
+                  <h3 className="event-description-title">Description</h3>
+                  <div className="event-description">
+                    <p>{event.description || 'No description available.'}</p>
+                  </div>
                 </div>
 
                 {/* Map */}

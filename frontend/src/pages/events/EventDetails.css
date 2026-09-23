@@ -165,6 +165,7 @@
   color: #B0B0B0;
   line-height: 1.8;
   font-size: 0.95rem;
+  margin: 0;
 }
 
 /* ============================================
@@ -803,4 +804,30 @@
 
 .btn-message-organizer:hover {
   background: #22963a;
+}
+
+/* ============================================
+   DESCRIPTION BOX
+   ============================================ */
+.event-description-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-description-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: 0.3px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2A2A2A;
+}
+
+.event-description {
+  background: transparent;
+  border: 1px solid #2A2A2A;
+  border-radius: 0.75rem;
+  padding: 16px 20px;
 }
