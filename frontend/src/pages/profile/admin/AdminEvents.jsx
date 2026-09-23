@@ -1,63 +1,12 @@
 // src/pages/profile/admin/AdminEvents.jsx
 import { useEffect, useState, useMemo } from 'react';
-import { eventService, userService } from '../../../services/api';
+import { eventService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CancelIcon from '@mui/icons-material/Cancel';
-import DownloadIcon from '@mui/icons-material/Download';
 import './AdminEvents.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
-
-// Helper: κατεβάζει string ως αρχείο
-const downloadFile = (data, filename, mime) => {
-  const blob = new Blob([data], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
-
-// Φιλτράρει το XML του backend ανά status (client-side)
-const filterXmlByStatus = (xmlString, status) => {
-  if (status === 'ALL') return xmlString;
-
-  const match = xmlString.match(/^([\s\S]*?)(<Events[\s\S]*)$/);
-  if (!match) throw new Error('Unexpected XML structure from server');
-  const header = match[1];
-  const body = match[2];
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(body, 'application/xml');
-
-  const parseError = doc.querySelector('parsererror');
-  if (parseError) throw new Error('Server returned invalid XML');
-
-  const events = doc.querySelectorAll('Events > Event');
-  events.forEach(ev => {
-    const statusEl = Array.from(ev.children).find(c => c.tagName === 'Status');
-    const evStatus = statusEl?.textContent?.trim();
-    if (evStatus !== status) {
-      ev.parentNode.removeChild(ev);
-    }
-  });
-
-  const serializer = new XMLSerializer();
-  const newBody = serializer.serializeToString(doc);
-  return header + newBody;
-};
-
-// Φιλτράρει το JSON του backend ανά status (client-side)
-const filterJsonByStatus = (jsonString, status) => {
-  if (status === 'ALL') return jsonString;
-  const parsed = JSON.parse(jsonString);
-  const filtered = (parsed.Events || []).filter(ev => ev.Status === status);
-  return JSON.stringify({ Events: filtered }, null, 2);
-};
 
 // Robust categories: strings ή objects {id, name, slug}
 const getCategoriesText = (ev) => {
@@ -74,8 +23,8 @@ const getCategoriesText = (ev) => {
 };
 
 // Robust organizer username
-const getOrganizerUsername = (ev) => ev?.organizer_username || ev?.organizer?.username || '—';
-
+const getOrganizerUsername = (ev) =>
+  ev?.organizer_username || ev?.organizer?.username || '—';
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -86,14 +35,12 @@ const AdminEvents = () => {
   const [sortBy, setSortBy] = useState('day');
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
 
   // Bookings του ανοιχτού event (το list endpoint δεν τα φέρνει)
   const [selectedEventBookings, setSelectedEventBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
 
   const [showCancelModal, setShowCancelModal] = useState(false);
-
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -108,16 +55,15 @@ const AdminEvents = () => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchEvents();
   }, []);
 
   // Fetch bookings όταν ανοίγει το modal
   useEffect(() => {
-    if (!selectedEvent) 
-      return;
-    
+    if (!selectedEvent) return;
+
     let cancelled = false;
     const fetchBookings = async () => {
       setLoadingBookings(true);
@@ -136,7 +82,9 @@ const AdminEvents = () => {
     };
 
     fetchBookings();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedEvent]);
 
   // ============================================
@@ -159,10 +107,11 @@ const AdminEvents = () => {
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(e =>
-        e.title?.toLowerCase().includes(q) ||
-        e.city?.toLowerCase().includes(q) ||
-        e.organizer_username?.toLowerCase().includes(q)
+      filtered = filtered.filter(
+        e =>
+          e.title?.toLowerCase().includes(q) ||
+          e.city?.toLowerCase().includes(q) ||
+          e.organizer_username?.toLowerCase().includes(q)
       );
     }
 
@@ -185,8 +134,9 @@ const AdminEvents = () => {
 
       case 'day':
       default:
-        return list.sort((a, b) =>
-          new Date(b.start_datetime || 0) - new Date(a.start_datetime || 0)
+        return list.sort(
+          (a, b) =>
+            new Date(b.start_datetime || 0) - new Date(a.start_datetime || 0)
         );
     }
   }, [filteredEvents, sortBy]);
@@ -200,36 +150,11 @@ const AdminEvents = () => {
   };
 
   // ============================================
-  // EXPORT
-  // ============================================
-  const handleExportEvents = async (format) => {
-    setExporting(true);
-    try {
-      const response = await userService.exportEvents(format);
-
-      let data = response.data;
-      if (activeFilter !== 'ALL') {
-        data = format === 'xml'
-          ? filterXmlByStatus(data, activeFilter)
-          : filterJsonByStatus(data, activeFilter);
-      }
-
-      const mime = format === 'xml' ? 'application/xml' : 'application/json';
-      const filename = `events_${activeFilter.toLowerCase()}.${format}`;
-      downloadFile(data, filename, mime);
-    } catch (err) {
-      console.error('Export events failed:', err);
-      alert('Export failed. Please try again.');
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  // ============================================
   // ACTIONS
   // ============================================
   const handleDelete = async (eventId) => {
-    if (!window.confirm('Delete this event permanently? This cannot be undone.')) return;
+    if (!window.confirm('Delete this event permanently? This cannot be undone.'))
+      return;
     setActionLoading(true);
     try {
       await eventService.deleteEvent(eventId);
@@ -237,7 +162,9 @@ const AdminEvents = () => {
       setSelectedEvent(null);
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert(err.message || 'Failed to delete event. It may have active bookings.');
+      alert(
+        err.message || 'Failed to delete event. It may have active bookings.'
+      );
     } finally {
       setActionLoading(false);
     }
@@ -270,7 +197,9 @@ const AdminEvents = () => {
           e.id === selectedEvent.id ? { ...e, status: 'CANCELLED' } : e
         )
       );
-      setSelectedEvent(prev => prev ? { ...prev, status: 'CANCELLED' } : null);
+      setSelectedEvent(prev =>
+        prev ? { ...prev, status: 'CANCELLED' } : null
+      );
       setShowCancelModal(false);
     } catch (err) {
       console.error('Error cancelling event:', err);
@@ -285,11 +214,16 @@ const AdminEvents = () => {
   // ============================================
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'PUBLISHED': return 'Published';
-      case 'DRAFT': return 'Draft';
-      case 'COMPLETED': return 'Completed';
-      case 'CANCELLED': return 'Cancelled';
-      default: return status;
+      case 'PUBLISHED':
+        return 'Published';
+      case 'DRAFT':
+        return 'Draft';
+      case 'COMPLETED':
+        return 'Completed';
+      case 'CANCELLED':
+        return 'Cancelled';
+      default:
+        return status;
     }
   };
 
@@ -299,7 +233,7 @@ const AdminEvents = () => {
     return d.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -308,7 +242,8 @@ const AdminEvents = () => {
     b => b.status !== 'CANCELLED'
   ).length;
 
-  const canDelete = (ev) => ev.status === 'DRAFT' || (ev.total_booked ?? 0) === 0;
+  const canDelete = (ev) =>
+    ev.status === 'DRAFT' || (ev.total_booked ?? 0) === 0;
   const canCancel = (ev) => ev.status === 'PUBLISHED';
 
   if (loading) {
@@ -319,13 +254,15 @@ const AdminEvents = () => {
     return (
       <div className="ae-error">
         <p>{error}</p>
-        <button className="btn-retry" onClick={fetchEvents}>Try Again</button>
+        <button className="btn-retry" onClick={fetchEvents}>
+          Try Again
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="ae-layout">
+    <div className="ae-layout ae-layout--2col">
       {/* Στήλη 1: Filters */}
       <aside className="ae-sidebar">
         {filters.map(f => (
@@ -382,13 +319,17 @@ const AdminEvents = () => {
                 <div className="ae-item-content">
                   <div className="ae-item-top">
                     <span className="ae-item-title">{ev.title}</span>
-                    <span className={`ae-status status-${(ev.status || '').toLowerCase()}`}>
+                    <span
+                      className={`ae-status status-${(ev.status || '').toLowerCase()}`}
+                    >
                       {getStatusLabel(ev.status)}
                     </span>
                   </div>
                   <div className="ae-item-bottom">
                     <span className="ae-item-meta">📍 {ev.city || '—'}</span>
-                    <span className="ae-item-meta">📅 {formatDate(ev.start_datetime)}</span>
+                    <span className="ae-item-meta">
+                      📅 {formatDate(ev.start_datetime)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -396,32 +337,6 @@ const AdminEvents = () => {
           </div>
         )}
       </div>
-
-      {/* Στήλη 3: Export Panel */}
-      <aside className="ae-export-panel">
-        <h4 className="ae-export-title">Export</h4>
-        <p className="ae-export-subtitle">
-          {activeFilter === 'ALL' ? 'All events' : `${getStatusLabel(activeFilter)} events`}
-          <br />
-          <span className="ae-export-count">({sortedEvents.length})</span>
-        </p>
-
-        <button
-          className="btn-export"
-          onClick={() => handleExportEvents('xml')}
-          disabled={exporting || sortedEvents.length === 0}
-        >
-          <DownloadIcon /> {exporting ? 'Exporting...' : 'Export XML'}
-        </button>
-
-        <button
-          className="btn-export"
-          onClick={() => handleExportEvents('json')}
-          disabled={exporting || sortedEvents.length === 0}
-        >
-          <DownloadIcon /> {exporting ? 'Exporting...' : 'Export JSON'}
-        </button>
-      </aside>
 
       {/* ============================================
           EVENT DETAILS MODAL
@@ -433,10 +348,17 @@ const AdminEvents = () => {
               <div className="ae-modal-header-info">
                 <h3>{selectedEvent.title}</h3>
                 <p>
-                  <span className={`ae-status status-${(selectedEvent.status || '').toLowerCase()}`}>
+                  <span
+                    className={`ae-status status-${(
+                      selectedEvent.status || ''
+                    ).toLowerCase()}`}
+                  >
                     {getStatusLabel(selectedEvent.status)}
                   </span>
-                  <span className="ae-modal-id"> • ID: {selectedEvent.event_id || selectedEvent.id}</span>
+                  <span className="ae-modal-id">
+                    {' '}
+                    • ID: {selectedEvent.event_id || selectedEvent.id}
+                  </span>
                 </p>
               </div>
               <button
@@ -459,7 +381,9 @@ const AdminEvents = () => {
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Type:</span>
-                  <span className="ae-modal-value">{selectedEvent.event_type || '—'}</span>
+                  <span className="ae-modal-value">
+                    {selectedEvent.event_type || '—'}
+                  </span>
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Categories:</span>
@@ -475,18 +399,23 @@ const AdminEvents = () => {
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Start:</span>
-                  <span className="ae-modal-value">{formatDate(selectedEvent.start_datetime)}</span>
+                  <span className="ae-modal-value">
+                    {formatDate(selectedEvent.start_datetime)}
+                  </span>
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Capacity:</span>
                   <span className="ae-modal-value">
-                    {selectedEvent.capacity} seats ({selectedEvent.available_capacity ?? '—'} available)
+                    {selectedEvent.capacity} seats (
+                    {selectedEvent.available_capacity ?? '—'} available)
                   </span>
                 </div>
                 <div className="ae-modal-row">
                   <span className="ae-modal-label">Bookings:</span>
                   <span className="ae-modal-value">
-                    {loadingBookings ? 'Loading...' : `${activeBookingsCount} active`}
+                    {loadingBookings
+                      ? 'Loading...'
+                      : `${activeBookingsCount} active`}
                   </span>
                 </div>
               </div>
@@ -530,7 +459,10 @@ const AdminEvents = () => {
           ============================================ */}
       {showCancelModal && selectedEvent && (
         <div className="ae-modal-overlay" onClick={closeCancelModal}>
-          <div className="ae-modal ae-cancel-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="ae-modal ae-cancel-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="ae-modal-header">
               <div className="ae-modal-header-info">
                 <h3>Cancel Event</h3>
@@ -546,19 +478,20 @@ const AdminEvents = () => {
 
             <div className="ae-modal-body">
               <p className="ae-cancel-warning">
-                ⚠️ Are you sure you want to cancel <strong>"{selectedEvent.title}"</strong>?
+                ⚠️ Are you sure you want to cancel{' '}
+                <strong>"{selectedEvent.title}"</strong>?
               </p>
               <p className="ae-cancel-subtext">
-                The event status will change to <strong>CANCELLED</strong>. No new
-                bookings will be allowed. Existing bookings will remain for historical
-                purposes.
+                The event status will change to <strong>CANCELLED</strong>. No
+                new bookings will be allowed. Existing bookings will remain for
+                historical purposes.
               </p>
 
               {activeBookingsCount > 0 ? (
                 <p className="ae-cancel-no-attendees">
-                  📩 A notification will be automatically sent by the system to all{' '}
-                  <strong>{activeBookingsCount}</strong> attendees
-                  with active bookings.
+                  📩 A notification will be automatically sent by the system to
+                  all <strong>{activeBookingsCount}</strong> attendees with
+                  active bookings.
                 </p>
               ) : (
                 <p className="ae-cancel-no-attendees">

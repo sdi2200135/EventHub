@@ -6,8 +6,9 @@ import '../common/Dashboard.css';
 
 import UserManagement from './UserManagement';
 import AdminEvents from './AdminEvents';
+import ExportData from './ExportData'; // 👈 νέο import
 
-const VALID_TABS = ['personal', 'users', 'events'];
+const VALID_TABS = ['personal', 'users', 'events', 'export']; // 👈 προσθήκη 'export'
 
 const AdminDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -52,18 +53,26 @@ const AdminDashboard = ({ user }) => {
         >
           Events
         </button>
+        <button
+          className={`profile-tab ${activeTab === 'export' ? 'active' : ''}`}
+          onClick={() => handleTabChange('export')}
+        >
+          Export Data
+        </button>
       </div>
 
       <div className="profile-tab-content">
         {activeTab === 'personal' && <PersonalInfoTab user={user} navigate={navigate} />}
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'events' && <AdminEvents />}
+        {activeTab === 'export' && <ExportData />} {/* 👈 νέο tab */}
       </div>
     </div>
   );
 };
 
 const PersonalInfoTab = ({ user, navigate }) => {
+  // ... (ίδιος κώδικας όπως πριν)
   return (
     <div className="personal-info-container">
       <div className="edit-btn-wrapper">
@@ -112,9 +121,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Location:</span>
-              <span className="dashboard-info-value">
-                {user?.city || '-'}
-              </span>
+              <span className="dashboard-info-value">{user?.city || '-'}</span>
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Tax Registration Number:</span>
