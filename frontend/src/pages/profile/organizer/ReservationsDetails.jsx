@@ -1,7 +1,7 @@
 // src/pages/profile/organizer/ReservationsDetails.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { eventService, /*bookingService*/ } from '../../../services/api';
+import { eventService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import './ReservationsDetails.css';
@@ -18,7 +18,6 @@ const ReservationsDetails = () => {
 
   // Modal state
   const [selectedBooking, setSelectedBooking] = useState(null);
-  // const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -32,7 +31,11 @@ const ReservationsDetails = () => {
         eventService.getEventBookings(id),
       ]);
       setEvent(eventRes.data);
-      setBookings(bookingsRes.data || []);
+
+      // Το bookings endpoint είναι paginated → results
+      const rawBookings = bookingsRes.data?.results || bookingsRes.data || [];
+      setBookings(rawBookings);
+
       setError('');
     } catch (err) {
       console.error('Error fetching reservations:', err);
@@ -55,7 +58,7 @@ const ReservationsDetails = () => {
     });
   };
 
-  // Ώρα σε 24h format, ανεξαρτήτως locale
+  // Ώρα σε 24h format
   const formatTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
@@ -65,6 +68,39 @@ const ReservationsDetails = () => {
     const min = String(date.getMinutes()).padStart(2, '0');
 
     return `${hh}:${min}`;
+  };
+
+  // Robust name — διαβάζει από nested attendee object
+  const getUserName = (booking) => {
+    const a = booking?.attendee;
+    if (!a) return 'Unknown user';
+    if (typeof a === 'object') {
+      const full = `${a.first_name || ''} ${a.last_name || ''}`.trim();
+      return full || a.username || `User #${a.id}`;
+    }
+    return `User #${a}`; // αν είναι σκέτο ID
+  };
+
+  // Robust username — για το modal (πιο σύντομο)
+  const getUsername = (booking) => {
+    const a = booking?.attendee;
+    if (!a) return '—';
+    if (typeof a === 'object') return a.username || '—';
+    return `user${a}`;
+  };
+
+  // Robust categories
+  const getCategoriesText = (ev) => {
+    if (!ev?.categories || ev.categories.length === 0) return '—';
+    const result = ev.categories
+      .map(c => {
+        if (typeof c === 'string') return c;
+        if (typeof c === 'number') return String(c);
+        return c?.name || c?.category_name || c?.category?.name || c?.label || null;
+      })
+      .filter(Boolean)
+      .join(', ');
+    return result || '—';
   };
 
   const getStatusLabel = (status) => {
@@ -84,12 +120,11 @@ const ReservationsDetails = () => {
   };
 
   const handleCloseModal = () => {
-    // if (actionLoading) return;
     setSelectedBooking(null);
   };
 
   // ============================================
-  // LOADING
+  // LOADING / ERROR
   // ============================================
   if (loading) {
     return <LoadingSpinner message="Loading reservations..." />;
@@ -185,7 +220,7 @@ const ReservationsDetails = () => {
             <div className="rd-row">
               <span className="rd-label">Category:</span>
               <span className="rd-value">
-                {event.categories?.join(', ') || '—'}
+                {getCategoriesText(event)}
               </span>
             </div>
           </div>
@@ -231,7 +266,7 @@ const ReservationsDetails = () => {
                   onClick={() => handleReservationClick(booking)}
                 >
                   <span className="rd-res-user">
-                    {booking.user_name || `User ${booking.user_id}`}
+                    {getUserName(booking)}
                   </span>
                   <span className="rd-res-ticket">
                     Ticket Type: {booking.ticket_type_name || 'Regular'}
@@ -251,7 +286,7 @@ const ReservationsDetails = () => {
           <div className="rd-modal" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="rd-modal-header">
-              <h3>Booking Id: {selectedBooking.id}</h3>
+              <h3>Booking Id: {selectedBooking.booking_id || selectedBooking.id}</h3>
             </div>
 
             {/* Body */}
@@ -260,13 +295,19 @@ const ReservationsDetails = () => {
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Attendee:</span>
                   <span className="rd-modal-value">
-                    {selectedBooking.user_name || `User ${selectedBooking.user_id}`}
+                    {getUserName(selectedBooking)}
+                  </span>
+                </div>
+                <div className="rd-modal-row">
+                  <span className="rd-modal-label">Username:</span>
+                  <span className="rd-modal-value">
+                    @{getUsername(selectedBooking)}
                   </span>
                 </div>
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Date:</span>
                   <span className="rd-modal-value">
-                    {formatDate(selectedBooking.booking_date || event.start_datetime)}
+                    {formatDate(selectedBooking.created_at || event.start_datetime)}
                   </span>
                 </div>
 
@@ -279,18 +320,18 @@ const ReservationsDetails = () => {
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Time:</span>
                   <span className="rd-modal-value">
-                    {formatTime(selectedBooking.booking_date || event.start_datetime)}
+                    {formatTime(selectedBooking.created_at || event.start_datetime)}
                   </span>
                 </div>
 
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Tickets Number:</span>
-                  <span className="rd-modal-value">{selectedBooking.quantity}</span>
+                  <span className="rd-modal-value">{selectedBooking.number_of_tickets}</span>
                 </div>
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Total Cost:</span>
                   <span className="rd-modal-value">
-                    {Number(selectedBooking.total_price || 0).toFixed(2)}
+                    {Number(selectedBooking.total_cost || 0).toFixed(2)}
                   </span>
                 </div>
 

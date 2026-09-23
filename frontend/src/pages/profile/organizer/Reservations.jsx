@@ -22,7 +22,23 @@ const Reservations = ({ user }) => {
     setLoading(true);
     try {
       const response = await eventService.getOrganizerEvents(user.id);
-      setEvents(response.data || []);
+      const eventsList = response.data || [];
+
+      // Για κάθε event, φέρνουμε τα bookings του (το list endpoint δεν τα περιλαμβάνει)
+      const eventsWithBookings = await Promise.all(
+        eventsList.map(async (event) => {
+          try {
+            const bookingsRes = await eventService.getEventBookings(event.id);
+            const bookings = bookingsRes.data?.results || bookingsRes.data || [];
+            return { ...event, bookings };
+          } catch (err) {
+            console.warn(`Could not load bookings for event ${event.id}:`, err);
+            return { ...event, bookings: [] };
+          }
+        })
+      );
+
+      setEvents(eventsWithBookings);
       setError('');
     } catch (err) {
       console.error('Error fetching events:', err);
