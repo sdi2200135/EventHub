@@ -262,7 +262,6 @@
 
 .event-status.status-cancelled {
   color: #e74c3c;
-  text-decoration: line-through;
 }
 
 /* ============================================

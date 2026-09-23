@@ -1,8 +1,22 @@
 // src/pages/auth/SignUp.jsx
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './auth.css';
+
+  // ============================================
+  // PASSWORD REQUIREMENTS
+  // ============================================
+  // Μόνο αγγλικά γράμματα, αριθμοί και "κοινά" σύμβολα
+  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
+
+  // Helper για rendering requirement
+  const Requirement = ({ ok, children }) => (
+    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
+      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
+      {children}
+    </li>
+  );
 
 const SignUp = () => {
   const [formData, setFormData] = useState({
@@ -26,11 +40,7 @@ const SignUp = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  // ============================================
-  // PASSWORD REQUIREMENTS
-  // ============================================
-  // Μόνο αγγλικά γράμματα, αριθμοί και "κοινά" σύμβολα
-  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]+$/;
+
 
   const passwordChecks = useMemo(() => {
     const pwd = formData.password || '';
@@ -39,7 +49,7 @@ const SignUp = () => {
       english: pwd.length > 0 && ALLOWED_PASSWORD_REGEX.test(pwd),
       letter: /[A-Za-z]/.test(pwd),
       number: /\d/.test(pwd),
-      symbol: /[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]/.test(pwd),
+      symbol: /[!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]/.test(pwd),
     };
   }, [formData.password]);
 
@@ -118,8 +128,6 @@ const SignUp = () => {
         delete submitData.longitude;
       }
 
-      console.log('Sending data to backend:', submitData);
-
       const result = await register(submitData);
 
       if (result.success) {
@@ -130,7 +138,7 @@ const SignUp = () => {
       } else {
         if (result.error && typeof result.error === 'object') {
           const errors = Object.entries(result.error)
-            .map(([key, value]) => `${key}: ${value.join(', ')}`)
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
             .join('\n');
           setError(errors);
         } else {
@@ -157,13 +165,7 @@ const SignUp = () => {
     }
   };
 
-  // Helper για rendering requirement
-  const Requirement = ({ ok, children }) => (
-    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
-      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
-      {children}
-    </li>
-  );
+
 
   return (
     <div className="signup-container">

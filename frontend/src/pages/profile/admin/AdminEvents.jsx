@@ -1,5 +1,5 @@
 // src/pages/profile/admin/AdminEvents.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { eventService, userService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -74,11 +74,8 @@ const getCategoriesText = (ev) => {
 };
 
 // Robust organizer username
-const getOrganizerUsername = (ev) => {
-  if (!ev?.organizer) return '—';
-  if (typeof ev.organizer === 'string') return ev.organizer;
-  return ev.organizer.username || '—';
-};
+const getOrganizerUsername = (ev) => ev?.organizer_username || ev?.organizer?.username || '—';
+
 
 const AdminEvents = () => {
   const [events, setEvents] = useState([]);
@@ -97,17 +94,30 @@ const AdminEvents = () => {
 
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const response = await eventService.getAllEvents();
+      setEvents(response.data || []);
+      setError('');
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Could not load events. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
     fetchEvents();
   }, []);
 
   // Fetch bookings όταν ανοίγει το modal
   useEffect(() => {
-    if (!selectedEvent) {
-      setSelectedEventBookings([]);
+    if (!selectedEvent) 
       return;
-    }
-
+    
     let cancelled = false;
     const fetchBookings = async () => {
       setLoadingBookings(true);
@@ -128,20 +138,6 @@ const AdminEvents = () => {
     fetchBookings();
     return () => { cancelled = true; };
   }, [selectedEvent]);
-
-  const fetchEvents = async () => {
-    setLoading(true);
-    try {
-      const response = await eventService.getAllEvents();
-      setEvents(response.data || []);
-      setError('');
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError('Could not load events. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // ============================================
   // FILTERS
@@ -166,9 +162,7 @@ const AdminEvents = () => {
       filtered = filtered.filter(e =>
         e.title?.toLowerCase().includes(q) ||
         e.city?.toLowerCase().includes(q) ||
-        e.organizer?.username?.toLowerCase().includes(q) ||
-        e.organizer?.first_name?.toLowerCase().includes(q) ||
-        e.organizer?.last_name?.toLowerCase().includes(q)
+        e.organizer_username?.toLowerCase().includes(q)
       );
     }
 
@@ -314,8 +308,8 @@ const AdminEvents = () => {
     b => b.status !== 'CANCELLED'
   ).length;
 
-  const canDelete = (ev) => ev.status === 'DRAFT' || !ev.bookings?.length;
-  const canCancel = (ev) => ev.status !== 'CANCELLED' && ev.status !== 'COMPLETED';
+  const canDelete = (ev) => ev.status === 'DRAFT' || (ev.total_booked ?? 0) === 0;
+  const canCancel = (ev) => ev.status === 'PUBLISHED';
 
   if (loading) {
     return <LoadingSpinner message="Loading events..." />;

@@ -20,12 +20,15 @@ class EventListSerializer(serializers.ModelSerializer):
     min_price = serializers.SerializerMethodField()
     categories = serializers.SlugRelatedField(many=True, slug_field='name', read_only=True)
     cover_photo = serializers.SerializerMethodField()
+    total_booked = serializers.IntegerField(source='total_reserved', read_only=True)
+
     class Meta:
         model = Event
         fields = [
             'id', 'event_id', 'title', 'event_type', 'venue', 'city', 'country',
             'start_datetime', 'end_datetime', 'capacity', 'status',
-            'available_capacity', 'min_price', 'categories', 'cover_photo', 'organizer_username'
+            'available_capacity', 'min_price', 'categories', 'cover_photo', 'organizer_username',
+            'total_booked'
         ]
 
     def get_min_price(self, obj):

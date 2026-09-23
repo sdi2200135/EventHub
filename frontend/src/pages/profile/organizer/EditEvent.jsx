@@ -279,7 +279,7 @@ const EditEvent = () => {
     }
 
     const filesToAdd = files.slice(0, remainingSlots);
-    const newPhotos = filesToAdd.map((file, idx) => ({
+    const newPhotos = filesToAdd.map((file) => ({
       file,
       url: URL.createObjectURL(file),
       name: file.name,
@@ -331,6 +331,9 @@ const EditEvent = () => {
     if (new Date(startStr) >= new Date(endStr)) {
       return 'End date must be after start date';
     }
+    if (new Date(startStr) <= new Date())
+      return 'Start date and time must be in the future';
+
     return null;
   };
 
@@ -354,6 +357,11 @@ const EditEvent = () => {
     if (totalTickets > formData.capacity) {
       return `Total tickets (${totalTickets}) exceed capacity (${formData.capacity})`;
     }
+
+    const names = ticketTypes.map(t => t.name.trim().toLowerCase());
+    if (new Set(names).size !== names.length) 
+      return 'Ticket type names must be different';
+
     return null;
   };
 
@@ -417,17 +425,12 @@ const EditEvent = () => {
       const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
 
       const ticketPayload = ticketTypes.map((t) => {
-        const originalQuantity = t.originalQuantity ?? t.quantity;
-        const originalAvailable = t.originalAvailable ?? t.quantity;
-        const booked = originalQuantity - originalAvailable;
         const newQuantity = Number(t.quantity);
-        const newAvailable = Math.max(0, newQuantity - booked);
 
         const item = {
           name: t.name,
           price: Number(t.price),
           quantity: newQuantity,
-          available: newAvailable,
         };
 
         if (t.pk != null) item.pk = t.pk;
@@ -451,12 +454,6 @@ const EditEvent = () => {
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         description,
         status: publish ? 'PUBLISHED' : 'DRAFT',
-        organizer: {
-          id: user?.id,
-          username: user?.username,
-          first_name: user?.first_name,
-          last_name: user?.last_name
-        },
         ticket_types: ticketPayload,
         photos: photoPayload,
       };
@@ -465,7 +462,7 @@ const EditEvent = () => {
       navigate(`/profile/events/${id}`);
     } catch (err) {
       console.error('Error updating event:', err);
-      setError(err.response?.data?.detail || err.message || 'Failed to update event');
+      setError( err.message || 'Failed to update event');
     } finally {
       setSubmitting(false);
     }
@@ -567,15 +564,7 @@ const EditEvent = () => {
               <div className="form-row date-row">
                 <label>START:</label>
                 <div className="datetime-split">
-                  <DatePicker
-                    selected={dateStrToObj(startParts.date)}
-                    onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
-                    dateFormat="dd/MM/yyyy"
-                    placeholderText="DD/MM/YYYY"
-                    className="datetime-input"
-                    isClearable
-                    onKeyDown={blockTyping}
-                  />
+                  <input type="date" value={startParts.date} onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)} className="datetime-input" />
                   <select value={startParts.hour} onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
                     {HOURS.map(h => <option key={h} value={h}>{h}</option>)}

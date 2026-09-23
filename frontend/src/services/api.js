@@ -167,8 +167,12 @@ export const bookingService = {
   getMyBookings: async () => ({
       data: await fetchAll('/bookings/me/'),
   }),
-};
 
+  getAllBookings: async () => ({
+     data: await fetchAll('/bookings/') 
+  }),
+  
+};
 // ============================================
 // MESSAGE SERVICES
 // ============================================

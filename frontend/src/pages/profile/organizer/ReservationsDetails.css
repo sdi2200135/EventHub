@@ -225,7 +225,7 @@
 }
 
 .rd-res-user {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #e0e0e0;
   overflow: hidden;
@@ -522,16 +522,24 @@
 /* ============================================
    RESERVATION CARD - STATUS LEFT BORDER
    ============================================ */
+.rd-res-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+   
 .rd-res-card.status-confirmed {
   border-left: 3px solid #2ecc71;
+  color: #2ecc71;
 }
 
 .rd-res-card.status-pending {
   border-left: 3px solid #f39c12;
+  color: #f39c12
 }
 
 .rd-res-card.status-cancelled {
   border-left: 3px solid #e74c3c;
+  color: #e74c3c
 }
 
 /* ============================================

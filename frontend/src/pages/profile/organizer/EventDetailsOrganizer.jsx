@@ -1,8 +1,7 @@
 // src/pages/profile/organizer/EventDetailsOrganizer.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../../context/AuthContext';
-import { eventService, messageService } from '../../../services/api';
+import { eventService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -14,7 +13,6 @@ import LoadingSpinner from '../../../components/common/LoadingSpinner';
 const EventDetailsOrganizer = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const [event, setEvent] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -24,13 +22,7 @@ const EventDetailsOrganizer = () => {
 
   // Cancel Modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelNotify, setCancelNotify] = useState(true);
-  const [cancelSubject, setCancelSubject] = useState('');
-  const [cancelBody, setCancelBody] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -41,9 +33,8 @@ const EventDetailsOrganizer = () => {
       ]);
       setEvent(eventRes.data);
 
-      // Το endpoint είναι paginated → results
-      const rawBookings = bookingsRes.data?.results || bookingsRes.data || [];
-      setBookings(rawBookings);
+      setBookings(bookingsRes.data || []);
+
 
       setError('');
     } catch (err) {
@@ -53,13 +44,17 @@ const EventDetailsOrganizer = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   // ============================================
   // DELETE EVENT
   // ============================================
   const handleDelete = async () => {
-    // Έλεγχος: επιτρέπεται μόνο αν DRAFT ή χωρίς bookings
-    const hasBookings = event?.bookings?.length > 0;
+    // Only when nothing is booked — otherwise the backend refuses it
+    const hasBookings = bookings.length > 0;
     if (event.status === 'PUBLISHED' && hasBookings) {
       alert('Cannot delete a published event that has bookings. Cancel it instead.');
       return;
@@ -83,12 +78,6 @@ const EventDetailsOrganizer = () => {
   // CANCEL EVENT (open modal)
   // ============================================
   const openCancelModal = () => {
-    // Pre-fill με default subject/body
-    setCancelSubject(`Event Cancelled: ${event.title}`);
-    setCancelBody(
-      `We regret to inform you that the event "${event.title}" scheduled for ${formatDate(event.start_datetime)} has been cancelled.\n\nWe apologize for any inconvenience.`
-    );
-    setCancelNotify(true);
     setShowCancelModal(true);
   };
 
@@ -103,12 +92,7 @@ const EventDetailsOrganizer = () => {
   const confirmCancel = async () => {
     setActionLoading(true);
     try {
-      await eventService.cancelEvent(
-        id,
-        cancelNotify,
-        cancelSubject,
-        cancelBody
-      );
+      await eventService.cancelEvent(id);
       setShowCancelModal(false);
       // Refresh event
       await fetchData();
@@ -179,8 +163,8 @@ const EventDetailsOrganizer = () => {
     );
   }
 
-  const canDelete = event.status === 'DRAFT' || !event.bookings?.length;
-  const canCancel = event.status !== 'CANCELLED' && event.status !== 'COMPLETED';
+  const canDelete = event.status === 'DRAFT' || bookings.length === 0;
+  const canCancel = event.status === 'PUBLISHED';
   const canEdit = event.status !== 'CANCELLED' && event.status !== 'COMPLETED';
 
   return (
@@ -354,60 +338,9 @@ const EventDetailsOrganizer = () => {
                 ⚠️ Are you sure you want to cancel <strong>"{event.title}"</strong>?
               </p>
               <p className="modal-subtext">
-                The event status will change to <strong>CANCELLED</strong>. No new
-                bookings will be allowed. Existing bookings will remain for historical
-                purposes.
+                The event status will change to <strong>CANCELLED</strong>. All bookings will be
+                cancelled and every attendee will automatically receive a message about it.
               </p>
-
-              {bookings.filter(b => b.status !== 'CANCELLED').length > 0 && (
-                <>
-                  <div className="modal-checkbox-row">
-                    <label className="modal-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={cancelNotify}
-                        onChange={(e) => setCancelNotify(e.target.checked)}
-                        disabled={actionLoading}
-                      />
-                      <span>
-                        Send notification to all attendees
-                        ({bookings.filter(b => b.status !== 'CANCELLED').length})
-                      </span>
-                    </label>
-                  </div>
-
-                  {cancelNotify && (
-                    <div className="modal-notify-fields">
-                      <div className="modal-field">
-                        <label>Subject:</label>
-                        <input
-                          type="text"
-                          value={cancelSubject}
-                          onChange={(e) => setCancelSubject(e.target.value)}
-                          disabled={actionLoading}
-                          placeholder="Event Cancelled"
-                        />
-                      </div>
-                      <div className="modal-field">
-                        <label>Message:</label>
-                        <textarea
-                          value={cancelBody}
-                          onChange={(e) => setCancelBody(e.target.value)}
-                          rows={5}
-                          disabled={actionLoading}
-                          placeholder="Write a message to attendees..."
-                        />
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {bookings.filter(b => b.status !== 'CANCELLED').length === 0 && (
-                <p className="modal-no-attendees">
-                  No attendees to notify (no active bookings).
-                </p>
-              )}
             </div>
 
             <div className="modal-footer">

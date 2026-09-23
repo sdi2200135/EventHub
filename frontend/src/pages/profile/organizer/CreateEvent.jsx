@@ -250,6 +250,10 @@ const CreateEvent = () => {
     if (new Date(startStr) >= new Date(endStr)) {
       return 'End date must be after start date';
     }
+
+    if (new Date(startStr) <= new Date()) 
+      return 'Start date and time must be in the future';
+
     return null;
   };
 
@@ -260,12 +264,17 @@ const CreateEvent = () => {
       if (!t.price || Number(t.price) <= 0) return 'Ticket price must be > 0';
       if (!t.quantity || Number(t.quantity) <= 0) return 'Ticket quantity must be > 0';
     }
+
     const totalTickets = ticketTypes.reduce(
       (sum, t) => sum + (Number(t.quantity) || 0), 0
     );
-    if (totalTickets > formData.capacity) {
+    if (totalTickets > formData.capacity) 
       return `Total tickets (${totalTickets}) exceed capacity (${formData.capacity})`;
-    }
+
+    const names = ticketTypes.map(t => t.name.trim().toLowerCase());
+    if (new Set(names).size !== names.length) 
+      return 'Ticket type names must be different';
+
     return null;
   };
 
@@ -337,24 +346,14 @@ const CreateEvent = () => {
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         description,
         status: publish ? 'PUBLISHED' : 'DRAFT',
-        organizer: {
-          id: user?.id,
-          username: user?.username,
-          first_name: user?.first_name,
-          last_name: user?.last_name
-        },
         ticket_types: ticketTypes.map((t) => ({
-          ticket_type_id: t.id,
           name: t.name,
           price: Number(t.price),
           quantity: Number(t.quantity),
-          available: Number(t.quantity)
         })),
-        photos: photos.map((p, i) => ({
-          id: i + 1,
-          image: p.url,
-          name: p.name,
-          caption: ''
+        photos: photos.map((p) => ({ 
+          file: p.file, 
+          name: p.name
         })),
       };
 
@@ -362,7 +361,7 @@ const CreateEvent = () => {
       navigate('/profile?tab=events');
     } catch (err) {
       console.error('Error creating event:', err);
-      setError(err.response?.data?.detail || err.message || 'Failed to create event');
+      setError( err.message || 'Failed to create event');
     } finally {
       setSubmitting(false);
     }

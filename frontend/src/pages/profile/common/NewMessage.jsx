@@ -59,6 +59,7 @@ const NewMessage = () => {
       }
     };
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user.id]);
 
   // for my own events i also need the list of people who booked

@@ -6,6 +6,18 @@ import { authService } from '../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import './EditProfile.css';
 
+  // ============================================
+  // PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
+  // ============================================
+  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
+
+  // Helper για rendering requirement
+  const Requirement = ({ ok, children }) => (
+    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
+      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
+      {children}
+    </li>
+  );
 const EditProfile = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
@@ -26,10 +38,6 @@ const EditProfile = () => {
     confirm_password: ''
   });
 
-  // ============================================
-  // PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
-  // ============================================
-  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]+$/;
 
   const passwordChecks = useMemo(() => {
     const pwd = formData.password || '';
@@ -38,7 +46,7 @@ const EditProfile = () => {
       english: pwd.length > 0 && ALLOWED_PASSWORD_REGEX.test(pwd),
       letter: /[A-Za-z]/.test(pwd),
       number: /\d/.test(pwd),
-      symbol: /[!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]/.test(pwd),
+      symbol: /[!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]/.test(pwd),
     };
   }, [formData.password]);
 
@@ -146,14 +154,6 @@ const EditProfile = () => {
   const handleCancel = () => {
     navigate('/profile');
   };
-
-  // Helper για rendering requirement
-  const Requirement = ({ ok, children }) => (
-    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
-      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
-      {children}
-    </li>
-  );
 
   return (
     <div className="edit-profile-page">

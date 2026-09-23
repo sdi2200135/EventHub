@@ -159,7 +159,7 @@ class EventViewSet(viewsets.ModelViewSet):
                 send_message(
                     conversation_id=conversation.pk,
                     sender=event.organizer,
-                    body=f'The event "{event.title}" scheduled for {timezone.localtime(event.start_datetime):%d-%m-%Y, %H:%M} has been cancelled. We will contact you afterwards for more info',
+                    body=f'The event "{event.title}" scheduled for {timezone.localtime(event.start_datetime):%d-%m-%Y, %H:%M} has been cancelled. We will contact you afterwards for more info.',
                 )
 
         return Response(EventDetailSerializer(event).data)

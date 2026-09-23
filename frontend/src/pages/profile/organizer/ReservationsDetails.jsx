@@ -1,9 +1,8 @@
 // src/pages/profile/organizer/ReservationsDetails.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { eventService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CloseIcon from '@mui/icons-material/Close';
 import './ReservationsDetails.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -19,10 +18,6 @@ const ReservationsDetails = () => {
   // Modal state
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
-
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -32,9 +27,7 @@ const ReservationsDetails = () => {
       ]);
       setEvent(eventRes.data);
 
-      // Το bookings endpoint είναι paginated → results
-      const rawBookings = bookingsRes.data?.results || bookingsRes.data || [];
-      setBookings(rawBookings);
+      setBookings(bookingsRes.data || []);
 
       setError('');
     } catch (err) {
@@ -44,6 +37,12 @@ const ReservationsDetails = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+
 
   // ============================================
   // HELPERS
@@ -266,7 +265,10 @@ const ReservationsDetails = () => {
                   onClick={() => handleReservationClick(booking)}
                 >
                   <span className="rd-res-user">
-                    {getUserName(booking)}
+                    Attendee: {getUserName(booking)}
+                  </span>
+                  <span className={`rd-res-status status-${(booking.status || '').toLowerCase()}`}>
+                    Status: {getStatusLabel(booking.status)}
                   </span>
                   <span className="rd-res-ticket">
                     Ticket Type: {booking.ticket_type_name || 'Regular'}

@@ -1,7 +1,7 @@
 // src/pages/profile/organizer/Reservations.jsx
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { eventService } from '../../../services/api';
+import { eventService, bookingService } from '../../../services/api';
 import './Reservations.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -11,33 +11,20 @@ const Reservations = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState('day-release'); // 'day-release' | 'name' | 'reservations'
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchEvents();
-    }
-  }, [user?.id]);
-
+  
   const fetchEvents = async () => {
     setLoading(true);
     try {
       const response = await eventService.getOrganizerEvents(user.id);
       const eventsList = response.data || [];
 
-      // Για κάθε event, φέρνουμε τα bookings του (το list endpoint δεν τα περιλαμβάνει)
-      const eventsWithBookings = await Promise.all(
-        eventsList.map(async (event) => {
-          try {
-            const bookingsRes = await eventService.getEventBookings(event.id);
-            const bookings = bookingsRes.data?.results || bookingsRes.data || [];
-            return { ...event, bookings };
-          } catch (err) {
-            console.warn(`Could not load bookings for event ${event.id}:`, err);
-            return { ...event, bookings: [] };
-          }
-        })
-      );
-
+      // one request for every booking of this organizer, grouped client-side
+      const { data: allBookings } = await bookingService.getAllBookings();
+      const eventsWithBookings = eventsList.map((event) => ({
+        ...event,
+        bookings: allBookings.filter((b) => b.event === event.id),
+      }));
+      
       setEvents(eventsWithBookings);
       setError('');
     } catch (err) {
@@ -47,6 +34,12 @@ const Reservations = ({ user }) => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (user?.id) {
+      fetchEvents();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   // ============================================
   // SORTING
@@ -62,7 +55,8 @@ const Reservations = ({ user }) => {
 
       case 'reservations':
         return list.sort((a, b) =>
-          (b.bookings?.length || 0) - (a.bookings?.length || 0)
+          (b.bookings?.filter(x => x.status !== 'CANCELLED').length || 0) -
+          (a.bookings?.filter(x => x.status !== 'CANCELLED').length || 0)
         );
 
       case 'day-release':

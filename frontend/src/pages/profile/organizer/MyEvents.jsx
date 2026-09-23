@@ -1,5 +1,5 @@
 // src/pages/profile/organizer/MyEvents.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { eventService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
@@ -16,12 +16,6 @@ const MyEvents = ({ user }) => {
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchEvents();
-    }
-  }, [user?.id]);
-
   const fetchEvents = async () => {
     setLoading(true);
     try {
@@ -35,6 +29,14 @@ const MyEvents = ({ user }) => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (user?.id) {
+      fetchEvents();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+
 
   // ============================================
   // FILTERS
@@ -60,7 +62,6 @@ const MyEvents = ({ user }) => {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(e =>
         e.title?.toLowerCase().includes(q) ||
-        e.description?.toLowerCase().includes(q) ||
         e.city?.toLowerCase().includes(q)
       );
     }
@@ -81,10 +82,7 @@ const MyEvents = ({ user }) => {
 
   // Η διαγραφή επιτρέπεται μόνο πριν τη δημοσίευση
   // ή το αργότερο πριν την υποβολή της πρώτης κράτησης.
-  const canDelete = (event) => {
-    const hasBookings = (event.bookings?.length || 0) > 0;
-    return event.status === 'DRAFT' || !hasBookings;
-  };
+  const canDelete = (event) => (event.total_booked ?? 0) === 0;
 
   // Events του τρέχοντος φίλτρου που μπορούν να διαγραφούν
   const deletableEvents = filteredEvents.filter(canDelete);
@@ -148,6 +146,10 @@ const MyEvents = ({ user }) => {
     } catch (err) {
       console.error('Error deleting events:', err);
       alert(err.message || 'Failed to delete events. Some events may have bookings.');
+    }
+    finally {
+      setSelectedEvents([]);
+      fetchEvents();
     }
   };
 
@@ -240,7 +242,7 @@ const MyEvents = ({ user }) => {
             <SearchIcon className="search-icon" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search by title or city"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="events-search"

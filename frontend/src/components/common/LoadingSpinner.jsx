@@ -1,5 +1,4 @@
 // src/components/common/LoadingSpinner.jsx
-import React from 'react';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 import './LoadingSpinner.css';
 

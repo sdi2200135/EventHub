@@ -1,5 +1,5 @@
 // src/components/common/Navbar.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { messageService } from '../../services/api';
@@ -42,7 +42,7 @@ const Navbar = () => {
       try {
         const response = await messageService.getUnreadCount(user.id);
         setUnreadCount(response.data.count || 0);
-      } catch (err) {
+      } catch  {
         /* ignore */
       }
     }, 20000);
@@ -50,7 +50,7 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [isAuthenticated, user?.id]);
 
-    // the dashboard tells us the new number as soon as a conversation is read
+  // the dashboard tells us the new number as soon as a conversation is read
   useEffect(() => {
     const onUnreadChanged = (e) => setUnreadCount(e.detail);
     window.addEventListener('unread-changed', onUnreadChanged);

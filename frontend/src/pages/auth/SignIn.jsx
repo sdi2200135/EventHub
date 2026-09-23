@@ -1,6 +1,6 @@
 // src/pages/auth/SignIn.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'; 
+import { useState } from 'react';
+import { Link, useNavigate} from 'react-router-dom'; 
 import { useAuth } from '../../context/AuthContext';
 import './auth.css';
 
@@ -11,9 +11,6 @@ const SignIn = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const redirectUrl = searchParams.get('redirect') ;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,14 +21,13 @@ const SignIn = () => {
       const result = await login(username, password);
       if (result.success) {
         // the admin is navigated to user management while the rest on home page
-        navigate(redirectUrl || (result.user?.is_staff ? '/profile?tab=users' : '/homepage'));
+        navigate((result.user?.is_staff ? '/profile?tab=users' : '/homepage'));
       }
       else {
         setError(result.error || 'Invalid username or password');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-    } finally {
+    } 
+    finally {
       setLoading(false);
     }
   };

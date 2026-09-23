@@ -78,8 +78,11 @@ const HomePage = () => {
 
   const getAvailabilityStatus = (event) => {
     if (event.available_capacity === 0) return 'unavailable';
-    if (event.available_capacity < event.capacity * 0.2) return 'limited';
+    const totalTickets = event.available_capacity + (event.total_booked ?? 0);
+    if (event.available_capacity <= 10 || event.available_capacity < totalTickets * 0.2) 
+      return 'limited';
     return 'available';
+
   };
 
   const getAvailabilityLabel = (status) => {
