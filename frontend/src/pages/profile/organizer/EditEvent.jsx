@@ -564,7 +564,16 @@ const EditEvent = () => {
               <div className="form-row date-row">
                 <label>START:</label>
                 <div className="datetime-split">
-                  <input type="date" value={startParts.date} onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)} className="datetime-input" />
+                  <DatePicker
+                    selected={dateStrToObj(startParts.date)}
+                    onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="datetime-input"
+                    minDate={new Date()}
+                    isClearable
+                    onKeyDown={blockTyping}
+                  />
                   <select value={startParts.hour} onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
                     {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
@@ -580,13 +589,14 @@ const EditEvent = () => {
                 <label>END:</label>
                 <div className="datetime-split">
                   <DatePicker
-                    selected={dateStrToObj(endParts.date)}
-                    onChange={(date) => handleDateTimeChange('end_datetime', 'date', dateObjToStr(date))}
+                    selected={dateStrToObj(startParts.date)}
+                    onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
                     dateFormat="dd/MM/yyyy"
                     placeholderText="DD/MM/YYYY"
                     className="datetime-input"
                     isClearable
                     onKeyDown={blockTyping}
+                    minDate={dateStrToObj(startParts.date) || new Date()}
                   />
                   <select value={endParts.hour} onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>

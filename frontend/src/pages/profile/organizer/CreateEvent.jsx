@@ -475,6 +475,7 @@ const CreateEvent = () => {
                 <label>START:</label>
                 <div className="datetime-split">
                   <DatePicker
+                    minDate={new Date()}
                     selected={dateStrToObj(startParts.date)}
                     onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
                     dateFormat="dd/MM/yyyy"
@@ -506,6 +507,7 @@ const CreateEvent = () => {
                     className="datetime-input"
                     isClearable
                     onKeyDown={blockTyping}
+                    minDate={dateStrToObj(startParts.date) || new Date()}
                   />
                   <select value={endParts.hour} onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
