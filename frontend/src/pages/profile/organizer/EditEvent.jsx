@@ -296,13 +296,14 @@ const EditEvent = () => {
 
   const handleRemovePhoto = (photoId) => {
     setPhotos(prev => {
-      const photo = prev.find(p => p === photoId || p.id === photoId || p.name === photoId);
-      if (photo?.url && photo.url.startsWith('blob:')) {
+      const photo = prev.find(p => (p.pk ?? p.url) === photoId);
+      if (photo?.url?.startsWith('blob:')) {
         URL.revokeObjectURL(photo.url);
       }
-      return prev.filter(p => p !== photo && p.pk !== photoId);
+      return prev.filter(p => p !== photo);
     });
   };
+
 
   const handleChooseFileClick = () => {
     fileInputRef.current?.click();

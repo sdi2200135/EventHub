@@ -7,6 +7,9 @@ import AddIcon from '@mui/icons-material/Add';
 import './MyEvents.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
+// order to of status in my events
+const STATUS_ORDER = { PUBLISHED: 0, DRAFT: 1, COMPLETED: 2, CANCELLED: 3 };
+
 const MyEvents = ({ user }) => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);
@@ -65,6 +68,12 @@ const MyEvents = ({ user }) => {
         e.city?.toLowerCase().includes(q)
       );
     }
+
+    filtered.sort((a, b) => {
+      const byStatus = (STATUS_ORDER[a.status] ?? 9) - (STATUS_ORDER[b.status] ?? 9);
+      if (byStatus !== 0) return byStatus;
+      return new Date(a.start_datetime || 0) - new Date(b.start_datetime || 0);
+    });
 
     return filtered;
   };
