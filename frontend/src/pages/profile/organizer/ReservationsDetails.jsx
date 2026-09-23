@@ -55,14 +55,16 @@ const ReservationsDetails = () => {
     });
   };
 
+  // Ώρα σε 24h format, ανεξαρτήτως locale
   const formatTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
+    if (isNaN(date.getTime())) return '—';
+
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+
+    return `${hh}:${min}`;
   };
 
   const getStatusLabel = (status) => {
@@ -85,43 +87,6 @@ const ReservationsDetails = () => {
     // if (actionLoading) return;
     setSelectedBooking(null);
   };
-
-  // const handleApprove = async () => {
-  //   if (!selectedBooking) return;
-  //   setActionLoading(true);
-  //   try {
-  //     await bookingService.approveBooking(selectedBooking.id);
-  //     // Update local state
-  //     setBookings(prev =>
-  //       prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CONFIRMED' } : b)
-  //     );
-  //     setSelectedBooking(null);
-  //   } catch (err) {
-  //     console.error('Error approving booking:', err);
-  //     alert('Failed to approve booking.');
-  //   } finally {
-  //     setActionLoading(false);
-  //   }
-  // };
-
-  // const handleReject = async () => {
-  //   if (!selectedBooking) return;
-  //   if (!window.confirm('Reject this booking? The tickets will be released back.')) return;
-
-  //   setActionLoading(true);
-  //   try {
-  //     await bookingService.rejectBooking(selectedBooking.id);
-  //     setBookings(prev =>
-  //       prev.map(b => b.id === selectedBooking.id ? { ...b, status: 'CANCELLED' } : b)
-  //     );
-  //     setSelectedBooking(null);
-  //   } catch (err) {
-  //     console.error('Error rejecting booking:', err);
-  //     alert('Failed to reject booking.');
-  //   } finally {
-  //     setActionLoading(false);
-  //   }
-  // };
 
   // ============================================
   // LOADING
@@ -343,29 +308,9 @@ const ReservationsDetails = () => {
               <button
                 className="btn-modal-exit"
                 onClick={handleCloseModal}
-                // disabled={actionLoading}
               >
                 Exit
               </button>
-
-              {/* {selectedBooking.status === 'PENDING' && (
-                <>
-                  <button
-                    className="btn-modal-approve"
-                    onClick={handleApprove}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? 'Approving...' : 'Approve'}
-                  </button>
-                  <button
-                    className="btn-modal-reject"
-                    onClick={handleReject}
-                    disabled={actionLoading}
-                  >
-                    {actionLoading ? 'Rejecting...' : 'Reject'}
-                  </button>
-                </>
-              )} */}
             </div>
           </div>
         </div>

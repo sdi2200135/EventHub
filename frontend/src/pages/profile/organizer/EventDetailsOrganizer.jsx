@@ -122,14 +122,16 @@ const EventDetailsOrganizer = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (isNaN(date.getTime())) return '';
+
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+
+    return `${dayName}, ${dd}/${mm}/${yyyy}, ${hh}:${min}`;
   };
 
   const getStatusLabel = (status) => {
