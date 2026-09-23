@@ -40,7 +40,11 @@ const EventDetailsOrganizer = () => {
         eventService.getEventBookings(id),
       ]);
       setEvent(eventRes.data);
-      setBookings(bookingsRes.data || []);
+
+      // Το endpoint είναι paginated → results
+      const rawBookings = bookingsRes.data?.results || bookingsRes.data || [];
+      setBookings(rawBookings);
+
       setError('');
     } catch (err) {
       console.error('Error fetching event:', err);
@@ -134,6 +138,20 @@ const EventDetailsOrganizer = () => {
     return `${dayName}, ${dd}/${mm}/${yyyy}, ${hh}:${min}`;
   };
 
+  // Robust categories: strings, numbers, objects {id, name, slug}
+  const getCategoriesText = (ev) => {
+    if (!ev?.categories || ev.categories.length === 0) return 'N/A';
+    const result = ev.categories
+      .map(c => {
+        if (typeof c === 'string') return c;
+        if (typeof c === 'number') return String(c);
+        return c?.name || c?.category_name || c?.category?.name || c?.label || null;
+      })
+      .filter(Boolean)
+      .join(', ');
+    return result || 'N/A';
+  };
+
   const getStatusLabel = (status) => {
     switch (status) {
       case 'PUBLISHED': return 'Published';
@@ -196,7 +214,7 @@ const EventDetailsOrganizer = () => {
               <div className="ed-meta-item">
                 <span className="meta-label">Categories:</span>
                 <span className="meta-value">
-                  {event.categories?.join(', ') || 'N/A'}
+                  {getCategoriesText(event)}
                 </span>
               </div>
               <div className="ed-meta-item">
@@ -252,13 +270,13 @@ const EventDetailsOrganizer = () => {
                   <strong>
                     {bookings
                       .filter(b => b.status !== 'CANCELLED')
-                      .reduce((sum, b) => sum + (b.quantity || 0), 0)}
+                      .reduce((sum, b) => sum + (b.number_of_tickets || 0), 0)}
                   </strong>
                 </div>
               )}
               <button
                 className="btn-view-reservations"
-                onClick={() => navigate('/profile?tab=reservations')}
+                onClick={() => navigate(`/profile/reservations/${event.id}`)}
               >
                 View in Reservations Tab
               </button>

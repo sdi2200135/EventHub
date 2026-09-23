@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
-import { eventService } from '../../../services/api';
+import { eventService, categoryService } from '../../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
@@ -19,14 +19,37 @@ const STEPS = [
 const MAX_DESCRIPTION = 150;
 const MAX_PHOTOS = 20;
 
-// Μετατροπή ISO date → format για datetime-local input
-const toDatetimeLocal = (isoString) => {
-  if (!isoString) return '';
-  const date = new Date(isoString);
-  if (isNaN(date.getTime())) return '';
+const EVENT_TYPES = [
+  { value: 'CONCERT',    label: 'Concert' },
+  { value: 'SEMINAR',    label: 'Seminar' },
+  { value: 'THEATER',    label: 'Theater' },
+  { value: 'CONFERENCE', label: 'Conference' },
+  { value: 'SPORTS',     label: 'Sports' },
+  { value: 'OTHER',      label: 'Other' },
+];
+
+const getEventTypeLabel = (value) =>
+  EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
+
+const splitDateTime = (value) => {
+  if (!value) return { date: '', hour: '', minute: '' };
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return { date: '', hour: '', minute: '' };
   const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return {
+    date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
+    hour: pad(d.getHours()),
+    minute: pad(d.getMinutes()),
+  };
 };
+
+const joinDateTime = (date, hour, minute) => {
+  if (!date || !hour || !minute) return '';
+  return `${date}T${hour}:${minute}`;
+};
+
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
 const EditEvent = () => {
   const navigate = useNavigate();
@@ -40,9 +63,6 @@ const EditEvent = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // ============================================
-  // STEP 1: EVENT DETAILS STATE
-  // ============================================
   const [formData, setFormData] = useState({
     event_id: '',
     title: '',
@@ -54,27 +74,40 @@ const EditEvent = () => {
     capacity: 150,
     latitude: '',
     longitude: '',
-    start_datetime: '',
-    end_datetime: '',
     categories: [],
   });
 
+  const [startParts, setStartParts] = useState({ date: '', hour: '', minute: '' });
+  const [endParts,   setEndParts]   = useState({ date: '', hour: '', minute: '' });
+
   const [newCategory, setNewCategory] = useState('');
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
-  // ============================================
-  // STEP 2: TICKETS STATE
-  // ============================================
   const [ticketTypes, setTicketTypes] = useState([]);
-
-  // ============================================
-  // STEP 3: PHOTOS & DESCRIPTION
-  // ============================================
   const [description, setDescription] = useState('');
-  // photos: { id, url, name, file? (αν είναι νέα), isExisting? }
   const [photos, setPhotos] = useState([]);
 
   // ============================================
-  // ΦΟΡΤΩΣΗ EVENT DATA
+  // FETCH AVAILABLE CATEGORIES
+  // ============================================
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        const response = await categoryService.getCategories();
+        setAvailableCategories(response.data || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // ============================================
+  // ΦΟΡΤΩΣΗ EVENT
   // ============================================
   useEffect(() => {
     const loadEvent = async () => {
@@ -83,7 +116,10 @@ const EditEvent = () => {
         const response = await eventService.getEvent(id);
         const ev = response.data;
 
-        // Step 1
+        const categoryNames = (ev.categories || [])
+          .map(c => (typeof c === 'string' ? c : c.name))
+          .filter(Boolean);
+
         setFormData({
           event_id: ev.event_id || '',
           title: ev.title || '',
@@ -95,22 +131,24 @@ const EditEvent = () => {
           capacity: ev.capacity || 0,
           latitude: ev.latitude != null ? String(ev.latitude) : '',
           longitude: ev.longitude != null ? String(ev.longitude) : '',
-          start_datetime: toDatetimeLocal(ev.start_datetime),
-          end_datetime: toDatetimeLocal(ev.end_datetime),
-          categories: ev.categories || [],
+          categories: categoryNames,
         });
 
-        // Step 2
+        setStartParts(splitDateTime(ev.start_datetime));
+        setEndParts(splitDateTime(ev.end_datetime));
+
+        // Ticket types — κρατάμε το DB id σε `pk` όπως το περιμένει το syncTicketTypes
         const types = (ev.ticket_types || []).map((t, i) => {
           const quantity = t.quantity ?? t.available ?? 0;
           const available = t.available ?? quantity;
           return {
-            id: t.ticket_type_id || `T${i + 1}`,
+            pk: t.id,                               // ← DB pk (για το syncTicketTypes)
+            id: t.ticket_type_id || `T${i + 1}`,    // ← display id (T1, T2)
             name: t.name || 'Regular',
             price: t.price ?? 0,
             quantity: quantity,
-            originalQuantity: quantity,      // ← ΝΕΟ
-            originalAvailable: available,    // ← ΝΕΟ
+            originalQuantity: quantity,
+            originalAvailable: available,
           };
         });
 
@@ -120,10 +158,11 @@ const EditEvent = () => {
             : [{ id: 'T1', name: 'Regular', price: 20, quantity: 50 }]
         );
 
-        // Step 3
         setDescription(ev.description || '');
+
+        // Photos — κρατάμε το DB id σε `pk`
         const existingPhotos = (ev.photos || []).map((p, i) => ({
-          id: `existing-${p.id || i}`,
+          pk: p.id,                                 // ← DB pk (για το syncEventPhotos)
           url: p.image,
           name: p.name || p.caption || `photo${i + 1}.png`,
           isExisting: true,
@@ -155,6 +194,14 @@ const EditEvent = () => {
     setFormData(prev => ({ ...prev, capacity: value }));
   };
 
+  const handleDateTimeChange = (field, part, value) => {
+    if (field === 'start_datetime') {
+      setStartParts(prev => ({ ...prev, [part]: value }));
+    } else {
+      setEndParts(prev => ({ ...prev, [part]: value }));
+    }
+  };
+
   const handleAddCategory = () => {
     const trimmed = newCategory.trim();
     if (!trimmed) return;
@@ -177,19 +224,13 @@ const EditEvent = () => {
     }));
   };
 
-  const handleCategoryKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddCategory();
-    }
-  };
-
   // ============================================
   // STEP 2 HANDLERS
   // ============================================
   const handleAddTicketType = () => {
     setTicketTypes(prev => {
       const nextId = `T${prev.length + 1}`;
+      // Χωρίς `pk` → νέο ticket type
       return [
         ...prev,
         { id: nextId, name: 'Regular', price: 20, quantity: 50 }
@@ -232,8 +273,8 @@ const EditEvent = () => {
 
     const filesToAdd = files.slice(0, remainingSlots);
     const newPhotos = filesToAdd.map((file, idx) => ({
-      id: `new-${Date.now()}-${idx}`,
-      file,
+      // Χωρίς `pk` → νέο photo
+      file,                                            // ← το πραγματικό File για upload
       url: URL.createObjectURL(file),
       name: file.name,
       isExisting: false,
@@ -249,12 +290,12 @@ const EditEvent = () => {
 
   const handleRemovePhoto = (photoId) => {
     setPhotos(prev => {
-      const photo = prev.find(p => p.id === photoId);
-      // Revoke μόνο αν είναι blob URL (νέο upload)
+      const photo = prev.find(p => p === photoId || p.id === photoId || p.name === photoId);
       if (photo?.url && photo.url.startsWith('blob:')) {
         URL.revokeObjectURL(photo.url);
       }
-      return prev.filter(p => p.id !== photoId);
+      // Διώξε με βάση reference ή pk ή url
+      return prev.filter(p => p !== photo && p.pk !== photoId);
     });
   };
 
@@ -274,9 +315,18 @@ const EditEvent = () => {
     if (!formData.country.trim()) return 'Country is required';
     if (!formData.capacity || formData.capacity <= 0) return 'Capacity must be > 0';
     if (formData.categories.length === 0) return 'Add at least one category';
-    if (!formData.start_datetime) return 'Start date is required';
-    if (!formData.end_datetime) return 'End date is required';
-    if (new Date(formData.start_datetime) >= new Date(formData.end_datetime)) {
+
+    if (!startParts.date || !startParts.hour || !startParts.minute) {
+      return 'Start date and time are required';
+    }
+    if (!endParts.date || !endParts.hour || !endParts.minute) {
+      return 'End date and time are required';
+    }
+
+    const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+    const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
+    if (new Date(startStr) >= new Date(endStr)) {
       return 'End date must be after start date';
     }
     return null;
@@ -285,7 +335,6 @@ const EditEvent = () => {
   const validateStep2 = () => {
     if (ticketTypes.length === 0) return 'Add at least one ticket type';
     for (const t of ticketTypes) {
-      // ΝΕΟΣ ΕΛΕΓΧΟΣ: το νέο quantity δεν μπορεί να είναι μικρότερο από τις κρατήσεις
       const originalQuantity = t.originalQuantity ?? t.quantity;
       const originalAvailable = t.originalAvailable ?? t.quantity;
       const booked = originalQuantity - originalAvailable;
@@ -357,37 +406,53 @@ const EditEvent = () => {
   };
 
   // ============================================
-  // SUBMIT (Update)
+  // SUBMIT
   // ============================================
   const handleSubmit = async (publish = false) => {
     setError('');
     const err1 = validateStep1();
-    if (err1) {
-      setError(err1);
-      setIsPreview(false);
-      setCurrentStep(1);
-      return;
-    }
+    if (err1) { setError(err1); setIsPreview(false); setCurrentStep(1); return; }
     const err2 = validateStep2();
-    if (err2) {
-      setError(err2);
-      setIsPreview(false);
-      setCurrentStep(2);
-      return;
-    }
+    if (err2) { setError(err2); setIsPreview(false); setCurrentStep(2); return; }
 
     setSubmitting(true);
     try {
-      // Διατήρησε τις existing photos ως URLs, τα νέα ως blobs
-      const photoPayload = photos.map((p, i) => ({
-        id: i + 1,
-        image: p.url,
-        name: p.name,
-        caption: ''
-      }));
+      const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+      const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
+      // Ticket types → στείλε ΟΛΑ τα πεδία (τα syncTicketTypes χρησιμοποιεί `pk`)
+      const ticketPayload = ticketTypes.map((t) => {
+        const originalQuantity = t.originalQuantity ?? t.quantity;
+        const originalAvailable = t.originalAvailable ?? t.quantity;
+        const booked = originalQuantity - originalAvailable;
+        const newQuantity = Number(t.quantity);
+        const newAvailable = Math.max(0, newQuantity - booked);
+
+        const item = {
+          name: t.name,
+          price: Number(t.price),
+          quantity: newQuantity,
+          available: newAvailable,
+        };
+
+        // ΜΟΝΟ τα υπάρχοντα έχουν pk
+        if (t.pk != null) item.pk = t.pk;
+
+        return item;
+      });
+
+      // Photos → τα υπάρχοντα έχουν `pk`, τα νέα έχουν `file` + `name`
+      const photoPayload = photos.map((p) => {
+        if (p.pk != null) {
+          return { pk: p.pk, name: p.name, caption: '' };
+        }
+        return { file: p.file, name: p.name, caption: '' };
+      });
 
       const payload = {
         ...formData,
+        start_datetime: startStr,
+        end_datetime: endStr,
         title: formData.title.trim(),
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
@@ -399,23 +464,7 @@ const EditEvent = () => {
           first_name: user?.first_name,
           last_name: user?.last_name
         },
-        ticket_types: ticketTypes.map((t) => {
-          const originalQuantity = t.originalQuantity ?? t.quantity;
-          const originalAvailable = t.originalAvailable ?? t.quantity;
-          const booked = originalQuantity - originalAvailable;
-          const newQuantity = Number(t.quantity);
-
-          // available_new = quantity_new - booked
-          const newAvailable = Math.max(0, newQuantity - booked);
-
-          return {
-            ticket_type_id: t.id,
-            name: t.name,
-            price: Number(t.price),
-            quantity: newQuantity,
-            available: newAvailable,
-          };
-        }),
+        ticket_types: ticketPayload,
         photos: photoPayload,
       };
 
@@ -434,14 +483,12 @@ const EditEvent = () => {
   // ============================================
   const renderStepper = () => {
     const displayStep = isPreview ? 4 : currentStep;
-
     return (
       <div className="stepper">
         {STEPS.map((step, idx) => {
           const isActive = !isPreview && step.id === currentStep;
           const isCompleted = isPreview || step.id < displayStep;
           const isClickable = isPreview || step.id < currentStep;
-
           return (
             <React.Fragment key={step.id}>
               <div
@@ -464,324 +511,204 @@ const EditEvent = () => {
     if (!dateString) return '—';
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return '—';
-    return date.toLocaleDateString('en-US', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }) + ' ' + date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = date.getFullYear();
+    const hh = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
   // ============================================
   // RENDER STEP 1
   // ============================================
-  const renderStep1 = () => (
-    <div className="step-content">
-      <h2 className="step-title">Event Details</h2>
+  const renderStep1 = () => {
+    const selectableCategories = availableCategories.filter(
+      cat => !formData.categories.includes(cat.name)
+    );
 
-      <div className="step-grid">
-        <div className="step-column">
-          <div className="form-row">
-            <label>ID:</label>
-            <input
-              type="text"
-              name="event_id"
-              value={formData.event_id || 'Auto-generated'}
-              disabled
-              className="input-disabled"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Title:</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Title"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Type:</label>
-            <input
-              type="text"
-              name="event_type"
-              value={formData.event_type}
-              onChange={handleChange}
-              placeholder="Type"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Venue:</label>
-            <input
-              type="text"
-              name="venue"
-              value={formData.venue}
-              onChange={handleChange}
-              placeholder="Venue"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Address:</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Address"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>City:</label>
-            <input
-              type="text"
-              name="city"
-              value={formData.city}
-              onChange={handleChange}
-              placeholder="City"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Country:</label>
-            <input
-              type="text"
-              name="country"
-              value={formData.country}
-              onChange={handleChange}
-              placeholder="Country"
-            />
-          </div>
-
-          <div className="form-row">
-            <label>Capacity:</label>
-            <input
-              type="number"
-              name="capacity"
-              value={formData.capacity}
-              onChange={handleCapacityChange}
-              min="1"
-              placeholder="150"
-            />
-          </div>
-        </div>
-
-        <div className="step-column">
-          <div className="form-row two-inputs">
-            <label>Latitude:</label>
-            <input
-              type="text"
-              name="latitude"
-              value={formData.latitude}
-              onChange={handleChange}
-              placeholder="Latitude"
-            />
-          </div>
-
-          <div className="form-row two-inputs">
-            <label>Longitude:</label>
-            <input
-              type="text"
-              name="longitude"
-              value={formData.longitude}
-              onChange={handleChange}
-              placeholder="Longitude"
-            />
-          </div>
-
-          <div className="datetime-section">
-            <div className="datetime-label">Date and Time:</div>
-
-            <div className="form-row date-row">
-              <label>START:</label>
-              <input
-                type="datetime-local"
-                name="start_datetime"
-                value={formData.start_datetime}
-                onChange={handleChange}
-                className="datetime-input"
-              />
-            </div>
-
-            <div className="form-row date-row">
-              <label>END:</label>
-              <input
-                type="datetime-local"
-                name="end_datetime"
-                value={formData.end_datetime}
-                onChange={handleChange}
-                className="datetime-input"
-              />
-            </div>
-          </div>
-
-          <div className="categories-section">
+    return (
+      <div className="step-content">
+        <h2 className="step-title">Event Details</h2>
+        <div className="step-grid">
+          <div className="step-column">
             <div className="form-row">
-              <label>Category:</label>
-              <div className="category-input-wrapper">
-                <input
-                  type="text"
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  onKeyDown={handleCategoryKeyDown}
-                  placeholder="Category"
-                />
-              </div>
+              <label>Title:</label>
+              <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Title" />
             </div>
-
-            {formData.categories.map((cat, idx) => (
-              <div key={idx} className="category-tag-row">
-                <div className="form-row category-display">
-                  <label>Category:</label>
-                  <div className="category-tag">
-                    <span>{cat}</span>
-                    <button
-                      type="button"
-                      className="btn-remove-category"
-                      onClick={() => handleRemoveCategory(cat)}
-                    >
-                      <CloseIcon />
-                    </button>
-                  </div>
+            <div className="form-row">
+              <label>Type:</label>
+              <select name="event_type" value={formData.event_type} onChange={handleChange} className="category-select">
+                <option value="">Select event type...</option>
+                {EVENT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>{type.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row">
+              <label>Venue:</label>
+              <input type="text" name="venue" value={formData.venue} onChange={handleChange} placeholder="Venue" />
+            </div>
+            <div className="form-row">
+              <label>Address:</label>
+              <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
+            </div>
+            <div className="form-row">
+              <label>City:</label>
+              <input type="text" name="city" value={formData.city} onChange={handleChange} placeholder="City" />
+            </div>
+            <div className="form-row">
+              <label>Country:</label>
+              <input type="text" name="country" value={formData.country} onChange={handleChange} placeholder="Country" />
+            </div>
+            <div className="form-row">
+              <label>Capacity:</label>
+              <input type="number" name="capacity" value={formData.capacity} onChange={handleCapacityChange} min="1" placeholder="150" />
+            </div>
+          </div>
+          <div className="step-column">
+            <div className="form-row two-inputs">
+              <label>Latitude:</label>
+              <input type="text" name="latitude" value={formData.latitude} onChange={handleChange} placeholder="Latitude" />
+            </div>
+            <div className="form-row two-inputs">
+              <label>Longitude:</label>
+              <input type="text" name="longitude" value={formData.longitude} onChange={handleChange} placeholder="Longitude" />
+            </div>
+            <div className="datetime-section">
+              <div className="datetime-label">Date and Time:</div>
+              <div className="form-row date-row">
+                <label>START:</label>
+                <div className="datetime-split">
+                  <input type="date" value={startParts.date} onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)} className="datetime-input" />
+                  <select value={startParts.hour} onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
+                    <option value="">--</option>
+                    {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                  <span className="datetime-colon">:</span>
+                  <select value={startParts.minute} onChange={(e) => handleDateTimeChange('start_datetime', 'minute', e.target.value)} className="datetime-input datetime-select">
+                    <option value="">--</option>
+                    {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
                 </div>
               </div>
-            ))}
-
-            <div className="add-category-wrapper">
-              <button
-                type="button"
-                className="btn-add-category"
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim()}
-              >
-                Add Category
-              </button>
+              <div className="form-row date-row">
+                <label>END:</label>
+                <div className="datetime-split">
+                  <input type="date" value={endParts.date} onChange={(e) => handleDateTimeChange('end_datetime', 'date', e.target.value)} className="datetime-input" />
+                  <select value={endParts.hour} onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
+                    <option value="">--</option>
+                    {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+                  </select>
+                  <span className="datetime-colon">:</span>
+                  <select value={endParts.minute} onChange={(e) => handleDateTimeChange('end_datetime', 'minute', e.target.value)} className="datetime-input datetime-select">
+                    <option value="">--</option>
+                    {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="categories-section">
+              <div className="form-row">
+                <label>Category:</label>
+                <div className="category-input-wrapper">
+                  <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="category-select" disabled={loadingCategories || selectableCategories.length === 0}>
+                    <option value="">
+                      {loadingCategories ? 'Loading categories...' : selectableCategories.length === 0 ? 'All categories added' : 'Select a category...'}
+                    </option>
+                    {selectableCategories.map(cat => (
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {formData.categories.map((cat, idx) => (
+                <div key={idx} className="category-tag-row">
+                  <div className="form-row category-display">
+                    <label>Category:</label>
+                    <div className="category-tag">
+                      <span>{cat}</span>
+                      <button type="button" className="btn-remove-category" onClick={() => handleRemoveCategory(cat)}>
+                        <CloseIcon />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div className="add-category-wrapper">
+                <button type="button" className="btn-add-category" onClick={handleAddCategory} disabled={!newCategory.trim()}>
+                  Add Category
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // ============================================
   // RENDER STEP 2
   // ============================================
   const renderStep2 = () => {
-    const totalTickets = ticketTypes.reduce(
-      (sum, t) => sum + (Number(t.quantity) || 0),
-      0
-    );
+    const totalTickets = ticketTypes.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
     const remaining = formData.capacity - totalTickets;
     const isOverCapacity = remaining < 0;
 
     return (
       <div className="step-content">
         <h2 className="step-title">Ticket Types</h2>
-
         <div className={`capacity-info ${isOverCapacity ? 'over' : ''}`}>
           <span>Capacity: <strong>{formData.capacity}</strong></span>
           <span className="capacity-sep">•</span>
           <span>Tickets allocated: <strong>{totalTickets}</strong></span>
           <span className="capacity-sep">•</span>
           <span className={isOverCapacity ? 'capacity-error' : 'capacity-ok'}>
-            {isOverCapacity
-              ? `Over by ${Math.abs(remaining)}`
-              : `Remaining: ${remaining}`}
+            {isOverCapacity ? `Over by ${Math.abs(remaining)}` : `Remaining: ${remaining}`}
           </span>
         </div>
-
         <div className="ticket-types-list">
           {ticketTypes.map((ticket, index) => (
             <div key={index} className="ticket-type-row">
               <div className="ticket-field id-field">
                 <label>ID:</label>
-                <input
-                  type="text"
-                  value={ticket.id}
-                  disabled
-                  className="input-disabled"
-                />
+                <input type="text" value={ticket.id} disabled className="input-disabled" />
               </div>
-
               <div className="ticket-field name-field">
                 <label>Name:</label>
-                <select
-                  value={ticket.name}
-                  onChange={(e) => handleTicketChange(index, 'name', e.target.value)}
-                  className="ticket-select"
-                >
-                  <option value="Regular">Regular</option>
-                  <option value="VIP">VIP</option>
-                </select>
+                <input type="text" value={ticket.name} onChange={(e) => handleTicketChange(index, 'name', e.target.value)} placeholder="e.g. Regular, VIP..." />
               </div>
-
               <div className="ticket-field">
                 <label>Price:</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={ticket.price}
-                  onChange={(e) => handleTicketChange(index, 'price', e.target.value)}
-                  placeholder="20.00"
-                />
+                <input type="number" min="0" step="0.01" value={ticket.price} onChange={(e) => handleTicketChange(index, 'price', e.target.value)} placeholder="20.00" />
               </div>
-
               <div className="ticket-field">
                 <label>Quantity:</label>
-                <input
-                  type="number"
-                  min="1"
-                  value={ticket.quantity}
-                  onChange={(e) => handleTicketChange(index, 'quantity', e.target.value)}
-                  placeholder="50"
-                />
+                <input type="number" min="1" value={ticket.quantity} onChange={(e) => handleTicketChange(index, 'quantity', e.target.value)} placeholder="50" />
               </div>
-
               <div className="ticket-field">
                 <label>Available:</label>
                 <input
                   type="number"
                   value={(() => {
-                    const originalQuantity = ticket.originalQuantity ?? ticket.quantity;
-                    const originalAvailable = ticket.originalAvailable ?? ticket.quantity;
-                    const booked = originalQuantity - originalAvailable;
-                    return Math.max(0, Number(ticket.quantity) - booked);
+                    const oq = ticket.originalQuantity ?? ticket.quantity;
+                    const oa = ticket.originalAvailable ?? ticket.quantity;
+                    return Math.max(0, Number(ticket.quantity) - (oq - oa));
                   })()}
                   disabled
                   className="input-disabled"
                 />
               </div>
-
               {ticketTypes.length > 1 && (
-                <button
-                  type="button"
-                  className="btn-remove-ticket"
-                  onClick={() => handleRemoveTicketType(index)}
-                  title="Remove ticket type"
-                >
+                <button type="button" className="btn-remove-ticket" onClick={() => handleRemoveTicketType(index)} title="Remove ticket type">
                   <CloseIcon />
                 </button>
               )}
             </div>
           ))}
         </div>
-
         <div className="add-ticket-wrapper">
-          <button
-            type="button"
-            className="btn-add-ticket"
-            onClick={handleAddTicketType}
-            disabled={remaining <= 0}
-            title={remaining <= 0 ? 'Capacity is full' : 'Add another ticket type'}
-          >
+          <button type="button" className="btn-add-ticket" onClick={handleAddTicketType} disabled={remaining <= 0}>
             Add Ticket Type
           </button>
         </div>
@@ -800,57 +727,28 @@ const EditEvent = () => {
     return (
       <div className="step-content">
         <h2 className="step-title">Event Info</h2>
-
         <div className="event-info-grid">
           <div className="event-info-left">
             <div className="form-row">
               <label>Organizer:</label>
-              <input
-                type="text"
-                value={organizerName}
-                disabled
-                className="input-disabled"
-              />
+              <input type="text" value={organizerName} disabled className="input-disabled" />
             </div>
-
             <div className="description-section">
               <label className="description-label">Description:</label>
               <div className="description-wrapper">
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))}
-                  placeholder="Write a description for your event..."
-                  className="description-textarea"
-                  maxLength={MAX_DESCRIPTION}
-                />
-                <div className="char-counter">
-                  {description.length} / {MAX_DESCRIPTION}
-                </div>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value.slice(0, MAX_DESCRIPTION))} placeholder="Write a description..." className="description-textarea" maxLength={MAX_DESCRIPTION} />
+                <div className="char-counter">{description.length} / {MAX_DESCRIPTION}</div>
               </div>
             </div>
           </div>
-
           <div className="event-info-right">
             <div className="media-header">
               <label className="media-label">Media / Photo:</label>
-              <button
-                type="button"
-                className="btn-choose-file"
-                onClick={handleChooseFileClick}
-                disabled={photos.length >= MAX_PHOTOS}
-              >
+              <button type="button" className="btn-choose-file" onClick={handleChooseFileClick} disabled={photos.length >= MAX_PHOTOS}>
                 Choose File
               </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileSelect}
-                style={{ display: 'none' }}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} style={{ display: 'none' }} />
             </div>
-
             <div className="media-list-wrapper">
               {photos.length === 0 ? (
                 <div className="media-empty">
@@ -860,30 +758,17 @@ const EditEvent = () => {
               ) : (
                 <div className="media-list">
                   {photos.map((photo) => (
-                    <div key={photo.id} className="media-item">
-                      <img
-                        src={photo.url}
-                        alt={photo.name}
-                        className="media-thumb"
-                      />
-                      <span className="media-name" title={photo.name}>
-                        {photo.name}
-                      </span>
-                      <button
-                        type="button"
-                        className="btn-remove-photo"
-                        onClick={() => handleRemovePhoto(photo.id)}
-                        title="Remove"
-                      >
+                    <div key={photo.pk ?? photo.url} className="media-item">
+                      <img src={photo.url} alt={photo.name} className="media-thumb" />
+                      <span className="media-name" title={photo.name}>{photo.name}</span>
+                      <button type="button" className="btn-remove-photo" onClick={() => handleRemovePhoto(photo.pk ?? photo.url)} title="Remove">
                         <CloseIcon />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-              <div className="media-counter">
-                {photos.length} / {MAX_PHOTOS}
-              </div>
+              <div className="media-counter">{photos.length} / {MAX_PHOTOS}</div>
             </div>
           </div>
         </div>
@@ -899,79 +784,34 @@ const EditEvent = () => {
       ? `${user.first_name} ${user.last_name}`
       : user?.username || 'Organizer';
 
+    const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+    const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
     return (
       <div className="preview-content">
         <section className="preview-section">
           <h2 className="preview-section-title">Event Details</h2>
           <div className="preview-details-grid">
             <div className="preview-col">
-              <div className="preview-row">
-                <span className="preview-label">ID:</span>
-                <span className="preview-value">{formData.event_id || 'Default'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Title:</span>
-                <span className="preview-value">{formData.title || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Type:</span>
-                <span className="preview-value">{formData.event_type || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Capacity:</span>
-                <span className="preview-value">{formData.capacity}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Category:</span>
-                <span className="preview-value">
-                  {formData.categories.length > 0
-                    ? formData.categories.join(', ')
-                    : '—'}
-                </span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Title:</span><span className="preview-value">{formData.title || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Type:</span><span className="preview-value">{getEventTypeLabel(formData.event_type)}</span></div>
+              <div className="preview-row"><span className="preview-label">Capacity:</span><span className="preview-value">{formData.capacity}</span></div>
+              <div className="preview-row"><span className="preview-label">Category:</span><span className="preview-value">{formData.categories.length > 0 ? formData.categories.join(', ') : '—'}</span></div>
             </div>
-
             <div className="preview-col">
-              <div className="preview-row">
-                <span className="preview-label">Venue:</span>
-                <span className="preview-value">{formData.venue || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Address:</span>
-                <span className="preview-value">{formData.address || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">City:</span>
-                <span className="preview-value">{formData.city || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Country:</span>
-                <span className="preview-value">{formData.country || '—'}</span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Venue:</span><span className="preview-value">{formData.venue || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Address:</span><span className="preview-value">{formData.address || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">City:</span><span className="preview-value">{formData.city || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Country:</span><span className="preview-value">{formData.country || '—'}</span></div>
             </div>
-
             <div className="preview-col">
               <div className="preview-row-inline">
-                <div className="preview-row-mini">
-                  <span className="preview-label">Latitude:</span>
-                  <span className="preview-value">{formData.latitude || '—'}</span>
-                </div>
-                <div className="preview-row-mini">
-                  <span className="preview-label">Longitude:</span>
-                  <span className="preview-value">{formData.longitude || '—'}</span>
-                </div>
+                <div className="preview-row-mini"><span className="preview-label">Latitude:</span><span className="preview-value">{formData.latitude || '—'}</span></div>
+                <div className="preview-row-mini"><span className="preview-label">Longitude:</span><span className="preview-value">{formData.longitude || '—'}</span></div>
               </div>
-              <div className="preview-row">
-                <span className="preview-label">Date and Time:</span>
-              </div>
-              <div className="preview-row preview-row-indent">
-                <span className="preview-label">Start:</span>
-                <span className="preview-value">{formatDateTime(formData.start_datetime)}</span>
-              </div>
-              <div className="preview-row preview-row-indent">
-                <span className="preview-label">End:</span>
-                <span className="preview-value">{formatDateTime(formData.end_datetime)}</span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Date and Time:</span></div>
+              <div className="preview-row preview-row-indent"><span className="preview-label">Start:</span><span className="preview-value">{formatDateTime(startStr)}</span></div>
+              <div className="preview-row preview-row-indent"><span className="preview-label">End:</span><span className="preview-value">{formatDateTime(endStr)}</span></div>
             </div>
           </div>
         </section>
@@ -981,24 +821,11 @@ const EditEvent = () => {
           <div className="preview-tickets">
             {ticketTypes.map((t, idx) => (
               <div key={idx} className="preview-ticket-row">
-                <div className="preview-ticket-field">
-                  <span className="preview-label">ID:</span>
-                  <span className="preview-value">{t.id}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Name:</span>
-                  <span className="preview-value">{t.name}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Price:</span>
-                  <span className="preview-value">${Number(t.price).toFixed(2)}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Quantity:</span>
-                  <span className="preview-value">{t.quantity}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Available:</span>
+                <div className="preview-ticket-field"><span className="preview-label">ID:</span><span className="preview-value">{t.id}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Name:</span><span className="preview-value">{t.name}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Price:</span><span className="preview-value">${Number(t.price).toFixed(2)}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Quantity:</span><span className="preview-value">{t.quantity}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Available:</span>
                   <span className="preview-value">
                     {(() => {
                       const oq = t.originalQuantity ?? t.quantity;
@@ -1016,18 +843,12 @@ const EditEvent = () => {
           <h2 className="preview-section-title">Event Info</h2>
           <div className="preview-info-grid">
             <div className="preview-info-left">
-              <div className="preview-row">
-                <span className="preview-label">Organizer:</span>
-                <span className="preview-value">{organizerName}</span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Organizer:</span><span className="preview-value">{organizerName}</span></div>
               <div className="preview-description">
                 <span className="preview-label">Description:</span>
-                <p className="preview-description-text">
-                  {description || 'No description provided.'}
-                </p>
+                <p className="preview-description-text">{description || 'No description provided.'}</p>
               </div>
             </div>
-
             <div className="preview-info-right">
               <span className="preview-label">Media / Photo:</span>
               {photos.length === 0 ? (
@@ -1035,7 +856,7 @@ const EditEvent = () => {
               ) : (
                 <div className="preview-photo-list">
                   {photos.map((p) => (
-                    <div key={p.id} className="preview-photo-item">
+                    <div key={p.pk ?? p.url} className="preview-photo-item">
                       <img src={p.url} alt={p.name} className="preview-photo-thumb" />
                       <span className="preview-photo-name">{p.name}</span>
                     </div>
@@ -1069,28 +890,16 @@ const EditEvent = () => {
     <div className="create-event-page">
       <div className="create-event-container">
         <div className="create-event-header">
-          <button className="btn-back" onClick={handleBack}>
-            <ArrowBackIcon />
-          </button>
+          <button className="btn-back" onClick={handleBack}><ArrowBackIcon /></button>
           <h1>{isPreview ? 'Preview Changes' : 'Edit Event'}</h1>
-
           {isPreview && (
-            <button
-              className="btn-edit-preview"
-              onClick={handleEditFromPreview}
-            >
-              <EditIcon /> Edit
-            </button>
+            <button className="btn-edit-preview" onClick={handleEditFromPreview}><EditIcon /> Edit</button>
           )}
         </div>
 
         {renderStepper()}
 
-        {error && (
-          <div className="create-event-error">
-            {error}
-          </div>
-        )}
+        {error && <div className="create-event-error">{error}</div>}
 
         <div className="step-content-wrapper">
           {!isPreview && currentStep === 1 && renderStep1()}
@@ -1102,29 +911,12 @@ const EditEvent = () => {
         <div className="create-event-actions">
           {isPreview && (
             <>
-              <button
-                type="button"
-                className="btn-cancel-preview"
-                onClick={() => navigate(`/profile/events/${id}`)}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
+              <button type="button" className="btn-cancel-preview" onClick={() => navigate(`/profile/events/${id}`)} disabled={submitting}>Cancel</button>
               <div className="actions-right">
-                <button
-                  type="button"
-                  className="btn-publish"
-                  onClick={() => handleSubmit(true)}
-                  disabled={submitting}
-                >
+                <button type="button" className="btn-publish" onClick={() => handleSubmit(true)} disabled={submitting}>
                   {submitting ? 'Updating...' : 'Submit'}
                 </button>
-                <button
-                  type="button"
-                  className="btn-save-draft"
-                  onClick={() => handleSubmit(false)}
-                  disabled={submitting}
-                >
+                <button type="button" className="btn-save-draft" onClick={() => handleSubmit(false)} disabled={submitting}>
                   {submitting ? 'Saving...' : 'Save as Draft'}
                 </button>
               </div>
@@ -1134,33 +926,13 @@ const EditEvent = () => {
           {!isPreview && (
             <>
               {currentStep > 1 && (
-                <button
-                  type="button"
-                  className="btn-prev"
-                  onClick={handleBack}
-                  disabled={submitting}
-                >
-                  Previous
-                </button>
+                <button type="button" className="btn-prev" onClick={handleBack} disabled={submitting}>Previous</button>
               )}
-
               <div className="actions-right">
                 {currentStep < 3 ? (
-                  <button
-                    type="button"
-                    className="btn-next"
-                    onClick={handleNext}
-                  >
-                    Next
-                  </button>
+                  <button type="button" className="btn-next" onClick={handleNext}>Next</button>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn-next"
-                    onClick={handleNext}
-                  >
-                    Preview
-                  </button>
+                  <button type="button" className="btn-next" onClick={handleNext}>Preview</button>
                 )}
               </div>
             </>
