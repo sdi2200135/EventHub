@@ -32,14 +32,6 @@ const EVENT_TYPES = [
 const getEventTypeLabel = (value) =>
   EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
 
-// "2025-06-15T20:30" → { date: "2025-06-15", hour: "20", minute: "30" }
-const splitDateTime = (value) => {
-  if (!value) return { date: '', hour: '', minute: '' };
-  const [date, time] = value.split('T');
-  const [hour = '', minute = ''] = (time || '').split(':');
-  return { date: date || '', hour, minute: minute.slice(0, 2) };
-};
-
 // { date, hour, minute } → "2025-06-15T20:30"
 const joinDateTime = (date, hour, minute) => {
   if (!date || !hour || !minute) return '';
@@ -73,10 +65,13 @@ const CreateEvent = () => {
     capacity: 150,
     latitude: '',
     longitude: '',
-    start_datetime: '',
-    end_datetime: '',
     categories: [],
   });
+
+  // Ξεχωριστά state για date/time parts, ώστε να μπορούν να
+  // συμπληρωθούν ανεξάρτητα. Το join γίνεται στο submit.
+  const [startParts, setStartParts] = useState({ date: '', hour: '', minute: '' });
+  const [endParts,   setEndParts]   = useState({ date: '', hour: '', minute: '' });
 
   const [newCategory, setNewCategory] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
@@ -127,16 +122,13 @@ const CreateEvent = () => {
     setFormData(prev => ({ ...prev, capacity: value }));
   };
 
-  // Split date + hour + minute handler
+  // Split date + hour + minute handler — ενημερώνει το σωστό state
   const handleDateTimeChange = (field, part, value) => {
-    setFormData(prev => {
-      const current = splitDateTime(prev[field]);
-      const updated = { ...current, [part]: value };
-      return {
-        ...prev,
-        [field]: joinDateTime(updated.date, updated.hour, updated.minute)
-      };
-    });
+    if (field === 'start_datetime') {
+      setStartParts(prev => ({ ...prev, [part]: value }));
+    } else {
+      setEndParts(prev => ({ ...prev, [part]: value }));
+    }
   };
 
   const handleAddCategory = () => {
@@ -248,16 +240,17 @@ const CreateEvent = () => {
     if (!formData.capacity || formData.capacity <= 0) return 'Capacity must be > 0';
     if (formData.categories.length === 0) return 'Add at least one category';
 
-    const startParts = splitDateTime(formData.start_datetime);
-    const endParts = splitDateTime(formData.end_datetime);
-
     if (!startParts.date || !startParts.hour || !startParts.minute) {
       return 'Start date and time are required';
     }
     if (!endParts.date || !endParts.hour || !endParts.minute) {
       return 'End date and time are required';
     }
-    if (new Date(formData.start_datetime) >= new Date(formData.end_datetime)) {
+
+    const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+    const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
+    if (new Date(startStr) >= new Date(endStr)) {
       return 'End date must be after start date';
     }
     return null;
@@ -356,8 +349,13 @@ const CreateEvent = () => {
 
     setSubmitting(true);
     try {
+      const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+      const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
       const payload = {
         ...formData,
+        start_datetime: startStr,
+        end_datetime: endStr,
         title: formData.title.trim(),
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
@@ -447,9 +445,6 @@ const CreateEvent = () => {
     const selectableCategories = availableCategories.filter(
       cat => !formData.categories.includes(cat.name)
     );
-
-    const startParts = splitDateTime(formData.start_datetime);
-    const endParts = splitDateTime(formData.end_datetime);
 
     return (
       <div className="step-content">
@@ -740,14 +735,13 @@ const CreateEvent = () => {
 
               <div className="ticket-field name-field">
                 <label>Name:</label>
-                <select
+                <input
+                  type="text"
                   value={ticket.name}
                   onChange={(e) => handleTicketChange(index, 'name', e.target.value)}
+                  placeholder="e.g. Regular, VIP, Student..."
                   className="ticket-select"
-                >
-                  <option value="Regular">Regular</option>
-                  <option value="VIP">VIP</option>
-                </select>
+                />
               </div>
 
               <div className="ticket-field">
@@ -922,6 +916,9 @@ const CreateEvent = () => {
       ? `${user.first_name} ${user.last_name}`
       : user?.username || 'Organizer';
 
+    const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
+    const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
+
     return (
       <div className="preview-content">
         <section className="preview-section">
@@ -988,11 +985,11 @@ const CreateEvent = () => {
               </div>
               <div className="preview-row preview-row-indent">
                 <span className="preview-label">Start:</span>
-                <span className="preview-value">{formatDateTime(formData.start_datetime)}</span>
+                <span className="preview-value">{formatDateTime(startStr)}</span>
               </div>
               <div className="preview-row preview-row-indent">
                 <span className="preview-label">End:</span>
-                <span className="preview-value">{formatDateTime(formData.end_datetime)}</span>
+                <span className="preview-value">{formatDateTime(endStr)}</span>
               </div>
             </div>
           </div>
