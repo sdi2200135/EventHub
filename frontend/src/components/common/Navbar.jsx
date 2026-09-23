@@ -58,7 +58,6 @@ const Navbar = () => {
   }, []);
 
   const isSignInPage = location.pathname === '/signin';
-  const isForgotPwdPage = location.pathname === '/signin/forgot-password';
   const isSignUpPage = location.pathname === '/signup';
 
   const handleLogout = () => {
@@ -116,7 +115,7 @@ const Navbar = () => {
             Home Page
           </NavLink>
 
-          {!isSignInPage && !isForgotPwdPage && !isSignUpPage && (
+          {!isSignInPage && !isSignUpPage && (
             <NavLink
               to="/events"
               className={({ isActive }) =>

@@ -1,10 +1,9 @@
 /* src/pages/auth/auth.css */
-/* Shared styles για SignIn, SignUp, ForgotPwd */
+/* Shared styles για SignIn, SignUp */
 
 /* ============================================
    CONTAINERS
    ============================================ */
-.forgot-container,
 .login-container,
 .signup-container {
   display: flex;
@@ -18,7 +17,6 @@
 /* ============================================
    CARDS
    ============================================ */
-.forgot-card,
 .login-card,
 .signup-card {
   background: #181818;
@@ -28,14 +26,12 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-.forgot-card { max-width: 480px; padding: 3rem 2.5rem; }
 .login-card  { max-width: 500px; padding: 3rem 2.5rem; }
 .signup-card { max-width: 560px; padding: 2rem 2.5rem; }
 
 /* ============================================
    TITLES & SUBTITLES
    ============================================ */
-.forgot-title,
 .login-title,
 .signup-title {
   font-weight: 600;
@@ -43,20 +39,16 @@
   text-align: center;
 }
 
-.forgot-title,
 .login-title {
   font-size: 1.8rem;
+  margin-bottom: 0.25rem;
 }
-
-.forgot-title { margin-bottom: 0.5rem; }
-.login-title  { margin-bottom: 0.25rem; }
 
 .signup-title {
   font-size: 1.6rem;
   margin-bottom: 1.25rem;
 }
 
-.forgot-subtitle,
 .login-subtitle {
   font-size: 0.95rem;
   color: #B0B0B0;
@@ -64,12 +56,9 @@
   margin-bottom: 1.5rem;
 }
 
-.forgot-subtitle { line-height: 1.6; }
-
 /* ============================================
    SUCCESS MESSAGES
    ============================================ */
-.forgot-success,
 .signup-success {
   background: rgba(26, 120, 46, 0.15);
   border: 1px solid #1A782E;
@@ -77,14 +66,6 @@
   border-radius: 0.5rem;
   font-size: 0.85rem;
   text-align: center;
-}
-
-.forgot-success {
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.signup-success {
   padding: 0.6rem 1rem;
   margin-bottom: 1rem;
 }
@@ -99,7 +80,6 @@
 /* ============================================
    ERROR MESSAGES
    ============================================ */
-.forgot-error,
 .login-error,
 .signup-error {
   background: rgba(152, 24, 24, 0.15);
@@ -110,7 +90,6 @@
   text-align: center;
 }
 
-.forgot-error,
 .login-error {
   padding: 0.75rem 1rem;
   margin-bottom: 1.25rem;
@@ -124,7 +103,6 @@
 /* ============================================
    FORMS
    ============================================ */
-.forgot-form,
 .login-form {
   display: flex;
   flex-direction: column;
@@ -208,7 +186,6 @@
 /* ============================================
    BUTTONS
    ============================================ */
-.forgot-btn,
 .login-btn,
 .signup-btn {
   background: #203855;
@@ -226,7 +203,6 @@
   align-self: center;
 }
 
-.forgot-btn,
 .login-btn {
   min-width: 120px;
 }
@@ -235,13 +211,11 @@
   min-width: 130px;
 }
 
-.forgot-btn:hover,
 .login-btn:hover,
 .signup-btn:hover {
   background: #2a4a6a;
 }
 
-.forgot-btn:active,
 .signup-btn:active {
   transform: scale(0.97);
 }
@@ -250,7 +224,6 @@
   transform: scale(0.98);
 }
 
-.forgot-btn:disabled,
 .login-btn:disabled,
 .signup-btn:disabled {
   opacity: 0.7;
@@ -260,7 +233,6 @@
 /* ============================================
    FOOTERS
    ============================================ */
-.forgot-footer,
 .login-footer {
   margin-top: 1.5rem;
   text-align: center;
@@ -274,7 +246,6 @@
   text-align: center;
 }
 
-.forgot-footer p,
 .login-footer p {
   font-size: 0.9rem;
   color: #B0B0B0;
@@ -288,8 +259,6 @@
 /* ============================================
    LINKS
    ============================================ */
-.forgot-footer .link-signin,
-.forgot-footer .link-signup,
 .login-footer .link-signup,
 .signup-footer .link-signin {
   color: #D9D9D9;
@@ -298,21 +267,8 @@
   transition: color 0.2s;
 }
 
-.forgot-footer .link-signin:hover,
-.forgot-footer .link-signup:hover,
 .login-footer .link-signup:hover,
 .signup-footer .link-signin:hover {
-  color: #4071ae;
-}
-
-.login-footer .link-forgot {
-  font-size: 0.8rem;
-  color: #B0B0B0;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.login-footer .link-forgot:hover {
   color: #4071ae;
 }
 
@@ -350,7 +306,6 @@
 }
 
 @media (max-width: 480px) {
-  .forgot-card,
   .login-card {
     padding: 2rem 1.5rem;
   }
@@ -359,7 +314,6 @@
     padding: 1rem 0.8rem;
   }
 
-  .forgot-title,
   .login-title {
     font-size: 1.5rem;
   }
@@ -367,12 +321,6 @@
   .login-btn {
     padding: 0.65rem;
     font-size: 0.9rem;
-  }
-
-  .forgot-btn {
-    padding: 0.4rem 1.2rem;
-    font-size: 0.85rem;
-    min-width: 100px;
   }
 }
 
