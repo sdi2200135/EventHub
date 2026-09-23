@@ -247,9 +247,9 @@ export const userService = {
     return await api.post(`/admin/users/${userId}/reject/`);
   },
 
-  exportEvents: async (format, organizerId) => {
+  exportEvents: async (format, organizerId,eventId) => {
     const { data } = await api.get(`/admin/events/export/${format}/`, {
-      params: { organizer: organizerId },
+      params: { organizer: organizerId, event: eventId },
       responseType: 'text',
     });
     return { data };

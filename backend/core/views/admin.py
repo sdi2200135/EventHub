@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, NotFound
 
-from core.models import User
+from core.models import User, Event
 from core.permissions import IsAdmin
 from core.serializers import UserAdminSerializer
 from core.services.event import mark_completed_events
@@ -63,16 +63,30 @@ class EventExportView(APIView):
             if user is None:
                 raise NotFound('User with this id doesn\'t exist')
 
-        # if organizer is none all events
-        data = build_events_data(get_exportable_events(organizer))
+        event_id = request.query_params.get('event')
+        if event_id is not None:
+            try:
+                event_id = int(event_id)
+            except ValueError:
+                raise ValidationError({'event': 'Must be an integer event ID.'})
+            event = Event.objects.filter(pk=event_id).first()
+            if event is None:
+                raise NotFound('Event with this id doesn\'t exist')
+            
+        # organizer or custom event
+        data = build_events_data(get_exportable_events(organizer, event_id))
+
         if file_format == 'xml':
             content, content_type = events_to_xml(data), 'application/xml'
         else:
             content, content_type = events_to_json(data), 'application/json'
 
         response = HttpResponse(content, content_type=f'{content_type}; charset=utf-8')
-        
-        filename = f'events.{file_format}' if organizer is None else f'events_{user.username}.{file_format}'
+
+        if event_id is not None:
+            filename = f'event_{event.event_id}.{file_format}'
+        else:
+            filename = f'events.{file_format}' if organizer is None else f'events_{user.username}.{file_format}'
         # content disposition header so it can work with greek usernames as well
         response['Content-Disposition'] = content_disposition_header(True, filename)
         return response

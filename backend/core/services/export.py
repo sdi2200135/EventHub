@@ -56,7 +56,7 @@ EVENTS_DTD = """
 """
 
 
-def get_exportable_events(user_id=None):
+def get_exportable_events(user_id=None, event_id=None):
     # the DTD asks for at least one Category and one TicketType per event(+), so filter out the ones which don't follow DTD
 
     # if a user id is given return only the ecents of this user as organizer 
@@ -65,7 +65,10 @@ def get_exportable_events(user_id=None):
 
     if user_id is not None:
         events = events.filter(organizer=user_id)
-    
+
+    if event_id is not None:
+        events = events.filter(pk=event_id)
+
     return (
         events
         .distinct()

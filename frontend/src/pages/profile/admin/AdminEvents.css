@@ -429,7 +429,7 @@
   border-top: 1px solid #2A2A2A;
   flex-wrap: wrap;
 }
-
+.btn-modal-export, 
 .btn-modal-exit,
 .btn-modal-cancel,
 .btn-modal-delete {
@@ -445,13 +445,13 @@
   font-family: inherit;
   border: 1px solid;
 }
-
+.btn-modal-export, 
 .btn-modal-exit {
   background: #2A2A2A;
   color: #e0e0e0;
   border-color: #3A3A3A;
 }
-
+.btn-modal-export:hover:not(:disabled), 
 .btn-modal-exit:hover:not(:disabled) { background: #3A3A3A; }
 
 .btn-modal-cancel {
@@ -481,7 +481,6 @@
 .btn-modal-delete svg {
   font-size: 16px !important;
 }
-
 .btn-modal-exit:disabled,
 .btn-modal-cancel:disabled,
 .btn-modal-delete:disabled {
@@ -758,7 +757,7 @@
   .ae-modal-footer {
     flex-direction: column-reverse;
   }
-
+  .btn-modal-export, 
   .btn-modal-exit,
   .btn-modal-cancel,
   .btn-modal-delete {

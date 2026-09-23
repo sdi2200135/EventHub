@@ -74,6 +74,10 @@ const getCategoriesText = (ev) => {
 const getOrganizerUsername = (ev) =>
   ev?.organizer_username || ev?.organizer?.username || '—';
 
+// export can be done only if there is 1+ category and 1+ ticket type as the DTD requires
+const canExportEvent = (ev) =>
+  (ev?.categories?.length ?? 0) > 0 && ev?.min_price != null;
+
 const ExportData = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +160,21 @@ const ExportData = () => {
     } catch (err) {
       console.error('Export events failed:', err);
       alert('Export failed. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportSingle = async (format) => {
+    if (!selectedEvent) return;
+    setExporting(true);
+    try {
+      const response = await userService.exportEvents(format, undefined, selectedEvent.id);
+      const mime = format === 'xml' ? 'application/xml' : 'application/json';
+      downloadFile(response.data, `event_${selectedEvent.event_id}.${format}`, mime);
+    } catch (err) {
+      console.error('Export event failed:', err);
+      alert(err.message || 'Export failed. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -332,6 +351,27 @@ const ExportData = () => {
             </div>
 
             <div className="ae-modal-footer">
+              <button
+                className="btn-modal-export"
+                onClick={() => handleExportSingle('xml')}
+                disabled={exporting || !canExportEvent(selectedEvent)}
+                title={canExportEvent(selectedEvent)
+                  ? 'Export this event as XML'
+                  : 'This event has no ticket type or category, so it cannot be exported'}
+              >
+                <DownloadIcon /> {exporting ? '...' : 'XML'}
+              </button>
+              <button
+                className="btn-modal-export"
+                onClick={() => handleExportSingle('json')}
+                disabled={exporting || !canExportEvent(selectedEvent)}
+                title={canExportEvent(selectedEvent)
+                  ? 'Export this event as JSON'
+                  : 'This event has no ticket type or category, so it cannot be exported'}
+              >
+                <DownloadIcon /> {exporting ? '...' : 'JSON'}
+              </button>
+
               <button
                 className="btn-modal-exit"
                 onClick={() => setSelectedEvent(null)}
