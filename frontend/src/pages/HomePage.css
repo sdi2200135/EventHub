@@ -119,7 +119,7 @@
    DATE PICKER
    ============================================ */
 .react-datepicker-wrapper {
-  flex: 1;
+  flex: 1.6;
   min-width: 0;
 }
 
