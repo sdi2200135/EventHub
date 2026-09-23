@@ -7,6 +7,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import EditIcon from '@mui/icons-material/Edit';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './CreateEvent.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
@@ -31,6 +33,18 @@ const EVENT_TYPES = [
 const getEventTypeLabel = (value) =>
   EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
 
+const dateStrToObj = (dateStr) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+};
+
+const dateObjToStr = (date) => {
+  if (!date) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
 const splitDateTime = (value) => {
   if (!value) return { date: '', hour: '', minute: '' };
   const d = new Date(value);
@@ -50,6 +64,17 @@ const joinDateTime = (date, hour, minute) => {
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+const blockTyping = (e) => {
+  const allowedKeys = [
+    'Tab', 'Escape',
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+    'Home', 'End', 'Enter'
+  ];
+  if (!allowedKeys.includes(e.key)) {
+    e.preventDefault();
+  }
+};
 
 const EditEvent = () => {
   const navigate = useNavigate();
@@ -88,9 +113,6 @@ const EditEvent = () => {
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState([]);
 
-  // ============================================
-  // FETCH AVAILABLE CATEGORIES
-  // ============================================
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -106,9 +128,6 @@ const EditEvent = () => {
     fetchCategories();
   }, []);
 
-  // ============================================
-  // ΦΟΡΤΩΣΗ EVENT
-  // ============================================
   useEffect(() => {
     const loadEvent = async () => {
       setLoading(true);
@@ -137,13 +156,12 @@ const EditEvent = () => {
         setStartParts(splitDateTime(ev.start_datetime));
         setEndParts(splitDateTime(ev.end_datetime));
 
-        // Ticket types — κρατάμε το DB id σε `pk` όπως το περιμένει το syncTicketTypes
         const types = (ev.ticket_types || []).map((t, i) => {
           const quantity = t.quantity ?? t.available ?? 0;
           const available = t.available ?? quantity;
           return {
-            pk: t.id,                               // ← DB pk (για το syncTicketTypes)
-            id: t.ticket_type_id || `T${i + 1}`,    // ← display id (T1, T2)
+            pk: t.id,
+            id: t.ticket_type_id || `T${i + 1}`,
             name: t.name || 'Regular',
             price: t.price ?? 0,
             quantity: quantity,
@@ -160,9 +178,8 @@ const EditEvent = () => {
 
         setDescription(ev.description || '');
 
-        // Photos — κρατάμε το DB id σε `pk`
         const existingPhotos = (ev.photos || []).map((p, i) => ({
-          pk: p.id,                                 // ← DB pk (για το syncEventPhotos)
+          pk: p.id,
           url: p.image,
           name: p.name || p.caption || `photo${i + 1}.png`,
           isExisting: true,
@@ -181,9 +198,6 @@ const EditEvent = () => {
     if (id) loadEvent();
   }, [id]);
 
-  // ============================================
-  // STEP 1 HANDLERS
-  // ============================================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -224,13 +238,9 @@ const EditEvent = () => {
     }));
   };
 
-  // ============================================
-  // STEP 2 HANDLERS
-  // ============================================
   const handleAddTicketType = () => {
     setTicketTypes(prev => {
       const nextId = `T${prev.length + 1}`;
-      // Χωρίς `pk` → νέο ticket type
       return [
         ...prev,
         { id: nextId, name: 'Regular', price: 20, quantity: 50 }
@@ -258,9 +268,6 @@ const EditEvent = () => {
     }));
   };
 
-  // ============================================
-  // STEP 3 HANDLERS
-  // ============================================
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -273,8 +280,7 @@ const EditEvent = () => {
 
     const filesToAdd = files.slice(0, remainingSlots);
     const newPhotos = filesToAdd.map((file, idx) => ({
-      // Χωρίς `pk` → νέο photo
-      file,                                            // ← το πραγματικό File για upload
+      file,
       url: URL.createObjectURL(file),
       name: file.name,
       isExisting: false,
@@ -294,7 +300,6 @@ const EditEvent = () => {
       if (photo?.url && photo.url.startsWith('blob:')) {
         URL.revokeObjectURL(photo.url);
       }
-      // Διώξε με βάση reference ή pk ή url
       return prev.filter(p => p !== photo && p.pk !== photoId);
     });
   };
@@ -303,9 +308,6 @@ const EditEvent = () => {
     fileInputRef.current?.click();
   };
 
-  // ============================================
-  // VALIDATION
-  // ============================================
   const validateStep1 = () => {
     if (!formData.title.trim()) return 'Title is required';
     if (!formData.event_type.trim()) return 'Event Type is required';
@@ -355,9 +357,6 @@ const EditEvent = () => {
     return null;
   };
 
-  // ============================================
-  // NAVIGATION
-  // ============================================
   const handleNext = () => {
     setError('');
     if (currentStep === 1) {
@@ -405,9 +404,6 @@ const EditEvent = () => {
     setCurrentStep(1);
   };
 
-  // ============================================
-  // SUBMIT
-  // ============================================
   const handleSubmit = async (publish = false) => {
     setError('');
     const err1 = validateStep1();
@@ -420,7 +416,6 @@ const EditEvent = () => {
       const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
       const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);
 
-      // Ticket types → στείλε ΟΛΑ τα πεδία (τα syncTicketTypes χρησιμοποιεί `pk`)
       const ticketPayload = ticketTypes.map((t) => {
         const originalQuantity = t.originalQuantity ?? t.quantity;
         const originalAvailable = t.originalAvailable ?? t.quantity;
@@ -435,13 +430,11 @@ const EditEvent = () => {
           available: newAvailable,
         };
 
-        // ΜΟΝΟ τα υπάρχοντα έχουν pk
         if (t.pk != null) item.pk = t.pk;
 
         return item;
       });
 
-      // Photos → τα υπάρχοντα έχουν `pk`, τα νέα έχουν `file` + `name`
       const photoPayload = photos.map((p) => {
         if (p.pk != null) {
           return { pk: p.pk, name: p.name, caption: '' };
@@ -478,9 +471,6 @@ const EditEvent = () => {
     }
   };
 
-  // ============================================
-  // RENDER HELPERS
-  // ============================================
   const renderStepper = () => {
     const displayStep = isPreview ? 4 : currentStep;
     return (
@@ -519,9 +509,6 @@ const EditEvent = () => {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
-  // ============================================
-  // RENDER STEP 1
-  // ============================================
   const renderStep1 = () => {
     const selectableCategories = availableCategories.filter(
       cat => !formData.categories.includes(cat.name)
@@ -580,7 +567,15 @@ const EditEvent = () => {
               <div className="form-row date-row">
                 <label>START:</label>
                 <div className="datetime-split">
-                  <input type="date" value={startParts.date} onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)} className="datetime-input" />
+                  <DatePicker
+                    selected={dateStrToObj(startParts.date)}
+                    onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="datetime-input"
+                    isClearable
+                    onKeyDown={blockTyping}
+                  />
                   <select value={startParts.hour} onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
                     {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
@@ -595,7 +590,15 @@ const EditEvent = () => {
               <div className="form-row date-row">
                 <label>END:</label>
                 <div className="datetime-split">
-                  <input type="date" value={endParts.date} onChange={(e) => handleDateTimeChange('end_datetime', 'date', e.target.value)} className="datetime-input" />
+                  <DatePicker
+                    selected={dateStrToObj(endParts.date)}
+                    onChange={(date) => handleDateTimeChange('end_datetime', 'date', dateObjToStr(date))}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
+                    className="datetime-input"
+                    isClearable
+                    onKeyDown={blockTyping}
+                  />
                   <select value={endParts.hour} onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
                     {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
@@ -647,9 +650,6 @@ const EditEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER STEP 2
-  // ============================================
   const renderStep2 = () => {
     const totalTickets = ticketTypes.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
     const remaining = formData.capacity - totalTickets;
@@ -670,10 +670,6 @@ const EditEvent = () => {
         <div className="ticket-types-list">
           {ticketTypes.map((ticket, index) => (
             <div key={index} className="ticket-type-row">
-              <div className="ticket-field id-field">
-                <label>ID:</label>
-                <input type="text" value={ticket.id} disabled className="input-disabled" />
-              </div>
               <div className="ticket-field name-field">
                 <label>Name:</label>
                 <input type="text" value={ticket.name} onChange={(e) => handleTicketChange(index, 'name', e.target.value)} placeholder="e.g. Regular, VIP..." />
@@ -716,9 +712,6 @@ const EditEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER STEP 3
-  // ============================================
   const renderStep3 = () => {
     const organizerName = user?.first_name && user?.last_name
       ? `${user.first_name} ${user.last_name}`
@@ -776,9 +769,6 @@ const EditEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER PREVIEW
-  // ============================================
   const renderPreview = () => {
     const organizerName = user?.first_name && user?.last_name
       ? `${user.first_name} ${user.last_name}`
@@ -821,7 +811,6 @@ const EditEvent = () => {
           <div className="preview-tickets">
             {ticketTypes.map((t, idx) => (
               <div key={idx} className="preview-ticket-row">
-                <div className="preview-ticket-field"><span className="preview-label">ID:</span><span className="preview-value">{t.id}</span></div>
                 <div className="preview-ticket-field"><span className="preview-label">Name:</span><span className="preview-value">{t.name}</span></div>
                 <div className="preview-ticket-field"><span className="preview-label">Price:</span><span className="preview-value">${Number(t.price).toFixed(2)}</span></div>
                 <div className="preview-ticket-field"><span className="preview-label">Quantity:</span><span className="preview-value">{t.quantity}</span></div>
@@ -870,9 +859,6 @@ const EditEvent = () => {
     );
   };
 
-  // ============================================
-  // LOADING
-  // ============================================
   if (loading) {
     return (
       <div className="create-event-page">
@@ -883,9 +869,6 @@ const EditEvent = () => {
     );
   }
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
   return (
     <div className="create-event-page">
       <div className="create-event-container">

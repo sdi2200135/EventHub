@@ -7,6 +7,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import CheckIcon from '@mui/icons-material/Check';
 import EditIcon from '@mui/icons-material/Edit';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import './CreateEvent.css';
 
 const STEPS = [
@@ -18,7 +20,6 @@ const STEPS = [
 const MAX_DESCRIPTION = 150;
 const MAX_PHOTOS = 20;
 
-// Πρέπει να ταιριάζουν με τα choices του backend model
 const EVENT_TYPES = [
   { value: 'CONCERT',    label: 'Concert' },
   { value: 'SEMINAR',    label: 'Seminar' },
@@ -28,19 +29,42 @@ const EVENT_TYPES = [
   { value: 'OTHER',      label: 'Other' },
 ];
 
-// Helper: μετατρέπει το key (π.χ. 'CONCERT') σε label (π.χ. 'Concert')
 const getEventTypeLabel = (value) =>
   EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
 
-// { date, hour, minute } → "2025-06-15T20:30"
+// "2025-06-15" → Date object (ή null)
+const dateStrToObj = (dateStr) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+};
+
+// Date object → "2025-06-15"
+const dateObjToStr = (date) => {
+  if (!date) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
 const joinDateTime = (date, hour, minute) => {
   if (!date || !hour || !minute) return '';
   return `${date}T${hour}:${minute}`;
 };
 
-// Options για τα dropdowns (24h format)
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
+
+// Επιτρέπει μόνο navigation keys — όχι πληκτρολόγηση
+const blockTyping = (e) => {
+  const allowedKeys = [
+    'Tab', 'Escape',
+    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+    'Home', 'End', 'Enter'
+  ];
+  if (!allowedKeys.includes(e.key)) {
+    e.preventDefault();
+  }
+};
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -52,9 +76,6 @@ const CreateEvent = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // ============================================
-  // STEP 1: EVENT DETAILS STATE
-  // ============================================
   const [formData, setFormData] = useState({
     title: '',
     event_type: '',
@@ -68,8 +89,6 @@ const CreateEvent = () => {
     categories: [],
   });
 
-  // Ξεχωριστά state για date/time parts, ώστε να μπορούν να
-  // συμπληρωθούν ανεξάρτητα. Το join γίνεται στο submit.
   const [startParts, setStartParts] = useState({ date: '', hour: '', minute: '' });
   const [endParts,   setEndParts]   = useState({ date: '', hour: '', minute: '' });
 
@@ -77,22 +96,13 @@ const CreateEvent = () => {
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
-  // ============================================
-  // STEP 2: TICKETS STATE
-  // ============================================
   const [ticketTypes, setTicketTypes] = useState([
     { id: 'T1', name: 'Regular', price: 20, quantity: 50 }
   ]);
 
-  // ============================================
-  // STEP 3: PHOTOS & DESCRIPTION
-  // ============================================
   const [description, setDescription] = useState('');
   const [photos, setPhotos] = useState([]);
 
-  // ============================================
-  // FETCH CATEGORIES FROM BACKEND
-  // ============================================
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
@@ -109,9 +119,6 @@ const CreateEvent = () => {
     fetchCategories();
   }, []);
 
-  // ============================================
-  // STEP 1 HANDLERS
-  // ============================================
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -122,7 +129,6 @@ const CreateEvent = () => {
     setFormData(prev => ({ ...prev, capacity: value }));
   };
 
-  // Split date + hour + minute handler — ενημερώνει το σωστό state
   const handleDateTimeChange = (field, part, value) => {
     if (field === 'start_datetime') {
       setStartParts(prev => ({ ...prev, [part]: value }));
@@ -153,9 +159,6 @@ const CreateEvent = () => {
     }));
   };
 
-  // ============================================
-  // STEP 2 HANDLERS
-  // ============================================
   const handleAddTicketType = () => {
     setTicketTypes(prev => {
       const nextId = `T${prev.length + 1}`;
@@ -186,9 +189,6 @@ const CreateEvent = () => {
     }));
   };
 
-  // ============================================
-  // STEP 3 HANDLERS
-  // ============================================
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -227,9 +227,6 @@ const CreateEvent = () => {
     fileInputRef.current?.click();
   };
 
-  // ============================================
-  // VALIDATION
-  // ============================================
   const validateStep1 = () => {
     if (!formData.title.trim()) return 'Title is required';
     if (!formData.event_type.trim()) return 'Event Type is required';
@@ -272,26 +269,20 @@ const CreateEvent = () => {
     return null;
   };
 
-  // ============================================
-  // NAVIGATION
-  // ============================================
   const handleNext = () => {
     setError('');
-
     if (currentStep === 1) {
       const err = validateStep1();
       if (err) { setError(err); return; }
       setCurrentStep(2);
       return;
     }
-
     if (currentStep === 2) {
       const err = validateStep2();
       if (err) { setError(err); return; }
       setCurrentStep(3);
       return;
     }
-
     if (currentStep === 3) {
       setIsPreview(true);
       return;
@@ -300,13 +291,11 @@ const CreateEvent = () => {
 
   const handleBack = () => {
     setError('');
-
     if (isPreview) {
       setIsPreview(false);
       setCurrentStep(3);
       return;
     }
-
     if (currentStep === 1) {
       navigate('/profile?tab=events');
     } else {
@@ -327,25 +316,12 @@ const CreateEvent = () => {
     setCurrentStep(1);
   };
 
-  // ============================================
-  // SUBMIT
-  // ============================================
   const handleSubmit = async (publish = false) => {
     setError('');
     const err1 = validateStep1();
-    if (err1) {
-      setError(err1);
-      setIsPreview(false);
-      setCurrentStep(1);
-      return;
-    }
+    if (err1) { setError(err1); setIsPreview(false); setCurrentStep(1); return; }
     const err2 = validateStep2();
-    if (err2) {
-      setError(err2);
-      setIsPreview(false);
-      setCurrentStep(2);
-      return;
-    }
+    if (err2) { setError(err2); setIsPreview(false); setCurrentStep(2); return; }
 
     setSubmitting(true);
     try {
@@ -392,19 +368,14 @@ const CreateEvent = () => {
     }
   };
 
-  // ============================================
-  // RENDER HELPERS
-  // ============================================
   const renderStepper = () => {
     const displayStep = isPreview ? 4 : currentStep;
-
     return (
       <div className="stepper">
         {STEPS.map((step, idx) => {
           const isActive = !isPreview && step.id === currentStep;
           const isCompleted = isPreview || step.id < displayStep;
           const isClickable = isPreview || step.id < currentStep;
-
           return (
             <React.Fragment key={step.id}>
               <div
@@ -423,9 +394,6 @@ const CreateEvent = () => {
     );
   };
 
-  // ============================================
-  // FORMAT HELPERS — 24h format, ανεξαρτήτως locale
-  // ============================================
   const formatDateTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
@@ -438,9 +406,6 @@ const CreateEvent = () => {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
-  // ============================================
-  // RENDER STEP 1
-  // ============================================
   const renderStep1 = () => {
     const selectableCategories = availableCategories.filter(
       cat => !formData.categories.includes(cat.name)
@@ -454,179 +419,103 @@ const CreateEvent = () => {
           <div className="step-column">
             <div className="form-row">
               <label>Title:</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="Title"
-              />
+              <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Title" />
             </div>
 
             <div className="form-row">
               <label>Type:</label>
-              <select
-                name="event_type"
-                value={formData.event_type}
-                onChange={handleChange}
-                className="category-select"
-              >
+              <select name="event_type" value={formData.event_type} onChange={handleChange} className="category-select">
                 <option value="">Select event type...</option>
                 {EVENT_TYPES.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
+                  <option key={type.value} value={type.value}>{type.label}</option>
                 ))}
               </select>
             </div>
 
             <div className="form-row">
               <label>Venue:</label>
-              <input
-                type="text"
-                name="venue"
-                value={formData.venue}
-                onChange={handleChange}
-                placeholder="Venue"
-              />
+              <input type="text" name="venue" value={formData.venue} onChange={handleChange} placeholder="Venue" />
             </div>
 
             <div className="form-row">
               <label>Address:</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Address"
-              />
+              <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" />
             </div>
 
             <div className="form-row">
               <label>City:</label>
-              <input
-                type="text"
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                placeholder="City"
-              />
+              <input type="text" name="city" value={formData.city} onChange={handleChange} placeholder="City" />
             </div>
 
             <div className="form-row">
               <label>Country:</label>
-              <input
-                type="text"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                placeholder="Country"
-              />
+              <input type="text" name="country" value={formData.country} onChange={handleChange} placeholder="Country" />
             </div>
 
             <div className="form-row">
               <label>Capacity:</label>
-              <input
-                type="number"
-                name="capacity"
-                value={formData.capacity}
-                onChange={handleCapacityChange}
-                min="1"
-                placeholder="150"
-              />
+              <input type="number" name="capacity" value={formData.capacity} onChange={handleCapacityChange} min="1" placeholder="150" />
             </div>
           </div>
 
           <div className="step-column">
             <div className="form-row two-inputs">
               <label>Latitude:</label>
-              <input
-                type="text"
-                name="latitude"
-                value={formData.latitude}
-                onChange={handleChange}
-                placeholder="Latitude"
-              />
+              <input type="text" name="latitude" value={formData.latitude} onChange={handleChange} placeholder="Latitude" />
             </div>
 
             <div className="form-row two-inputs">
               <label>Longitude:</label>
-              <input
-                type="text"
-                name="longitude"
-                value={formData.longitude}
-                onChange={handleChange}
-                placeholder="Longitude"
-              />
+              <input type="text" name="longitude" value={formData.longitude} onChange={handleChange} placeholder="Longitude" />
             </div>
 
             <div className="datetime-section">
               <div className="datetime-label">Date and Time:</div>
 
-              {/* START */}
               <div className="form-row date-row">
                 <label>START:</label>
                 <div className="datetime-split">
-                  <input
-                    type="date"
-                    value={startParts.date}
-                    onChange={(e) => handleDateTimeChange('start_datetime', 'date', e.target.value)}
+                  <DatePicker
+                    selected={dateStrToObj(startParts.date)}
+                    onChange={(date) => handleDateTimeChange('start_datetime', 'date', dateObjToStr(date))}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
                     className="datetime-input"
+                    isClearable
+                    onKeyDown={blockTyping}
                   />
-                  <select
-                    value={startParts.hour}
-                    onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)}
-                    className="datetime-input datetime-select"
-                  >
+                  <select value={startParts.hour} onChange={(e) => handleDateTimeChange('start_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
-                    {HOURS.map(h => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
+                    {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                   <span className="datetime-colon">:</span>
-                  <select
-                    value={startParts.minute}
-                    onChange={(e) => handleDateTimeChange('start_datetime', 'minute', e.target.value)}
-                    className="datetime-input datetime-select"
-                  >
+                  <select value={startParts.minute} onChange={(e) => handleDateTimeChange('start_datetime', 'minute', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
-                    {MINUTES.map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
+                    {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* END */}
               <div className="form-row date-row">
                 <label>END:</label>
                 <div className="datetime-split">
-                  <input
-                    type="date"
-                    value={endParts.date}
-                    onChange={(e) => handleDateTimeChange('end_datetime', 'date', e.target.value)}
+                  <DatePicker
+                    selected={dateStrToObj(endParts.date)}
+                    onChange={(date) => handleDateTimeChange('end_datetime', 'date', dateObjToStr(date))}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="DD/MM/YYYY"
                     className="datetime-input"
+                    isClearable
+                    onKeyDown={blockTyping}
                   />
-                  <select
-                    value={endParts.hour}
-                    onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)}
-                    className="datetime-input datetime-select"
-                  >
+                  <select value={endParts.hour} onChange={(e) => handleDateTimeChange('end_datetime', 'hour', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
-                    {HOURS.map(h => (
-                      <option key={h} value={h}>{h}</option>
-                    ))}
+                    {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
                   </select>
                   <span className="datetime-colon">:</span>
-                  <select
-                    value={endParts.minute}
-                    onChange={(e) => handleDateTimeChange('end_datetime', 'minute', e.target.value)}
-                    className="datetime-input datetime-select"
-                  >
+                  <select value={endParts.minute} onChange={(e) => handleDateTimeChange('end_datetime', 'minute', e.target.value)} className="datetime-input datetime-select">
                     <option value="">--</option>
-                    {MINUTES.map(m => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
+                    {MINUTES.map(m => <option key={m} value={m}>{m}</option>)}
                   </select>
                 </div>
               </div>
@@ -636,23 +525,12 @@ const CreateEvent = () => {
               <div className="form-row">
                 <label>Category:</label>
                 <div className="category-input-wrapper">
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="category-select"
-                    disabled={loadingCategories || selectableCategories.length === 0}
-                  >
+                  <select value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="category-select" disabled={loadingCategories || selectableCategories.length === 0}>
                     <option value="">
-                      {loadingCategories
-                        ? 'Loading categories...'
-                        : selectableCategories.length === 0
-                          ? 'All categories added'
-                          : 'Select a category...'}
+                      {loadingCategories ? 'Loading categories...' : selectableCategories.length === 0 ? 'All categories added' : 'Select a category...'}
                     </option>
                     {selectableCategories.map(cat => (
-                      <option key={cat.id} value={cat.name}>
-                        {cat.name}
-                      </option>
+                      <option key={cat.id} value={cat.name}>{cat.name}</option>
                     ))}
                   </select>
                 </div>
@@ -664,11 +542,7 @@ const CreateEvent = () => {
                     <label>Category:</label>
                     <div className="category-tag">
                       <span>{cat}</span>
-                      <button
-                        type="button"
-                        className="btn-remove-category"
-                        onClick={() => handleRemoveCategory(cat)}
-                      >
+                      <button type="button" className="btn-remove-category" onClick={() => handleRemoveCategory(cat)}>
                         <CloseIcon />
                       </button>
                     </div>
@@ -677,12 +551,7 @@ const CreateEvent = () => {
               ))}
 
               <div className="add-category-wrapper">
-                <button
-                  type="button"
-                  className="btn-add-category"
-                  onClick={handleAddCategory}
-                  disabled={!newCategory.trim()}
-                >
+                <button type="button" className="btn-add-category" onClick={handleAddCategory} disabled={!newCategory.trim()}>
                   Add Category
                 </button>
               </div>
@@ -693,14 +562,8 @@ const CreateEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER STEP 2
-  // ============================================
   const renderStep2 = () => {
-    const totalTickets = ticketTypes.reduce(
-      (sum, t) => sum + (Number(t.quantity) || 0),
-      0
-    );
+    const totalTickets = ticketTypes.reduce((sum, t) => sum + (Number(t.quantity) || 0), 0);
     const remaining = formData.capacity - totalTickets;
     const isOverCapacity = remaining < 0;
 
@@ -714,25 +577,13 @@ const CreateEvent = () => {
           <span>Tickets allocated: <strong>{totalTickets}</strong></span>
           <span className="capacity-sep">•</span>
           <span className={isOverCapacity ? 'capacity-error' : 'capacity-ok'}>
-            {isOverCapacity
-              ? `Over by ${Math.abs(remaining)}`
-              : `Remaining: ${remaining}`}
+            {isOverCapacity ? `Over by ${Math.abs(remaining)}` : `Remaining: ${remaining}`}
           </span>
         </div>
 
         <div className="ticket-types-list">
           {ticketTypes.map((ticket, index) => (
             <div key={index} className="ticket-type-row">
-              <div className="ticket-field id-field">
-                <label>ID:</label>
-                <input
-                  type="text"
-                  value={ticket.id}
-                  disabled
-                  className="input-disabled"
-                />
-              </div>
-
               <div className="ticket-field name-field">
                 <label>Name:</label>
                 <input
@@ -806,9 +657,6 @@ const CreateEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER STEP 3
-  // ============================================
   const renderStep3 = () => {
     const organizerName = user?.first_name && user?.last_name
       ? `${user.first_name} ${user.last_name}`
@@ -822,12 +670,7 @@ const CreateEvent = () => {
           <div className="event-info-left">
             <div className="form-row">
               <label>Organizer:</label>
-              <input
-                type="text"
-                value={organizerName}
-                disabled
-                className="input-disabled"
-              />
+              <input type="text" value={organizerName} disabled className="input-disabled" />
             </div>
 
             <div className="description-section">
@@ -840,9 +683,7 @@ const CreateEvent = () => {
                   className="description-textarea"
                   maxLength={MAX_DESCRIPTION}
                 />
-                <div className="char-counter">
-                  {description.length} / {MAX_DESCRIPTION}
-                </div>
+                <div className="char-counter">{description.length} / {MAX_DESCRIPTION}</div>
               </div>
             </div>
           </div>
@@ -878,14 +719,8 @@ const CreateEvent = () => {
                 <div className="media-list">
                   {photos.map((photo) => (
                     <div key={photo.id} className="media-item">
-                      <img
-                        src={photo.url}
-                        alt={photo.name}
-                        className="media-thumb"
-                      />
-                      <span className="media-name" title={photo.name}>
-                        {photo.name}
-                      </span>
+                      <img src={photo.url} alt={photo.name} className="media-thumb" />
+                      <span className="media-name" title={photo.name}>{photo.name}</span>
                       <button
                         type="button"
                         className="btn-remove-photo"
@@ -898,9 +733,7 @@ const CreateEvent = () => {
                   ))}
                 </div>
               )}
-              <div className="media-counter">
-                {photos.length} / {MAX_PHOTOS}
-              </div>
+              <div className="media-counter">{photos.length} / {MAX_PHOTOS}</div>
             </div>
           </div>
         </div>
@@ -908,9 +741,6 @@ const CreateEvent = () => {
     );
   };
 
-  // ============================================
-  // RENDER PREVIEW
-  // ============================================
   const renderPreview = () => {
     const organizerName = user?.first_name && user?.last_name
       ? `${user.first_name} ${user.last_name}`
@@ -923,104 +753,40 @@ const CreateEvent = () => {
       <div className="preview-content">
         <section className="preview-section">
           <h2 className="preview-section-title">Event Details</h2>
-
           <div className="preview-details-grid">
             <div className="preview-col">
-              <div className="preview-row">
-                <span className="preview-label">Title:</span>
-                <span className="preview-value">{formData.title || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Type:</span>
-                <span className="preview-value">
-                  {getEventTypeLabel(formData.event_type)}
-                </span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Capacity:</span>
-                <span className="preview-value">{formData.capacity}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Category:</span>
-                <span className="preview-value">
-                  {formData.categories.length > 0
-                    ? formData.categories.join(', ')
-                    : '—'}
-                </span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Title:</span><span className="preview-value">{formData.title || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Type:</span><span className="preview-value">{getEventTypeLabel(formData.event_type)}</span></div>
+              <div className="preview-row"><span className="preview-label">Capacity:</span><span className="preview-value">{formData.capacity}</span></div>
+              <div className="preview-row"><span className="preview-label">Category:</span><span className="preview-value">{formData.categories.length > 0 ? formData.categories.join(', ') : '—'}</span></div>
             </div>
-
             <div className="preview-col">
-              <div className="preview-row">
-                <span className="preview-label">Venue:</span>
-                <span className="preview-value">{formData.venue || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Address:</span>
-                <span className="preview-value">{formData.address || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">City:</span>
-                <span className="preview-value">{formData.city || '—'}</span>
-              </div>
-              <div className="preview-row">
-                <span className="preview-label">Country:</span>
-                <span className="preview-value">{formData.country || '—'}</span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Venue:</span><span className="preview-value">{formData.venue || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Address:</span><span className="preview-value">{formData.address || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">City:</span><span className="preview-value">{formData.city || '—'}</span></div>
+              <div className="preview-row"><span className="preview-label">Country:</span><span className="preview-value">{formData.country || '—'}</span></div>
             </div>
-
             <div className="preview-col">
               <div className="preview-row-inline">
-                <div className="preview-row-mini">
-                  <span className="preview-label">Latitude:</span>
-                  <span className="preview-value">{formData.latitude || '—'}</span>
-                </div>
-                <div className="preview-row-mini">
-                  <span className="preview-label">Longitude:</span>
-                  <span className="preview-value">{formData.longitude || '—'}</span>
-                </div>
+                <div className="preview-row-mini"><span className="preview-label">Latitude:</span><span className="preview-value">{formData.latitude || '—'}</span></div>
+                <div className="preview-row-mini"><span className="preview-label">Longitude:</span><span className="preview-value">{formData.longitude || '—'}</span></div>
               </div>
-              <div className="preview-row">
-                <span className="preview-label">Date and Time:</span>
-              </div>
-              <div className="preview-row preview-row-indent">
-                <span className="preview-label">Start:</span>
-                <span className="preview-value">{formatDateTime(startStr)}</span>
-              </div>
-              <div className="preview-row preview-row-indent">
-                <span className="preview-label">End:</span>
-                <span className="preview-value">{formatDateTime(endStr)}</span>
-              </div>
+              <div className="preview-row"><span className="preview-label">Date and Time:</span></div>
+              <div className="preview-row preview-row-indent"><span className="preview-label">Start:</span><span className="preview-value">{formatDateTime(startStr)}</span></div>
+              <div className="preview-row preview-row-indent"><span className="preview-label">End:</span><span className="preview-value">{formatDateTime(endStr)}</span></div>
             </div>
           </div>
         </section>
 
         <section className="preview-section">
           <h2 className="preview-section-title">Ticket Types</h2>
-
           <div className="preview-tickets">
             {ticketTypes.map((t, idx) => (
               <div key={idx} className="preview-ticket-row">
-                <div className="preview-ticket-field">
-                  <span className="preview-label">ID:</span>
-                  <span className="preview-value">{t.id}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Name:</span>
-                  <span className="preview-value">{t.name}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Price:</span>
-                  <span className="preview-value">${Number(t.price).toFixed(2)}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Quantity:</span>
-                  <span className="preview-value">{t.quantity}</span>
-                </div>
-                <div className="preview-ticket-field">
-                  <span className="preview-label">Available:</span>
-                  <span className="preview-value">{t.quantity}</span>
-                </div>
+                <div className="preview-ticket-field"><span className="preview-label">Name:</span><span className="preview-value">{t.name}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Price:</span><span className="preview-value">${Number(t.price).toFixed(2)}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Quantity:</span><span className="preview-value">{t.quantity}</span></div>
+                <div className="preview-ticket-field"><span className="preview-label">Available:</span><span className="preview-value">{t.quantity}</span></div>
               </div>
             ))}
           </div>
@@ -1028,22 +794,14 @@ const CreateEvent = () => {
 
         <section className="preview-section">
           <h2 className="preview-section-title">Event Info</h2>
-
           <div className="preview-info-grid">
             <div className="preview-info-left">
-              <div className="preview-row">
-                <span className="preview-label">Organizer:</span>
-                <span className="preview-value">{organizerName}</span>
-              </div>
-
+              <div className="preview-row"><span className="preview-label">Organizer:</span><span className="preview-value">{organizerName}</span></div>
               <div className="preview-description">
                 <span className="preview-label">Description:</span>
-                <p className="preview-description-text">
-                  {description || 'No description provided.'}
-                </p>
+                <p className="preview-description-text">{description || 'No description provided.'}</p>
               </div>
             </div>
-
             <div className="preview-info-right">
               <span className="preview-label">Media / Photo:</span>
               {photos.length === 0 ? (
@@ -1065,35 +823,20 @@ const CreateEvent = () => {
     );
   };
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
   return (
     <div className="create-event-page">
       <div className="create-event-container">
         <div className="create-event-header">
-          <button className="btn-back" onClick={handleBack}>
-            <ArrowBackIcon />
-          </button>
+          <button className="btn-back" onClick={handleBack}><ArrowBackIcon /></button>
           <h1>{isPreview ? 'Preview Event' : 'Create Event'}</h1>
-
           {isPreview && (
-            <button
-              className="btn-edit-preview"
-              onClick={handleEditFromPreview}
-            >
-              <EditIcon /> Edit
-            </button>
+            <button className="btn-edit-preview" onClick={handleEditFromPreview}><EditIcon /> Edit</button>
           )}
         </div>
 
         {renderStepper()}
 
-        {error && (
-          <div className="create-event-error">
-            {error}
-          </div>
-        )}
+        {error && <div className="create-event-error">{error}</div>}
 
         <div className="step-content-wrapper">
           {!isPreview && currentStep === 1 && renderStep1()}
@@ -1105,29 +848,12 @@ const CreateEvent = () => {
         <div className="create-event-actions">
           {isPreview && (
             <>
-              <button
-                type="button"
-                className="btn-cancel-preview"
-                onClick={() => navigate('/profile?tab=events')}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
+              <button type="button" className="btn-cancel-preview" onClick={() => navigate('/profile?tab=events')} disabled={submitting}>Cancel</button>
               <div className="actions-right">
-                <button
-                  type="button"
-                  className="btn-publish"
-                  onClick={() => handleSubmit(true)}
-                  disabled={submitting}
-                >
+                <button type="button" className="btn-publish" onClick={() => handleSubmit(true)} disabled={submitting}>
                   {submitting ? 'Submitting...' : 'Submit'}
                 </button>
-                <button
-                  type="button"
-                  className="btn-save-draft"
-                  onClick={() => handleSubmit(false)}
-                  disabled={submitting}
-                >
+                <button type="button" className="btn-save-draft" onClick={() => handleSubmit(false)} disabled={submitting}>
                   {submitting ? 'Saving...' : 'Save'}
                 </button>
               </div>
@@ -1137,33 +863,13 @@ const CreateEvent = () => {
           {!isPreview && (
             <>
               {currentStep > 1 && (
-                <button
-                  type="button"
-                  className="btn-prev"
-                  onClick={handleBack}
-                  disabled={submitting}
-                >
-                  Previous
-                </button>
+                <button type="button" className="btn-prev" onClick={handleBack} disabled={submitting}>Previous</button>
               )}
-
               <div className="actions-right">
                 {currentStep < 3 ? (
-                  <button
-                    type="button"
-                    className="btn-next"
-                    onClick={handleNext}
-                  >
-                    Next
-                  </button>
+                  <button type="button" className="btn-next" onClick={handleNext}>Next</button>
                 ) : (
-                  <button
-                    type="button"
-                    className="btn-next"
-                    onClick={handleNext}
-                  >
-                    Preview
-                  </button>
+                  <button type="button" className="btn-next" onClick={handleNext}>Preview</button>
                 )}
               </div>
             </>

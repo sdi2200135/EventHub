@@ -401,7 +401,7 @@
 /* Ticket Row */
 .ticket-type-row {
   display: grid;
-  grid-template-columns: 80px 1.2fr 1fr 1fr 1fr 36px;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr 36px;
   gap: 12px;
   align-items: end;
   padding: 14px 16px;
@@ -619,18 +619,17 @@
   .ticket-type-row {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "id name"
-      "price quantity"
-      "available remove";
+      "name quantity"
+      "price available"
+      "remove remove";
     gap: 10px;
   }
 
-  .ticket-field.id-field { grid-area: id; }
   .ticket-field.name-field { grid-area: name; }
-  .ticket-field:nth-child(3) { grid-area: price; }
-  .ticket-field:nth-child(4) { grid-area: quantity; }
-  .ticket-field:nth-child(5) { grid-area: available; }
-  .btn-remove-ticket { grid-area: remove; justify-self: end; }
+  .ticket-field:nth-child(2) { grid-area: price; }
+  .ticket-field:nth-child(3) { grid-area: quantity; }
+  .ticket-field:nth-child(4) { grid-area: available; }
+  .btn-remove-ticket { grid-area: remove; justify-self: stretch; }
 }
 
 @media (max-width: 768px) {
@@ -696,11 +695,10 @@
     grid-template-areas: none;
   }
 
-  .ticket-field.id-field,
   .ticket-field.name-field,
+  .ticket-field:nth-child(2),
   .ticket-field:nth-child(3),
   .ticket-field:nth-child(4),
-  .ticket-field:nth-child(5),
   .btn-remove-ticket {
     grid-area: auto;
   }
@@ -1329,28 +1327,60 @@
 }
 
 /* ============================================
-   DATETIME SPLIT (date + hour + minute dropdowns)
+   DATETIME SPLIT — Flexbox (πιο αξιόπιστο)
    ============================================ */
 .datetime-split {
-  display: grid;
-  grid-template-columns: 1.5fr 0.8fr auto 0.8fr;
-  gap: 6px;
+  display: flex;
+  flex-wrap: nowrap;
   align-items: center;
-  width: 100%;
-}
-
-.datetime-split input,
-.datetime-split select {
+  gap: 6px;
   width: 100%;
   box-sizing: border-box;
-  min-width: 0;
 }
 
-.datetime-select {
+/* DatePicker wrapper — παίρνει τον υπόλοιπο χώρο */
+.datetime-split .react-datepicker-wrapper {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  display: block;
+}
+
+.datetime-split .react-datepicker__input-container {
+  display: block;
+  width: 100%;
+}
+
+.datetime-split .react-datepicker__input-container input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 8px;
+  font-size: 14px;
+  color: #e0e0e0;
   background: transparent;
   border: 1px solid #4a4a5a;
   border-radius: 6px;
-  padding: 10px 8px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.datetime-split .react-datepicker__input-container input:focus {
+  border-color: #4a90d9;
+}
+
+.datetime-split .react-datepicker__input-container input::placeholder {
+  color: #6c7a89;
+}
+
+/* Ώρα — σταθερό μικρό πλάτος */
+.datetime-split .datetime-select {
+  flex: 0 0 auto;
+  width: 60px;
+  background: transparent;
+  border: 1px solid #4a4a5a;
+  border-radius: 6px;
+  padding: 10px 4px;
   color: #e0e0e0;
   font-size: 14px;
   font-family: inherit;
@@ -1361,30 +1391,96 @@
   text-align-last: center;
 }
 
-.datetime-select:focus {
+.datetime-split .datetime-select:focus {
   border-color: #4a90d9;
 }
 
-.datetime-select option {
+.datetime-split .datetime-select option {
   background: #1E1E1E;
   color: #e0e0e0;
 }
 
-.datetime-colon {
+/* Άνω-κάτω τελεία */
+.datetime-split .datetime-colon {
+  flex: 0 0 auto;
   color: #a0a0b8;
   font-weight: 600;
   font-size: 16px;
   text-align: center;
-  padding: 0 2px;
 }
 
+/* ============================================
+   REACT DATEPICKER - DARK THEME
+   ============================================ */
+.react-datepicker {
+  background-color: #1a1a2e !important;
+  border: 1px solid #2a2a3e !important;
+  color: #e0e0e0 !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.react-datepicker__header {
+  background-color: #121212 !important;
+  border-bottom: 1px solid #2a2a3e !important;
+}
+
+.react-datepicker__current-month {
+  color: #e0e0e0 !important;
+}
+
+.react-datepicker__day-name {
+  color: #a0a0b8 !important;
+}
+
+.react-datepicker__day {
+  color: #e0e0e0 !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: #203855 !important;
+}
+
+.react-datepicker__day--selected {
+  background-color: #203855 !important;
+  color: white !important;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #2a4a6a !important;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #a0a0b8 !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #e0e0e0 !important;
+}
+
+/* Close icon (clear) */
+.datetime-split .react-datepicker__close-icon::after {
+  background-color: #6c7a89;
+  font-size: 12px;
+}
+
+/* ============================================
+   DATETIME — MOBILE
+   ============================================ */
 @media (max-width: 480px) {
   .datetime-split {
-    grid-template-columns: 1fr 1fr;
+    flex-wrap: wrap;
   }
-  .datetime-split input {
-    grid-column: 1 / -1;
+
+  .datetime-split .react-datepicker-wrapper {
+    flex: 1 1 100%;
+    width: 100%;
   }
+
+  .datetime-split .datetime-select {
+    flex: 1 1 auto;
+    width: auto;
+  }
+
   .datetime-colon {
     display: none;
   }
