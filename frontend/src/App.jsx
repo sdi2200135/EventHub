@@ -10,7 +10,7 @@ import './App.css';
 import WelcomePage from './pages/WelcomePage';
 import HomePage from './pages/HomePage';
 import SignIn from './pages/auth/SignIn';
-import ForgotPwd from './pages/auth/ForgotPwd';
+// import ForgotPwd from './pages/auth/ForgotPwd';
 import SignUp from './pages/auth/SignUp';
 import EventsPage from './pages/events/EventsPage';
 import EventDetails from './pages/events/EventDetails';
@@ -81,7 +81,7 @@ function App() {
                     {/* PUBLIC */}
                     <Route path="/homepage" element={<HomePage />} />
                     <Route path="/signin" element={<SignIn />} />
-                    <Route path="/signin/forgot-password" element={<ForgotPwd />} />
+                    {/* <Route path="/signin/forgot-password" element={<ForgotPwd />} /> */}
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/events" element={<EventsPage />} />
                     <Route path="/events/details/:id" element={<EventDetails />} />
