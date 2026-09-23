@@ -727,3 +727,46 @@
     padding: 8px 14px;
   }
 }
+
+/* Sort wrapper στο toolbar */
+.ae-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ae-sort-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ae-sort-label {
+  font-size: 13px;
+  color: #a0a0b8;
+  font-weight: 500;
+}
+
+.ae-sort-select {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  border: 1px solid #2A2A2A;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ae-sort-select:focus {
+  border-color: #203855;
+}
+
+.ae-sort-select option {
+  background: #1E1E1E;
+  color: #e0e0e0;
+}

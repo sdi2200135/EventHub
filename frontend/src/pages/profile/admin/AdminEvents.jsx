@@ -1,5 +1,5 @@
 // src/pages/profile/admin/AdminEvents.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { eventService, userService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -65,6 +65,7 @@ const AdminEvents = () => {
   const [error, setError] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('day'); // 'day' | 'name'
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -122,6 +123,26 @@ const AdminEvents = () => {
   };
 
   const filteredEvents = getFilteredEvents();
+
+  // ============================================
+  // SORTING
+  // ============================================
+  const sortedEvents = useMemo(() => {
+    const list = [...filteredEvents];
+
+    switch (sortBy) {
+      case 'name':
+        return list.sort((a, b) =>
+          (a.title || '').localeCompare(b.title || '')
+        );
+
+      case 'day':
+      default:
+        return list.sort((a, b) =>
+          new Date(b.start_datetime || 0) - new Date(a.start_datetime || 0)
+        );
+    }
+  }, [filteredEvents, sortBy]);
 
   const counts = {
     ALL: events.length,
@@ -195,7 +216,6 @@ const AdminEvents = () => {
     setActionLoading(true);
 
     try {
-      // Το backend στέλνει αυτόματα τα μηνύματα σε όλους τους attendees
       await eventService.cancelEvent(selectedEvent.id);
 
       setEvents(prev =>
@@ -285,15 +305,28 @@ const AdminEvents = () => {
               className="events-search"
             />
           </div>
+
+          {/* Sort dropdown */}
+          <div className="ae-sort-wrapper">
+            <span className="ae-sort-label">Sort by :</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="ae-sort-select"
+            >
+              <option value="day">Day</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
         </div>
 
-        {filteredEvents.length === 0 ? (
+        {sortedEvents.length === 0 ? (
           <div className="ae-empty">
             <p>No events found.</p>
           </div>
         ) : (
           <div className="ae-list">
-            {filteredEvents.map(ev => (
+            {sortedEvents.map(ev => (
               <div
                 key={ev.id}
                 className={`ae-item status-${(ev.status || '').toLowerCase()}`}
@@ -323,13 +356,13 @@ const AdminEvents = () => {
         <p className="ae-export-subtitle">
           {activeFilter === 'ALL' ? 'All events' : `${getStatusLabel(activeFilter)} events`}
           <br />
-          <span className="ae-export-count">({filteredEvents.length})</span>
+          <span className="ae-export-count">({sortedEvents.length})</span>
         </p>
 
         <button
           className="btn-export"
           onClick={() => handleExportEvents('xml')}
-          disabled={exporting || filteredEvents.length === 0}
+          disabled={exporting || sortedEvents.length === 0}
         >
           <DownloadIcon /> {exporting ? 'Exporting...' : 'Export XML'}
         </button>
@@ -337,7 +370,7 @@ const AdminEvents = () => {
         <button
           className="btn-export"
           onClick={() => handleExportEvents('json')}
-          disabled={exporting || filteredEvents.length === 0}
+          disabled={exporting || sortedEvents.length === 0}
         >
           <DownloadIcon /> {exporting ? 'Exporting...' : 'Export JSON'}
         </button>
