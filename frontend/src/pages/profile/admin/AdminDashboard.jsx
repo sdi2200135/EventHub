@@ -1,5 +1,5 @@
 // src/pages/profile/admin/AdminDashboard.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
 import '../common/Dashboard.css';
@@ -88,10 +88,6 @@ const PersonalInfoTab = ({ user, navigate }) => {
               <span className="dashboard-info-value">{user?.username || 'Username'}</span>
             </div>
             <div className="dashboard-info-row">
-              <span className="dashboard-info-label">Password:</span>
-              <span className="dashboard-info-value">{user?.password || 'password123'}</span>
-            </div>
-            <div className="dashboard-info-row">
               <span className="dashboard-info-label">First Name:</span>
               <span className="dashboard-info-value">{user?.first_name || 'First Name'}</span>
             </div>
@@ -101,28 +97,28 @@ const PersonalInfoTab = ({ user, navigate }) => {
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Email:</span>
-              <span className="dashboard-info-value">{user?.email || 'email@gmail.com'}</span>
+              <span className="dashboard-info-value">{user?.email || '-'}</span>
             </div>
           </div>
 
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Phone Number:</span>
-              <span className="dashboard-info-value">{user?.phone || 'Phone Number'}</span>
+              <span className="dashboard-info-value">{user?.phone || '-'}</span>
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Address:</span>
-              <span className="dashboard-info-value">{user?.address || 'Address'}</span>
+              <span className="dashboard-info-value">{user?.address || '-'}</span>
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Location:</span>
               <span className="dashboard-info-value">
-                {user?.city || user?.location || 'Location'}
+                {user?.city || '-'}
               </span>
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Tax Registration Number:</span>
-              <span className="dashboard-info-value">{user?.afm || 'Tax Registration Number'}</span>
+              <span className="dashboard-info-value">{user?.afm || '-'}</span>
             </div>
           </div>
         </div>

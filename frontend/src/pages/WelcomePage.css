@@ -349,3 +349,35 @@
   .welcome-orb-3 { width: 180px; height: 180px; }
   .welcome-orb-4 { width: 150px; height: 150px; }
 }
+
+.welcome-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin: 24px 0 8px;
+}
+
+.welcome-btn {
+  padding: 12px 28px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: transparent;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.welcome-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.welcome-btn.primary {
+  background: #1a782e;
+  border-color: #1a782e;
+}
+
+.welcome-btn.primary:hover {
+  background: #22963a;
+}

@@ -1,5 +1,5 @@
 // src/pages/profile/admin/UserManagement.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { userService } from '../../../services/api';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
@@ -165,10 +165,7 @@ const UserManagement = () => {
     }
   };
 
-  const getRoleLabel = (user) => {
-    if (user.is_staff || user.is_superuser || user.role === 'ADMIN') return 'Admin';
-    return 'User';
-  };
+  const getRoleLabel = (user) => (user.is_staff ? 'Admin' : 'User');
 
   const getInitials = (u) => {
     const f = u.first_name?.charAt(0) || '';
@@ -290,7 +287,7 @@ const UserManagement = () => {
               <div className="um-modal-row">
                 <span className="um-modal-label">City:</span>
                 <span className="um-modal-value">
-                  {selectedUser.city || selectedUser.location || '—'}
+                  {selectedUser.city || '—'}
                 </span>
               </div>
               <div className="um-modal-row">

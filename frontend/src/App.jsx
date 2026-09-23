@@ -1,8 +1,9 @@
 // src/App.jsx
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { Navbar, Footer } from './components/common';
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+
 import RequireRole from './components/RequireRole';
 import './App.css';
 
@@ -21,11 +22,46 @@ import CreateEvent from './pages/profile/organizer/CreateEvent';
 import EventDetailsOrganizer from './pages/profile/organizer/EventDetailsOrganizer';
 import EditEvent from './pages/profile/organizer/EditEvent';
 import ReservationsDetails from './pages/profile/organizer/ReservationsDetails';
+// keeps the browser tab title in sync with the route
+const PageTitle = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const path = location.pathname;
+    const tab = new URLSearchParams(location.search).get('tab');
+    const tabTitles = {
+      messages: 'Messages',
+      bookings: 'My Bookings',
+      events: 'My Events',
+      reservations: 'Reservations',
+      users: 'User Management',
+    };
+
+    let title = 'EventHub';
+    if (path.startsWith('/events/details')) title = 'Event';
+    else if (path.startsWith('/events')) title = 'Find Events';
+    else if (path.startsWith('/profile/messages/new')) title = 'New Message';
+    else if (path.startsWith('/profile/events/new')) title = 'Create Event';
+    else if (path.startsWith('/profile/events/edit')) title = 'Edit Event';
+    else if (path.startsWith('/profile/edit')) title = 'Edit Profile';
+    else if (path.startsWith('/profile')) title = tabTitles[tab] || 'My Account';
+    else if (path === '/homepage') title = 'Home';
+    else if (path === '/signin') title = 'Sign In';
+    else if (path === '/signup') title = 'Sign Up';
+    else if (path === '/') title = 'Welcome';
+
+
+    document.title = title === 'EventHub' ? 'EventHub' : `${title} · EventHub`;
+  }, [location]);
+
+  return null;
+};
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <PageTitle />
         <Routes>
           {/* ============================================
               WELCOME (χωρίς Navbar/Footer - fullscreen)

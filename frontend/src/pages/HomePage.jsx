@@ -1,7 +1,6 @@
 // src/pages/HomePage.jsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';  
-import { useAuth } from '../context/AuthContext';
 import { eventService, categoryService } from '../services/api';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,60 +11,38 @@ import SearchIcon from '@mui/icons-material/Search';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 const HomePage = () => {
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();  
   const [categories, setCategories] = useState([]);
   const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('Popular');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [totalCount, setTotalCount] = useState(0);
 
   // State για τα φίλτρα του search
   const [searchFilters, setSearchFilters] = useState({
     category: '',
-    region: '',
-    date: null
+    region: ''
   });
 
+  // the categories are needed once, for the tabs and the search box
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [eventsRes, categoriesRes] = await Promise.all([
-          eventService.getEvents(),
-          categoryService.getCategories()
-        ]);
-        setEvents(eventsRes.data || []);
-        setCategories(categoriesRes.data || []);
-        
-        const sortedByViews = [...(eventsRes.data || [])].sort((a, b) => 
-          (b.views || 0) - (a.views || 0)
-        );
-        setFilteredEvents(sortedByViews);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    categoryService.getCategories()
+      .then(({ data }) => setCategories(data))
+      .catch((err) => console.error('Error fetching categories:', err));
   }, []);
 
+  // the events of the selected tab come from the backend
   useEffect(() => {
-    filterEventsByCategory(activeCategory);
-  }, [activeCategory, events]);
+    const category = categories.find((c) => c.name === activeCategory);
+    const params = category ? { category: category.id } : {};
+    setLoading(true);
+    eventService.getEvents(params)
+      .then(({ data, count }) => { setEvents(data); setTotalCount(count); })
+      .catch((err) => console.error('Error fetching events:', err))
+      .finally(() => setLoading(false));
+  }, [activeCategory, categories]);
 
-  const filterEventsByCategory = (categoryName) => {
-    if (categoryName === 'Popular') {
-      const sorted = [...events].sort((a, b) => (b.views || 0) - (a.views || 0));
-      setFilteredEvents(sorted);
-    } else {
-      const filtered = events.filter(event => 
-        event.categories && event.categories.includes(categoryName)
-      );
-      setFilteredEvents(filtered);
-    }
-  };
 
   const handleCategoryClick = (categoryName) => {
     setActiveCategory(categoryName);
@@ -80,7 +57,7 @@ const HomePage = () => {
     // Δημιουργία των query parameters
     const params = new URLSearchParams();
     
-    if (searchFilters.category) {
+    if (searchFilters.category && searchFilters.category !== 'all') {
       params.append('category', searchFilters.category);
     }
     if (searchFilters.region) {
@@ -167,9 +144,10 @@ const HomePage = () => {
                 value={searchFilters.category}
                 onChange={(e) => setSearchFilters({...searchFilters, category: e.target.value})}
               >
-                <option value="">Type/Category</option>
+                <option value="" disabled hidden>Type/Category</option>
+                <option value="all">All categories</option>
                 {categories.map(cat => (
-                  <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
               <input
@@ -203,10 +181,10 @@ const HomePage = () => {
         <div className="categories-bar-container">
           <div className="categories-list">
             <span 
-              className={`category-item ${activeCategory === 'Popular' ? 'active' : ''}`}
-              onClick={() => handleCategoryClick('Popular')}
+              className={`category-item ${activeCategory === 'All' ? 'active' : ''}`}
+              onClick={() => handleCategoryClick('All')}
             >
-              Popular
+              All
             </span>
             {categories.map((cat) => (
               <span 
@@ -227,9 +205,9 @@ const HomePage = () => {
       <section className="events-section">
         <div className="events-header">
           <h2>
-            {activeCategory === 'Popular' ? 'Popular Events' : `${activeCategory} Events`}
+            {activeCategory === 'All' ? 'All categories' : `${activeCategory} Events`}
           </h2>
-          <span className="events-count">{filteredEvents.length} events</span>
+          <span className="events-count">{events.length} events</span>
         </div>
 
         {loading ? (
@@ -237,14 +215,14 @@ const HomePage = () => {
             <AutorenewIcon className="loading-icon" />
             <p>Loading events...</p>
           </div>
-        ) : filteredEvents.length === 0 ? (
+        ) : events.length === 0 ? (
           <div className="empty-state">
             <CalendarMonthIcon className="empty-icon" />
             <p>No events available for this category.</p>
           </div>
         ) : (
           <div className="events-grid">
-            {filteredEvents.map((event) => {
+            {events.map((event) => {
               const availability = getAvailabilityStatus(event);
               const categoriesText = getCategoriesText(event);
               const photo = getEventPhoto(event);
@@ -312,6 +290,18 @@ const HomePage = () => {
           </div>
         )}
       </section>
+          { totalCount > events.length && (
+          <div className="events-more">
+            <Link
+              to={activeCategory === 'All'
+                ? '/events'
+                : `/events?category=${categories.find(c => c.name === activeCategory)?.id ?? ''}`}
+              className="btn-see-all"
+            >
+              See all {totalCount} events
+            </Link>
+          </div>
+        )}
     </div>
   );
 };

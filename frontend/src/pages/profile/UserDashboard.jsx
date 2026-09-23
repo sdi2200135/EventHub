@@ -15,7 +15,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 
 // ============================================
-// TABS — όλα ορατά σε όλους, με σταθερή σειρά
+// TABS — visible to everyone
 // ============================================
 const TABS = [
   { id: 'personal',     label: 'Personal Info' },
@@ -71,11 +71,7 @@ const UserDashboard = ({ user }) => {
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
 
-  useEffect(() => { fetchUnreadCount(); }, []);
 
-  useEffect(() => {
-    if (activeTab === 'messages') fetchMessages();
-  }, [activeTab, activeFolder]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -102,6 +98,14 @@ const UserDashboard = ({ user }) => {
     }
   };
 
+
+  useEffect(() => { fetchUnreadCount(); }, []);
+
+  useEffect(() => {
+    if (activeTab === 'messages') fetchMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, activeFolder]);
+  
   // ============================================
   // 3. MESSAGES HANDLERS
   // ============================================
@@ -323,10 +327,6 @@ const PersonalInfoTab = ({ user, navigate }) => {
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Username:</span>
               <span className="dashboard-info-value">{user?.username || 'Username'}</span>
-            </div>
-            <div className="dashboard-info-row">
-              <span className="dashboard-info-label">Password:</span>
-              <span className="dashboard-info-value">{user?.password || 'password123'}</span>
             </div>
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">First Name:</span>

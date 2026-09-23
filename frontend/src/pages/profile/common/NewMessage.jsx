@@ -48,6 +48,10 @@ const NewMessage = () => {
           .filter((o, i, all) => all.findIndex((x) => x.value === o.value) === i)
           .sort((a, b) => a.label.localeCompare(b.label));
         setOptions(unique);
+        if (eventValue && !unique.some((o) => o.value === eventValue)) {
+          setEventValue('');
+          setError('You can only message about an event you booked or organise.');
+        }
       } catch (err) {
         setError(err.message || 'Could not load your events.');
       } finally {

@@ -582,3 +582,23 @@
     font-size: 0.7rem;
   }
 }
+
+.events-more {
+  display: flex;
+  justify-content: center;
+  margin: 28px 0 8px;
+}
+
+.btn-see-all {
+  padding: 12px 32px;
+  border-radius: 30px;
+  background: #1a782e;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.btn-see-all:hover {
+  background: #22963a;
+}

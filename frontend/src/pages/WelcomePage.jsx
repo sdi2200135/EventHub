@@ -1,5 +1,5 @@
 // src/pages/WelcomePage.jsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './WelcomePage.css';
 
@@ -24,6 +24,7 @@ const WelcomePage = () => {
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -49,7 +50,22 @@ const WelcomePage = () => {
         <p className="welcome-subtext">
           Your gateway to unforgettable experiences.
         </p>
-        <p className="welcome-hint">Click anywhere to continue</p>
+                <div className="welcome-actions">
+          <button
+            className="welcome-btn primary"
+            onClick={(e) => { e.stopPropagation(); navigate('/signup'); }}
+          >
+            Sign Up
+          </button>
+          <button
+            className="welcome-btn"
+            onClick={(e) => { e.stopPropagation(); navigate('/signin'); }}
+          >
+            Log In
+          </button>
+        </div>
+
+        <p className="welcome-hint">or click anywhere to browse as a guest</p>
       </div>
     </div>
   );

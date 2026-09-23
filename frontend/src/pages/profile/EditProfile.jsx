@@ -1,5 +1,5 @@
 // src/pages/profile/EditProfile.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/api';
@@ -21,6 +21,7 @@ const EditProfile = () => {
     address: '',
     city: '',
     afm: '',
+    current_password: '',
     password: '',
     confirm_password: ''
   });
@@ -63,10 +64,11 @@ const EditProfile = () => {
         email: user.email || '',
         phone: user.phone || '',
         address: user.address || '',
-        city: user.city || user.location || '',
+        city: user.city || '',
         afm: user.afm || '',
         password: '',
-        confirm_password: ''
+        confirm_password: '',
+        current_password: ''
       });
     }
   }, [user]);
@@ -83,6 +85,10 @@ const EditProfile = () => {
 
     // ---- Password validation ----
     if (isChangingPassword) {
+      if (!formData.current_password) {
+        setError('Enter your current password in order to change it.');
+        return;
+      }
       if (!isPasswordValid) {
         setError('Password does not meet all the requirements.');
         return;
@@ -105,7 +111,8 @@ const EditProfile = () => {
       };
 
       if (isChangingPassword) {
-        updateData.password = formData.password;
+        updateData.new_password = formData.password;
+        updateData.current_password = formData.current_password;
       }
 
       const response = await authService.updateProfile(updateData);
@@ -283,6 +290,17 @@ const EditProfile = () => {
             <div className="edit-profile-actions-section">
               <div className="edit-profile-password-section">
                 <h4>Change Password</h4>
+                  <div className="edit-profile-form-group">
+                  <label htmlFor="current_password">Current Password:</label>
+                  <input
+                    type="password"
+                    id="current_password"
+                    name="current_password"
+                    value={formData.current_password}
+                    onChange={handleChange}
+                    autoComplete="current-password"
+                  />
+                </div>
                 <div className="edit-profile-form-group">
                   <label htmlFor="password">New Password:</label>
                   <input

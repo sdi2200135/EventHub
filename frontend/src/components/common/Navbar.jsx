@@ -91,7 +91,7 @@ const Navbar = () => {
         {/* LOGO */}
         <div className="logo-wrapper">
           <Link to="/homepage" className="logo">
-            <img src={logoImg} alt="Eventize" className="logo-img" />
+            <img src={logoImg} alt="EventHub" className="logo-img" />
           </Link>
         </div>
 

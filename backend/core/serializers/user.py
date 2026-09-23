@@ -18,6 +18,8 @@ class UserSerializer(serializers.ModelSerializer):
     approval_status_display = serializers.CharField(source='get_approval_status_display', read_only=True)
     latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
     longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
+    new_password = serializers.CharField(write_only=True, required=False)
+    current_password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
@@ -26,12 +28,26 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'address', 'city', 'country', 'afm',
             'latitude', 'longitude',
             'approval_status', 'approval_status_display', 'is_staff',
+            'new_password','current_password'
         ]
         # email cannot be changed after registration
         read_only_fields = ['id', 'username', 'afm','approval_status', 'is_staff','email']
 
+    def validate_new_password(self, value):
+        try:
+            validate_password(value, user=self.instance)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
+        return value
+    
     # make sure the pair longitude lataitude is given
     def validate(self, attrs):
+        # check if the current password matches the existing one 
+        if attrs.get('new_password'):
+            current = attrs.pop('current_password', None)
+            if not current or not self.instance.check_password(current):
+                raise serializers.ValidationError({'current_password': 'Your current password is not correct.'})
+            
         lat = attrs.get('latitude', getattr(self.instance, 'latitude', None))
         lon = attrs.get('longitude', getattr(self.instance, 'longitude', None))
         if (lat is None) != (lon is None):
@@ -53,9 +69,18 @@ class UserSerializer(serializers.ModelSerializer):
     # in order to update a race condtion canbe created if user edits his info and admin approve the user 
     # so in order to solve that write only what the request included, ofc not the apporval status
     def update(self, instance, validated_data):
+        new_password = validated_data.pop('new_password', None)
+        validated_data.pop('current_password', None)
+
         for field, value in validated_data.items():
             setattr(instance, field, value)
-        instance.save(update_fields=list(validated_data.keys()))
+        fields = list(validated_data.keys())
+
+        if new_password:
+            instance.set_password(new_password)
+            fields.append('password')
+
+        instance.save(update_fields=fields)
         return instance
 
 class UserAdminSerializer(serializers.ModelSerializer):
