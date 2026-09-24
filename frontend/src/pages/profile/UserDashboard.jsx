@@ -1,5 +1,5 @@
 // src/pages/profile/UserDashboard.jsx
-import { useEffect, useState, useRef} from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { messageService } from '../../services/api';
 import EditIcon from '@mui/icons-material/Edit';
@@ -71,8 +71,6 @@ const UserDashboard = ({ user }) => {
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
 
-
-
   const fetchUnreadCount = async () => {
     try {
       const response = await messageService.getUnreadCount();
@@ -98,28 +96,24 @@ const UserDashboard = ({ user }) => {
     }
   };
 
-
   useEffect(() => { fetchUnreadCount(); }, []);
 
   useEffect(() => {
     if (activeTab === 'messages') fetchMessages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, activeFolder]);
-  
+
   // ============================================
   // 3. MESSAGES HANDLERS
   // ============================================
-  // open the conversation of the clicked message on the right and mark it as read
   const handleOpenMessage = async (message) => {
     setOpenedMessage(message);
     setReplyText('');
     setLoadingOpened(true);
     try {
-      // mark first, so the conversation comes back already read
       await messageService.markConversationRead(message.conversation);
       const { data } = await messageService.getConversation(message.conversation);
       setThread(data);
-      // the rows i received in this conversation stop being bold
       setMessages((prev) => prev.map((m) =>
         m.conversation === message.conversation && m.receiver === user.id ? { ...m, is_read: true } : m
       ));
@@ -131,14 +125,12 @@ const UserDashboard = ({ user }) => {
     }
   };
 
-
   const handleCloseOpenedMessage = () => {
     setOpenedMessage(null);
     setThread([]);
     setReplyText('');
   };
 
-  // reply inside the open conversation; the new bubble appears at the bottom
   const handleSendReply = async () => {
     if (!replyText.trim() || !openedMessage) return;
     setSendingReply(true);
@@ -149,7 +141,6 @@ const UserDashboard = ({ user }) => {
       });
       setThread((prev) => [...prev, data]);
       setReplyText('');
-      // in Sent the new message must also appear in the list
       if (activeFolder === 'sent') fetchMessages();
     } catch (err) {
       alert(err.message || 'Failed to send reply. Please try again.');
@@ -157,7 +148,6 @@ const UserDashboard = ({ user }) => {
       setSendingReply(false);
     }
   };
-
 
   const handleSelectMessage = (messageId) => {
     setSelectedMessages(prev =>
@@ -183,7 +173,6 @@ const UserDashboard = ({ user }) => {
 
     try {
       await Promise.all(selectedMessages.map((id) => messageService.deleteMessage(id)));
-      // the deleted ones also leave the open conversation
       setThread((prev) => prev.filter((m) => !selectedMessages.includes(m.id)));
       fetchMessages();
       fetchUnreadCount();
@@ -192,7 +181,6 @@ const UserDashboard = ({ user }) => {
     }
   };
 
-  // delete the opened conversation only for me
   const handleDeleteConversation = async () => {
     const warning = 'Delete this conversation?\n\n'
       + 'It will be deleted only for you, with all its messages. '
@@ -208,8 +196,6 @@ const UserDashboard = ({ user }) => {
     }
   };
 
-  // the backend already separates into inbox / sent
-  //  here  only search by the other person's name and the event title
   const getFilteredMessages = () => {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return messages;
@@ -254,7 +240,6 @@ const UserDashboard = ({ user }) => {
             user={user}
             thread={thread}
             onDeleteConversation={handleDeleteConversation}
-
           />
         );
 
@@ -303,6 +288,64 @@ const UserDashboard = ({ user }) => {
 // PERSONAL INFO TAB
 // ============================================
 const PersonalInfoTab = ({ user, navigate }) => {
+  // ============================================
+  // ΝΕΑ ΠΕΔΙΑ — ξεχωριστές μεταβλητές
+  // ============================================
+  const userLatitude =
+    user?.latitude ??
+    user?.lat ??
+    user?.location?.latitude ??
+    user?.location?.lat;
+
+  const userLongitude =
+    user?.longitude ??
+    user?.lng ??
+    user?.lon ??
+    user?.location?.longitude ??
+    user?.location?.lng;
+
+  const userRegisteredAt =
+    user?.date_joined ??
+    user?.created_at ??
+    user?.registered_at ??
+    user?.registration_date ??
+    user?.created;
+
+  const userLastLogin =
+    user?.last_login ??
+    user?.last_login_at ??
+    user?.lastLogin;
+
+  const formatRegisteredDate = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatLastLogin = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }) + ' ' + d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const formatNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(5) : '—';
+  };
+
   return (
     <div className="personal-info-container">
       <div className="edit-btn-wrapper">
@@ -321,8 +364,8 @@ const PersonalInfoTab = ({ user, navigate }) => {
           </div>
         </div>
 
-
         <div className="profile-info-grid">
+          {/* Στήλη 1 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Username:</span>
@@ -340,8 +383,17 @@ const PersonalInfoTab = ({ user, navigate }) => {
               <span className="dashboard-info-label">Email:</span>
               <span className="dashboard-info-value">{user?.email || 'email@gmail.com'}</span>
             </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Latitude:</span>
+              <span className="dashboard-info-value">{formatNumber(userLatitude)}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Longitude:</span>
+              <span className="dashboard-info-value">{formatNumber(userLongitude)}</span>
+            </div>
           </div>
 
+          {/* Στήλη 2 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Phone Number:</span>
@@ -360,6 +412,14 @@ const PersonalInfoTab = ({ user, navigate }) => {
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Tax Registration Number:</span>
               <span className="dashboard-info-value">{user?.afm || 'Tax Registration Number'}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Registered:</span>
+              <span className="dashboard-info-value">{formatRegisteredDate(userRegisteredAt)}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Last Login:</span>
+              <span className="dashboard-info-value">{formatLastLogin(userLastLogin)}</span>
             </div>
           </div>
         </div>
@@ -400,17 +460,16 @@ const MessagesLayout = ({
     return colors[(id || 0) % colors.length];
   };
 
-  // in inbox the other person is the sender, in sent the receiver
   const other = (m) => (m.sender === user.id
     ? { id: m.receiver, name: m.receiver_username }
     : { id: m.sender, name: m.sender_username });
 
-  // when a conversation opens or a reply is sent, scroll down to the newest message
   const bodyRef = useRef(null);
 
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [thread]);
+
   return (
     <div className={`msg-layout ${openedMessage ? 'with-opened' : ''}`}>
       <aside className="msg-sidebar">
@@ -487,18 +546,14 @@ const MessagesLayout = ({
 
                 <div
                   className="msg-row-content"
-                  onClick={() => {
-                     onOpenMessage(message);
-                  }}
+                  onClick={() => { onOpenMessage(message); }}
                 >
                   <div className="msg-row-top">
                     <span className="msg-row-sender">{activeFolder === 'sent' ? 'To: ' : ''}{other(message).name}</span>
                     <span className="msg-row-date">{formatDate(message.created_at)}</span>
                   </div>
                   <div className="msg-row-bottom">
-                    <span className="msg-row-title">
-                      {message.event_title}
-                    </span>
+                    <span className="msg-row-title">{message.event_title}</span>
                   </div>
                   <div className="msg-row-preview">
                     {message.body?.substring(0, 60)}
@@ -542,7 +597,6 @@ const MessagesLayout = ({
             <div className="msg-detail-loading">Loading...</div>
           ) : (
             <>
-              {/* the whole conversation: my messages on the right, theirs on the left */}
               <div className="msg-detail-body" ref={bodyRef}>
                 {thread.map((m) => (
                   <div
@@ -579,6 +633,5 @@ const MessagesLayout = ({
     </div>
   );
 };
-
 
 export default UserDashboard;

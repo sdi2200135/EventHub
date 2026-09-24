@@ -173,6 +173,45 @@ const UserManagement = () => {
     return (f + l).toUpperCase() || u.username?.charAt(0).toUpperCase() || 'U';
   };
 
+  // ============================================
+  // ΝΕΑ ΠΕΔΙΑ — ίδια λογική με UserDashboard
+  // ============================================
+  const userLatitude =
+    selectedUser?.latitude ??
+    selectedUser?.lat ??
+    selectedUser?.location?.latitude ??
+    selectedUser?.location?.lat;
+
+  const userLongitude =
+    selectedUser?.longitude ??
+    selectedUser?.lng ??
+    selectedUser?.lon ??
+    selectedUser?.location?.longitude ??
+    selectedUser?.location?.lng;
+
+  const userRegisteredAt =
+    selectedUser?.date_joined ??
+    selectedUser?.created_at ??
+    selectedUser?.registered_at ??
+    selectedUser?.registration_date ??
+    selectedUser?.created;
+
+  const formatRegisteredDate = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(5) : '—';
+  };
+
   if (loading) {
     return <LoadingSpinner message="Loading users..." />;
   }
@@ -286,9 +325,7 @@ const UserManagement = () => {
               </div>
               <div className="um-modal-row">
                 <span className="um-modal-label">City:</span>
-                <span className="um-modal-value">
-                  {selectedUser.city || '—'}
-                </span>
+                <span className="um-modal-value">{selectedUser.city || '—'}</span>
               </div>
               <div className="um-modal-row">
                 <span className="um-modal-label">Country:</span>
@@ -298,6 +335,22 @@ const UserManagement = () => {
                 <span className="um-modal-label">AFM:</span>
                 <span className="um-modal-value">{selectedUser.afm || '—'}</span>
               </div>
+
+              <div className="um-modal-row">
+                <span className="um-modal-label">Latitude:</span>
+                <span className="um-modal-value">{formatNumber(userLatitude)}</span>
+              </div>
+              <div className="um-modal-row">
+                <span className="um-modal-label">Longitude:</span>
+                <span className="um-modal-value">{formatNumber(userLongitude)}</span>
+              </div>
+              <div className="um-modal-row">
+                <span className="um-modal-label">Registered:</span>
+                <span className="um-modal-value">
+                  {formatRegisteredDate(userRegisteredAt)}
+                </span>
+              </div>
+
               <div className="um-modal-row">
                 <span className="um-modal-label">Status:</span>
                 <span className={`um-modal-value status-${(selectedUser.approval_status || '').toLowerCase()}`}>

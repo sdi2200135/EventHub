@@ -6,9 +6,9 @@ import '../common/Dashboard.css';
 
 import UserManagement from './UserManagement';
 import AdminEvents from './AdminEvents';
-import ExportData from './ExportData'; // 👈 νέο import
+import ExportData from './ExportData';
 
-const VALID_TABS = ['personal', 'users', 'events', 'export']; // 👈 προσθήκη 'export'
+const VALID_TABS = ['personal', 'users', 'events', 'export'];
 
 const AdminDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -65,14 +65,78 @@ const AdminDashboard = ({ user }) => {
         {activeTab === 'personal' && <PersonalInfoTab user={user} navigate={navigate} />}
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'events' && <AdminEvents />}
-        {activeTab === 'export' && <ExportData />} {/* 👈 νέο tab */}
+        {activeTab === 'export' && <ExportData />}
       </div>
     </div>
   );
 };
 
+// ============================================
+// PERSONAL INFO TAB
+// ============================================
 const PersonalInfoTab = ({ user, navigate }) => {
-  // ... (ίδιος κώδικας όπως πριν)
+  // ============================================
+  // ΝΕΑ ΠΕΔΙΑ — ίδια λογική με UserDashboard
+  // ============================================
+  const userLatitude =
+    user?.latitude ??
+    user?.lat ??
+    user?.location?.latitude ??
+    user?.location?.lat;
+
+  const userLongitude =
+    user?.longitude ??
+    user?.lng ??
+    user?.lon ??
+    user?.location?.longitude ??
+    user?.location?.lng;
+
+  const userRegisteredAt =
+    user?.date_joined ??
+    user?.created_at ??
+    user?.registered_at ??
+    user?.registration_date ??
+    user?.created;
+
+  const userLastLogin =
+    user?.last_login ??
+    user?.last_login_at ??
+    user?.lastLogin;
+
+  const formatRegisteredDate = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatLastLogin = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return (
+      d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }) +
+      ' ' +
+      d.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    );
+  };
+
+  const formatNumber = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n.toFixed(5) : '—';
+  };
+
   return (
     <div className="personal-info-container">
       <div className="edit-btn-wrapper">
@@ -90,7 +154,9 @@ const PersonalInfoTab = ({ user, navigate }) => {
               : user?.username?.charAt(0)?.toUpperCase() || 'U'}
           </div>
         </div>
+
         <div className="profile-info-grid">
+          {/* Στήλη 1 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Username:</span>
@@ -108,8 +174,17 @@ const PersonalInfoTab = ({ user, navigate }) => {
               <span className="dashboard-info-label">Email:</span>
               <span className="dashboard-info-value">{user?.email || '-'}</span>
             </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Latitude:</span>
+              <span className="dashboard-info-value">{formatNumber(userLatitude)}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Longitude:</span>
+              <span className="dashboard-info-value">{formatNumber(userLongitude)}</span>
+            </div>
           </div>
 
+          {/* Στήλη 2 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Phone Number:</span>
@@ -126,6 +201,14 @@ const PersonalInfoTab = ({ user, navigate }) => {
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Tax Registration Number:</span>
               <span className="dashboard-info-value">{user?.afm || '-'}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Registered:</span>
+              <span className="dashboard-info-value">{formatRegisteredDate(userRegisteredAt)}</span>
+            </div>
+            <div className="dashboard-info-row">
+              <span className="dashboard-info-label">Last Login:</span>
+              <span className="dashboard-info-value">{formatLastLogin(userLastLogin)}</span>
             </div>
           </div>
         </div>

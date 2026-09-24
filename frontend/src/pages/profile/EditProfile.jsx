@@ -6,18 +6,19 @@ import { authService } from '../../services/api';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import './EditProfile.css';
 
-  // ============================================
-  // PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
-  // ============================================
-  const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
+// ============================================
+// PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
+// ============================================
+const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
 
-  // Helper για rendering requirement
-  const Requirement = ({ ok, children }) => (
-    <li className={`pwd-req ${ok ? 'ok' : ''}`}>
-      <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
-      {children}
-    </li>
-  );
+// Helper για rendering requirement
+const Requirement = ({ ok, children }) => (
+  <li className={`pwd-req ${ok ? 'ok' : ''}`}>
+    <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
+    {children}
+  </li>
+);
+
 const EditProfile = () => {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();
@@ -33,11 +34,12 @@ const EditProfile = () => {
     address: '',
     city: '',
     afm: '',
+    latitude: '',
+    longitude: '',
     current_password: '',
     password: '',
     confirm_password: ''
   });
-
 
   const passwordChecks = useMemo(() => {
     const pwd = formData.password || '';
@@ -57,7 +59,6 @@ const EditProfile = () => {
     passwordChecks.number &&
     passwordChecks.symbol;
 
-  // Το password είναι "ενεργό" μόνο αν ο χρήστης έχει γράψει κάτι
   const isChangingPassword = formData.password.length > 0;
 
   // ============================================
@@ -74,12 +75,67 @@ const EditProfile = () => {
         address: user.address || '',
         city: user.city || '',
         afm: user.afm || '',
+        latitude:
+          user.latitude ??
+          user.lat ??
+          user.location?.latitude ??
+          user.location?.lat ??
+          '',
+        longitude:
+          user.longitude ??
+          user.lng ??
+          user.lon ??
+          user.location?.longitude ??
+          user.location?.lng ??
+          '',
         password: '',
         confirm_password: '',
         current_password: ''
       });
     }
   }, [user]);
+
+  // Read-only πεδία
+  const userRegisteredAt =
+    user?.date_joined ??
+    user?.created_at ??
+    user?.registered_at ??
+    user?.registration_date ??
+    user?.created;
+
+  const userLastLogin =
+    user?.last_login ??
+    user?.last_login_at ??
+    user?.lastLogin;
+
+  const formatRegisteredDate = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  };
+
+  const formatLastLogin = (value) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return (
+      d.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }) +
+      ' ' +
+      d.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    );
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -117,6 +173,14 @@ const EditProfile = () => {
         address: formData.address,
         city: formData.city,
       };
+
+      // Συντεταγμένες — στέλνονται μόνο αν είναι συμπληρωμένες
+      if (formData.latitude !== '' && formData.latitude !== null) {
+        updateData.latitude = Number(formData.latitude);
+      }
+      if (formData.longitude !== '' && formData.longitude !== null) {
+        updateData.longitude = Number(formData.longitude);
+      }
 
       if (isChangingPassword) {
         updateData.new_password = formData.password;
@@ -232,6 +296,29 @@ const EditProfile = () => {
                   placeholder="Email"
                 />
               </div>
+
+              {/* ΝΕΑ read-only πεδία */}
+              <div className="edit-profile-form-group">
+                <label htmlFor="registered">Registered:</label>
+                <input
+                  type="text"
+                  id="registered"
+                  value={formatRegisteredDate(userRegisteredAt)}
+                  disabled
+                  className="input-disabled"
+                />
+              </div>
+
+              <div className="edit-profile-form-group">
+                <label htmlFor="last_login">Last Login:</label>
+                <input
+                  type="text"
+                  id="last_login"
+                  value={formatLastLogin(userLastLogin)}
+                  disabled
+                  className="input-disabled"
+                />
+              </div>
             </div>
 
             {/* CENTER COLUMN: Contact & Location */}
@@ -272,6 +359,37 @@ const EditProfile = () => {
                 />
               </div>
 
+              {/* ΝΕΑ επεξεργάσιμα πεδία */}
+              <div className="edit-profile-form-group">
+                <label htmlFor="latitude">Latitude:</label>
+                <input
+                  type="number"
+                  id="latitude"
+                  name="latitude"
+                  value={formData.latitude}
+                  onChange={handleChange}
+                  placeholder="e.g. 37.98381"
+                  step="any"
+                  min="-90"
+                  max="90"
+                />
+              </div>
+
+              <div className="edit-profile-form-group">
+                <label htmlFor="longitude">Longitude:</label>
+                <input
+                  type="number"
+                  id="longitude"
+                  name="longitude"
+                  value={formData.longitude}
+                  onChange={handleChange}
+                  placeholder="e.g. 23.72754"
+                  step="any"
+                  min="-180"
+                  max="180"
+                />
+              </div>
+
               <div className="edit-profile-form-group">
                 <label htmlFor="afm">Tax Registration Number:</label>
                 <input
@@ -290,7 +408,7 @@ const EditProfile = () => {
             <div className="edit-profile-actions-section">
               <div className="edit-profile-password-section">
                 <h4>Change Password</h4>
-                  <div className="edit-profile-form-group">
+                <div className="edit-profile-form-group">
                   <label htmlFor="current_password">Current Password:</label>
                   <input
                     type="password"
@@ -313,7 +431,6 @@ const EditProfile = () => {
                     autoComplete="new-password"
                   />
 
-                  {/* Password requirements - live, κλείνει όταν είναι valid */}
                   {isChangingPassword && !isPasswordValid && (
                     <ul className="pwd-requirements">
                       <Requirement ok={passwordChecks.length}>
