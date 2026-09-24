@@ -378,7 +378,7 @@ const EventsPage = () => {
           <input
             type="text"
             className="search-input"
-            placeholder="Search events by title, description, city..."
+            placeholder="Search events by title, description..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
           />
