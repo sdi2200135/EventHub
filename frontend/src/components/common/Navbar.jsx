@@ -107,7 +107,7 @@ const Navbar = () => {
             </NavLink>
           )}
 
-          {isAuthenticated && (
+          {isAuthenticated && !isAdmin && (
             <NavLink
               to="/recommendations"
               end
