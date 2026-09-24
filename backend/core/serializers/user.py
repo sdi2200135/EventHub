@@ -28,10 +28,10 @@ class UserSerializer(serializers.ModelSerializer):
             'phone', 'address', 'city', 'country', 'afm',
             'latitude', 'longitude',
             'approval_status', 'approval_status_display', 'is_staff',
-            'new_password','current_password'
+            'new_password','current_password','date_joined', 'last_login',
         ]
         # email cannot be changed after registration
-        read_only_fields = ['id', 'username', 'afm','approval_status', 'is_staff','email']
+        read_only_fields = ['id', 'username', 'afm','approval_status', 'is_staff','email','date_joined', 'last_login',]
 
     def validate_new_password(self, value):
         try:
@@ -93,13 +93,14 @@ class UserAdminSerializer(serializers.ModelSerializer):
             'id', 'username', 'email', 'first_name', 'last_name',
             'phone', 'address', 'city', 'country', 'afm',
             'approval_status', 'approval_status_display',
-            'is_active', 'is_staff', 'date_joined',
+            'is_active', 'is_staff', 'latitude', 'longitude',
+            'date_joined', 'last_login',
         ]
         read_only_fields = [
             'id', 'username', 'email', 'first_name', 'last_name',
             'phone', 'address', 'city', 'country', 'afm',
-            'approval_status', 
-            'is_active', 'is_staff', 'date_joined',
+            'approval_status', 'latitude', 'longitude',
+            'is_active', 'is_staff', 'date_joined', 'last_login',
         ]       
 
 
