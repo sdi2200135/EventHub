@@ -333,7 +333,7 @@ const ReservationsDetails = () => {
                 <div className="rd-modal-row">
                   <span className="rd-modal-label">Total Cost:</span>
                   <span className="rd-modal-value">
-                    {Number(selectedBooking.total_cost || 0).toFixed(2)}
+                    ${Number(selectedBooking.total_cost || 0).toFixed(2)}
                   </span>
                 </div>
 

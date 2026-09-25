@@ -95,47 +95,7 @@ const EditProfile = () => {
     }
   }, [user]);
 
-  // Read-only πεδία
-  const userRegisteredAt =
-    user?.date_joined ??
-    user?.created_at ??
-    user?.registered_at ??
-    user?.registration_date ??
-    user?.created;
 
-  const userLastLogin =
-    user?.last_login ??
-    user?.last_login_at ??
-    user?.lastLogin;
-
-  const formatRegisteredDate = (value) => {
-    if (!value) return '—';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return '—';
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatLastLogin = (value) => {
-    if (!value) return '—';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return '—';
-    return (
-      d.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }) +
-      ' ' +
-      d.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    );
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -163,6 +123,15 @@ const EditProfile = () => {
       }
     }
 
+    // coordinates are stored as a pair: either both are filled in or both are empty
+    const latEmpty = String(formData.latitude).trim() === '';
+    const lonEmpty = String(formData.longitude).trim() === '';
+    if (latEmpty !== lonEmpty) {
+      setError('Latitude and longitude go together — fill in both or clear both.');
+      return;
+    }
+
+
     setLoading(true);
 
     try {
@@ -174,13 +143,10 @@ const EditProfile = () => {
         city: formData.city,
       };
 
-      // Συντεταγμένες — στέλνονται μόνο αν είναι συμπληρωμένες
-      if (formData.latitude !== '' && formData.latitude !== null) {
-        updateData.latitude = Number(formData.latitude);
-      }
-      if (formData.longitude !== '' && formData.longitude !== null) {
-        updateData.longitude = Number(formData.longitude);
-      }
+      // an empty box means remove the pair
+      updateData.latitude = latEmpty ? null : Number(formData.latitude);
+      updateData.longitude = lonEmpty ? null : Number(formData.longitude);
+
 
       if (isChangingPassword) {
         updateData.new_password = formData.password;
@@ -199,17 +165,18 @@ const EditProfile = () => {
         navigate('/profile');
       }, 2000);
     } catch (err) {
-      console.error('Update profile error:', err);
       const errorData = err.response?.data;
-      if (errorData?.username) {
-        setError(`Username: ${errorData.username.join(', ')}`);
-      } else {
-        setError(
-          errorData?.detail ||
-          errorData?.message ||
-          'Failed to update profile. Please try again.'
-        );
-      }
+      console.error('Update profile error:', err);
+      // DRF reports field problems as {field: [messages]}
+      const fieldError = errorData && typeof errorData === 'object'
+        ? Object.values(errorData).flat().find(m => typeof m === 'string')
+        : null;
+      setError(
+        errorData?.detail ||
+        errorData?.message ||
+        fieldError ||
+        'Failed to update profile. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -231,7 +198,8 @@ const EditProfile = () => {
 
         {success && (
           <div className="edit-profile-success">
-            ✅ Profile updated successfully! Redirecting...
+            ✅ Profile updated successfully! Taking you back to your profile shortly...
+
           </div>
         )}
 
@@ -296,27 +264,16 @@ const EditProfile = () => {
                   placeholder="Email"
                 />
               </div>
-
-              {/* ΝΕΑ read-only πεδία */}
               <div className="edit-profile-form-group">
-                <label htmlFor="registered">Registered:</label>
+                <label htmlFor="afm">Tax Registration Number:</label>
                 <input
                   type="text"
-                  id="registered"
-                  value={formatRegisteredDate(userRegisteredAt)}
+                  id="afm"
+                  name="afm"
+                  value={formData.afm}
                   disabled
                   className="input-disabled"
-                />
-              </div>
-
-              <div className="edit-profile-form-group">
-                <label htmlFor="last_login">Last Login:</label>
-                <input
-                  type="text"
-                  id="last_login"
-                  value={formatLastLogin(userLastLogin)}
-                  disabled
-                  className="input-disabled"
+                  placeholder="Tax Registration Number"
                 />
               </div>
             </div>
@@ -387,19 +344,6 @@ const EditProfile = () => {
                   step="any"
                   min="-180"
                   max="180"
-                />
-              </div>
-
-              <div className="edit-profile-form-group">
-                <label htmlFor="afm">Tax Registration Number:</label>
-                <input
-                  type="text"
-                  id="afm"
-                  name="afm"
-                  value={formData.afm}
-                  disabled
-                  className="input-disabled"
-                  placeholder="Tax Registration Number"
                 />
               </div>
             </div>

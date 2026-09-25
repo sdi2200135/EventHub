@@ -1,5 +1,5 @@
 // src/components/RequireRole.jsx
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
@@ -27,7 +27,6 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
  */
 const RequireRole = ({ roles = [], children }) => {
   const { user, isAuthenticated, loading } = useAuth();
-  const location = useLocation();
 
   // Όσο φορτώνει το auth state, δείξε spinner για να μην κάνουμε λάθος redirect
   if (loading) {
@@ -41,8 +40,7 @@ const RequireRole = ({ roles = [], children }) => {
 
   // Αν δεν είναι συνδεδεμένος → signin με redirect πίσω στο path
   if (!isAuthenticated) {
-    const redirectUrl = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/signin?redirect=${redirectUrl}`} replace />;
+    return <Navigate to={`/signin`} replace />;
   }
 
   // ============================================

@@ -228,21 +228,33 @@ const CreateEvent = () => {
   };
 
   const validateStep1 = () => {
-    if (!formData.title.trim()) return 'Title is required';
-    if (!formData.event_type.trim()) return 'Event Type is required';
-    if (!formData.venue.trim()) return 'Venue is required';
-    if (!formData.address.trim()) return 'Address is required';
-    if (!formData.city.trim()) return 'City is required';
-    if (!formData.country.trim()) return 'Country is required';
-    if (!formData.capacity || formData.capacity <= 0) return 'Capacity must be > 0';
-    if (formData.categories.length === 0) return 'Add at least one category';
-
-    if (!startParts.date || !startParts.hour || !startParts.minute) {
+    if (!formData.title.trim()) 
+      return 'Title is required';
+    if (!formData.event_type.trim()) 
+      return 'Event Type is required';
+    if (!formData.venue.trim()) 
+      return 'Venue is required';
+    if (!formData.address.trim()) 
+      return 'Address is required';
+    if (!formData.city.trim()) 
+      return 'City is required';
+    if (!formData.country.trim()) 
+      return 'Country is required';
+    if (!String(formData.latitude).trim() || !String(formData.longitude).trim())
+      return 'Latitude and longitude are required';
+    if (Number.isNaN(Number(formData.latitude)) || Number(formData.latitude) < -90 || Number(formData.latitude) > 90)
+      return 'Latitude must be a number from -90 to 90';
+    if (Number.isNaN(Number(formData.longitude)) || Number(formData.longitude) < -180 || Number(formData.longitude) > 180)
+      return 'Longitude must be a number from -180 to 180';
+    if (!formData.capacity || formData.capacity <= 0) 
+      return 'Capacity must be > 0';
+    if (formData.categories.length === 0) 
+      return 'Add at least one category';
+    if (!startParts.date || !startParts.hour || !startParts.minute) 
       return 'Start date and time are required';
-    }
-    if (!endParts.date || !endParts.hour || !endParts.minute) {
+    if (!endParts.date || !endParts.hour || !endParts.minute) 
       return 'End date and time are required';
-    }
+    
 
     const startStr = joinDateTime(startParts.date, startParts.hour, startParts.minute);
     const endStr   = joinDateTime(endParts.date,   endParts.hour,   endParts.minute);

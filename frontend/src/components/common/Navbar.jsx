@@ -56,9 +56,6 @@ const Navbar = () => {
     return () => window.removeEventListener('unread-changed', onUnreadChanged);
   }, []);
 
-  const isSignInPage = location.pathname === '/signin';
-  const isSignUpPage = location.pathname === '/signup';
-
   const handleLogout = () => {
     logout();
     window.location.href = '/';
@@ -128,7 +125,6 @@ const Navbar = () => {
             Home Page
           </NavLink>
 
-          {!isSignInPage && !isSignUpPage && (
             <NavLink
               to="/events"
               className={({ isActive }) =>
@@ -137,7 +133,6 @@ const Navbar = () => {
             >
               Find Event
             </NavLink>
-          )}
 
           {isAuthenticated ? (
             <>

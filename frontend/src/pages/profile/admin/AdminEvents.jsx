@@ -162,9 +162,7 @@ const AdminEvents = () => {
       setSelectedEvent(null);
     } catch (err) {
       console.error('Error deleting event:', err);
-      alert(
-        err.message || 'Failed to delete event. It may have active bookings.'
-      );
+      alert(err.message || 'Failed to delete event. It may have active bookings.');
     } finally {
       setActionLoading(false);
     }
@@ -203,7 +201,7 @@ const AdminEvents = () => {
       setShowCancelModal(false);
     } catch (err) {
       console.error('Error cancelling event:', err);
-      alert('Failed to cancel event. Please try again.');
+      alert(err.message || 'Failed to cancel event. Please try again.');
     } finally {
       setActionLoading(false);
     }

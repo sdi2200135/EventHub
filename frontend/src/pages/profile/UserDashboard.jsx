@@ -343,7 +343,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
 
   const formatNumber = (v) => {
     const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(5) : '—';
+    return Number.isFinite(n) ? String(Number(n.toFixed(5))) : '—';
   };
 
   return (
@@ -414,7 +414,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
               <span className="dashboard-info-value">{user?.afm || 'Tax Registration Number'}</span>
             </div>
             <div className="dashboard-info-row">
-              <span className="dashboard-info-label">Registered:</span>
+              <span className="dashboard-info-label">Registered on:</span>
               <span className="dashboard-info-value">{formatRegisteredDate(userRegisteredAt)}</span>
             </div>
             <div className="dashboard-info-row">

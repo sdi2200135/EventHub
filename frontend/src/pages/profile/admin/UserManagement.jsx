@@ -31,11 +31,7 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
+  
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -49,6 +45,11 @@ const UserManagement = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+
 
   // ============================================
   // FILTERS
@@ -104,7 +105,7 @@ const UserManagement = () => {
       );
     } catch (err) {
       console.error('Error approving user:', err);
-      alert('Failed to approve user.');
+      alert(err.message || 'Failed to approve user.');
     } finally {
       setActionLoading(false);
     }
@@ -123,7 +124,7 @@ const UserManagement = () => {
       );
     } catch (err) {
       console.error('Error rejecting user:', err);
-      alert('Failed to reject user.');
+      alert(err.message || 'Failed to reject user.');
     } finally {
       setActionLoading(false);
     }
@@ -142,7 +143,7 @@ const UserManagement = () => {
       downloadFile(response.data, filename, mime);
     } catch (err) {
       console.error('Export user events failed:', err);
-      alert('Export failed. Please try again.');
+      alert(err.message || 'Export failed. Please try again.');
     } finally {
       setExporting(false);
     }
@@ -196,6 +197,12 @@ const UserManagement = () => {
     selectedUser?.registration_date ??
     selectedUser?.created;
 
+    const userLastLogin =
+    selectedUser?.last_login ??
+    selectedUser?.last_login_at ??
+    selectedUser?.lastLogin;
+
+
   const formatRegisteredDate = (value) => {
     if (!value) return '—';
     const d = new Date(value);
@@ -207,9 +214,23 @@ const UserManagement = () => {
     });
   };
 
+  const formatLastLogin = (value) => {
+    if (!value) return 'Never';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }) + ' ' + d.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   const formatNumber = (v) => {
     const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(5) : '—';
+    return Number.isFinite(n) ? String(Number(n.toFixed(5))) : '—';
   };
 
   if (loading) {
@@ -349,6 +370,10 @@ const UserManagement = () => {
                 <span className="um-modal-value">
                   {formatRegisteredDate(userRegisteredAt)}
                 </span>
+              </div>
+              <div className="um-modal-row">
+                <span className="um-modal-label">Last Login:</span>
+                <span className="um-modal-value">{formatLastLogin(userLastLogin)}</span>
               </div>
 
               <div className="um-modal-row">

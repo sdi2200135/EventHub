@@ -134,7 +134,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
 
   const formatNumber = (v) => {
     const n = Number(v);
-    return Number.isFinite(n) ? n.toFixed(5) : '—';
+    return Number.isFinite(n) ? String(Number(n.toFixed(5))) : '—';
   };
 
   return (

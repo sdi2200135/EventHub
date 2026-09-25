@@ -159,7 +159,7 @@ const ExportData = () => {
       downloadFile(data, filename, mime);
     } catch (err) {
       console.error('Export events failed:', err);
-      alert('Export failed. Please try again.');
+      alert(err.message || 'Export failed. Please try again.');
     } finally {
       setExporting(false);
     }

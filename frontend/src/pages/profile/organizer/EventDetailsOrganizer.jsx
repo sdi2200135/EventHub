@@ -98,7 +98,7 @@ const EventDetailsOrganizer = () => {
       await fetchData();
     } catch (err) {
       console.error('Error cancelling event:', err);
-      alert('Failed to cancel event. Please try again.');
+      alert(err.message || 'Failed to cancel event. Please try again.');
     } finally {
       setActionLoading(false);
     }

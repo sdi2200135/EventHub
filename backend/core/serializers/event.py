@@ -68,8 +68,8 @@ class EventWriteSerializer(serializers.ModelSerializer):
     categories = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Category.objects.all(), required=True, allow_empty=False
     )
-    latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
-    longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=False, allow_null=True)
+    latitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=True, allow_null=False)
+    longitude = serializers.DecimalField(max_digits=None, decimal_places=None, required=True, allow_null=False)
     class Meta:
         model = Event
         fields = [

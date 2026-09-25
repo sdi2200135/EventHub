@@ -15,10 +15,6 @@ const MyBookings = () => {
   const [error, setError] = useState('');
   const [filter, setFilter] = useState('all'); 
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
   const fetchBookings = async () => {
     setLoading(true);
     try {
@@ -32,6 +28,11 @@ const MyBookings = () => {
       setLoading(false);
     }
   };
+  
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
 
   // Ημερομηνία + ώρα σε 24ωρο format, ανεξαρτήτως locale
   const formatDate = (dateString) => {

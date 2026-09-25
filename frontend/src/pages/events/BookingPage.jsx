@@ -67,8 +67,7 @@ const BookingPage = () => {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       localStorage.setItem('bookingData', JSON.stringify(bookingData));
-      const currentUrl = `/events/details/${id}/booking`;
-      navigate(`/signin?redirect=${encodeURIComponent(currentUrl)}`);
+      navigate('/signin');
     }
   }, [authLoading, isAuthenticated, navigate, id, bookingData]);
 
