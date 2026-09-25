@@ -1,3 +1,4 @@
 .env
 *.pem
 *.zip
+rel_event_csvs/

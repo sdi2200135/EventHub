@@ -21,6 +21,10 @@ from core.services.event import (
     mark_completed_events,
     DomainError,
 )
+from datetime import timedelta
+
+# to count event view 
+VIEW_COOLDOWN = timedelta(seconds=30)
 
 
 
@@ -86,8 +90,11 @@ class EventViewSet(viewsets.ModelViewSet):
         # don't increase view count when the organizer clicks his event (noise)
         if request.user.is_authenticated and instance.organizer_id != request.user.id:
             view,created = EventView.objects.get_or_create(user=request.user, event=instance)
-            if( not created ):
-                EventView.objects.filter(pk=view.pk).update(view_count=F('view_count') + 1, last_viewed_at = timezone.now())
+            if not created:
+                # view cooldown so somone spamming f5 on purpose cannot increase the view count
+                EventView.objects.filter(
+                    pk=view.pk, last_viewed_at__lte=timezone.now() - VIEW_COOLDOWN
+                ).update(view_count=F('view_count') + 1, last_viewed_at=timezone.now())
 
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
