@@ -133,8 +133,8 @@ const SignUp = () => {
       if (result.success) {
         setSuccess(true);
         setTimeout(() => {
-          navigate('/');
-        }, 8000);
+          navigate('/homepage');
+        }, 2000);
       } else {
         if (result.error && typeof result.error === 'object') {
           const errors = Object.entries(result.error)

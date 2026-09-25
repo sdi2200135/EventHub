@@ -74,7 +74,9 @@ const UserDashboard = ({ user }) => {
   const fetchUnreadCount = async () => {
     try {
       const response = await messageService.getUnreadCount();
+      const count = response.data.count || 0;
       setUnreadCount(response.data.count);
+      window.dispatchEvent(new CustomEvent('unread-changed', { detail: count }));
     } catch (error) {
       console.error('Error fetching unread count:', error);
     }
