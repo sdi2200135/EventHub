@@ -99,7 +99,7 @@ class Event(models.Model):
     
     @property
     def is_active(self):
-        return self.status == self.EventStatus.PUBLISHED and self.start_datetime > timezone.now()
+        return self.status == self.EventStatus.PUBLISHED and self.end_datetime > timezone.now()
     
     @property
     def total_reserved(self):

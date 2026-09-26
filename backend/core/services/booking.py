@@ -20,7 +20,7 @@ class BookingNotPendingError(BookingError):
     pass
 
 class EventNotActiveError(BookingError):
-    """It is triggered when the event is not active (not published or has already started).""" 
+    """It is triggered when the event is not active (not published or has finished).""" 
     pass
 
 class TicketTypeMismatchError(BookingError):
@@ -43,10 +43,7 @@ def create_booking(*, user, event_id, ticket_type_id, number_of_tickets):
         raise EventNotActiveError("This event no longer exists.")
     
     if not event.is_active: #check event is active
-        raise EventNotActiveError(
-            f"Event '{event.title}' is not active. "
-            f"Status: {event.status}, Start: {event.start_datetime}"
-        )
+        raise EventNotActiveError('This event has finished, so it can no longer be booked.')
 
     if event.organizer_id == user.id:
         raise PermissionError("An organizer cannot book their own event.")
@@ -93,10 +90,7 @@ def confirm_booking(*, booking_id,event_id, user):
     
     # check for the active event status
     if not event.is_active: 
-        raise EventNotActiveError(
-            f"Event '{event.title}' is not active. "
-            f"Status: {event.status}, Start: {event.start_datetime}"
-        )
+        raise EventNotActiveError('This event has finished, so it can no longer be booked.')
     # the final reservation of ticket takes place after the confirmation of booking
     reserve_tickets(
         ticket_type_id=booking.ticket_type_id,

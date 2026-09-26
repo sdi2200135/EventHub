@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { eventService, categoryService } from '../../services/api';
-import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import TuneIcon from '@mui/icons-material/Tune';
 import RecommendIcon from '@mui/icons-material/Recommend';
@@ -32,7 +31,6 @@ const RecommendationsPage = () => {
     dateTo: searchParams.get('dateTo') || '',
     priceMin: searchParams.get('priceMin') || '',
     priceMax: searchParams.get('priceMax') || '',
-    search: searchParams.get('search') || '',
   });
 
   // Ξεχωριστά states για τα UI controls
@@ -42,7 +40,6 @@ const RecommendationsPage = () => {
   const [selectedDateTo, setSelectedDateTo] = useState(
     filters.dateTo ? new Date(filters.dateTo) : null
   );
-  const [searchInput, setSearchInput] = useState(filters.search);
 
   // Temporary state για το drawer
   const [draftFilters, setDraftFilters] = useState(filters);
@@ -73,11 +70,9 @@ const RecommendationsPage = () => {
     if (filters.dateTo) params.start_before = `${filters.dateTo}T23:59:59`;
     if (filters.priceMin !== '') params.min_price = filters.priceMin;
     if (filters.priceMax !== '') params.max_price = filters.priceMax;
-    if (filters.search) params.search = filters.search;
 
     setLoading(true);
-    // TODO: change to eventService.getRecommendations(params) when backend is ready
-    eventService.getEvents(params)
+    eventService.getRecommendations(params)
       .then(({ data, count }) => {
         setEvents(data || []);
         setTotalCount(count || 0);
@@ -147,7 +142,6 @@ const RecommendationsPage = () => {
       dateTo: '',
       priceMin: '',
       priceMax: '',
-      search: '',
     };
     setFilters(empty);
     setDraftFilters(empty);
@@ -155,7 +149,6 @@ const RecommendationsPage = () => {
     setSelectedDateTo(null);
     setDraftDateFrom(null);
     setDraftDateTo(null);
-    setSearchInput('');
     setSearchParams({});
     setCurrentPage(1);
   };
@@ -168,27 +161,10 @@ const RecommendationsPage = () => {
       dateTo: '',
       priceMin: '',
       priceMax: '',
-      search: filters.search, // κρατάμε το search
     };
     setDraftFilters(empty);
     setDraftDateFrom(null);
     setDraftDateTo(null);
-  };
-
-  // ============================================
-  // SEARCH
-  // ============================================
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const newFilters = { ...filters, search: searchInput };
-    setFilters(newFilters);
-    setCurrentPage(1);
-
-    const params = new URLSearchParams();
-    Object.keys(newFilters).forEach(k => {
-      if (newFilters[k]) params.append(k, newFilters[k]);
-    });
-    setSearchParams(params);
   };
 
   // ============================================
@@ -198,7 +174,6 @@ const RecommendationsPage = () => {
     const newFilters = { ...filters, [key]: '' };
     setFilters(newFilters);
     setCurrentPage(1);
-    if (key === 'search') setSearchInput('');
     if (key === 'dateFrom') setSelectedDateFrom(null);
     if (key === 'dateTo') setSelectedDateTo(null);
 
@@ -372,21 +347,10 @@ const RecommendationsPage = () => {
       <section className="events-hero">
         <h1>Recommended for You</h1>
         <p className="rec-subtitle">
-          Based on your bookings and the events you have viewed.
+          You must not miss these events. They are made for you!
         </p>
 
-        <form className="events-search-bar" onSubmit={handleSearch}>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search within recommendations..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-          <button type="submit" className="btn-search">
-            <SearchIcon />
-            Search
-          </button>
+        <div className="rec-filter-bar">
           <button
             type="button"
             className={`btn-open-filters ${activeFilterCount > 0 ? 'has-filters' : ''}`}
@@ -398,7 +362,8 @@ const RecommendationsPage = () => {
               <span className="filters-badge">{activeFilterCount}</span>
             )}
           </button>
-        </form>
+        </div>
+
       </section>
 
       {/* RESULTS */}
@@ -414,7 +379,7 @@ const RecommendationsPage = () => {
               )}
             </span>
           </div>
-          {(activeFilterCount > 0 || filters.search) && (
+          {(activeFilterCount > 0 ) && (
             <button className="clear-all" onClick={handleClearAll}>
               Clear all
             </button>
@@ -487,16 +452,6 @@ const RecommendationsPage = () => {
           </div>
         )}
 
-        {/* Active search tag */}
-        {filters.search && (
-          <div className="active-filters">
-            <span className="filter-tag">
-              "{filters.search}"
-              <CloseIcon className="remove-filter" onClick={() => removeFilter('search')} />
-            </span>
-          </div>
-        )}
-
         {/* Results */}
         {loading ? (
           <LoadingSpinner message="Loading recommendations..." />
@@ -504,7 +459,7 @@ const RecommendationsPage = () => {
           <div className="empty-state rec-empty">
             <RecommendIcon className="rec-empty-icon" />
             <p>
-              {filters.search || activeFilterCount > 0
+              { activeFilterCount > 0
                 ? 'No recommendations match your criteria.'
                 : "We don't have enough data yet to recommend events."}
             </p>

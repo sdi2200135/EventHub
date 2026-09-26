@@ -104,8 +104,8 @@ const BookingPage = () => {
           return;
         }
 
-        if (new Date(ev.start_datetime) <= new Date()) {
-          setError('This event has already started. Bookings are closed.');
+        if (new Date(ev.end_datetime) <= new Date()) {
+          setError('This event has finished. Bookings are closed.');
           setEvent(ev);
           setLoading(false);
           return;

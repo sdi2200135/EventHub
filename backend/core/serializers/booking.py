@@ -44,7 +44,7 @@ class BookingSerializer(serializers.ModelSerializer):
             errors['ticket_type'] = 'Ticket type does not belong to this event.'
         #check event is active
         if event and not event.is_active:
-            errors['event'] = 'Bookings are only allowed for published, upcoming events.'
+            errors['event'] = 'This event has finished, so it can no longer be booked.'
         #check availability
         if ticket_type and number_of_tickets and not ticket_type.is_available(number_of_tickets):
             errors['number_of_tickets'] = 'Not enough tickets available for this ticket type.'

@@ -143,6 +143,10 @@ export const eventService = {
     data: await fetchAll(`/bookings/`, { event: eventId})
   }),
 
+  getRecommendations: async (params = {}) => {
+    const { data } = await api.get('/events/recommendations/', { params });
+    return { data: data.results, count: data.count };
+  },
 };
 
 // ============================================

@@ -133,7 +133,7 @@ const EventDetails = () => {
     if (!ev) return false;
     if (ev.status !== 'PUBLISHED') return false;
     if ((ev.available_capacity ?? 0) <= 0) return false;
-    if (new Date(ev.start_datetime) <= new Date()) return false;
+    if (new Date(ev.end_datetime) <= new Date()) return false;
 
     const hasAvailableTicket = (ev.ticket_types || []).some(t => (t.available ?? 0) > 0);
     return hasAvailableTicket;
@@ -148,8 +148,8 @@ const EventDetails = () => {
       case 'PUBLISHED':
         if ((ev.available_capacity ?? 0) <= 0) 
           return 'This event is sold out.';
-        if (new Date(ev.start_datetime) <= new Date()) 
-          return 'This event has already started.';
+        if (new Date(ev.end_datetime) <= new Date()) 
+          return 'This event has finished.';
         return 'No tickets available.';
 
       default: return 'Bookings are not available.';

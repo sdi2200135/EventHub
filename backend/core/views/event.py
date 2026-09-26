@@ -1,6 +1,6 @@
 # core/views/event.py
 from django.db import transaction
-from django.db.models import F, Q, Sum
+from django.db.models import F, Q, Sum, Case, When, IntegerField, Value
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -21,6 +21,7 @@ from core.services.event import (
     mark_completed_events,
     DomainError,
 )
+from core.services.recommendations import rank_event_ids
 from datetime import timedelta
 
 # to count event view 
@@ -54,7 +55,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return qs.filter(visible)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action in ('list','recommendations'):
             return EventListSerializer
         if self.action in ('create', 'update', 'partial_update'):
             return EventWriteSerializer
@@ -65,6 +66,8 @@ class EventViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         if self.action == 'create':
             return [IsOrganizer()]
+        if self.action == 'recommendations':
+            return [IsApprovedUser()]
         return [IsApprovedUser(), IsEventOwnerOrReadOnly()]
 
     def perform_create(self, serializer):
@@ -197,3 +200,35 @@ class EventViewSet(viewsets.ModelViewSet):
         photo = get_object_or_404(EventPhoto, pk=photo_id, event=event)
         photo.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['get'])
+    def recommendations(self, request): 
+        # get the events except the ones who already have a ticket for
+        candidates = self.filter_queryset(self.get_queryset()).filter(
+            status=Event.EventStatus.PUBLISHED,
+            end_datetime__gt=timezone.now(),
+
+
+        ).exclude(organizer=request.user).exclude(
+            pk__in=Booking.objects.filter(
+                attendee=request.user,
+                status=Booking.BookingStatus.CONFIRMED,
+            ).values('event_id')
+        )
+
+        # get top events
+        ordered_ids = rank_event_ids(request.user.id,list(candidates.values_list('pk', flat=True)))
+
+        queryset = candidates
+        if ordered_ids:
+            # push the ranking back into SQL as an ordering column otherwise the pagination would be a differently ordered list
+            ranking = Case(
+                *[When(pk=pk, then=Value(position))
+                  for position, pk in enumerate(ordered_ids)],
+                output_field=IntegerField(),
+            )
+            queryset = candidates.annotate(recommendation_rank=ranking) \
+                                 .order_by('recommendation_rank')
+
+        page = self.paginate_queryset(queryset)
+        return self.get_paginated_response(self.get_serializer(page, many=True).data)

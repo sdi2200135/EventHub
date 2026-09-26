@@ -32,8 +32,8 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
 
   const isEventBookable =
     event.status === 'PUBLISHED' &&
-    // backend doesn't allow purchase ticket after start time
-    new Date(event.start_datetime) > new Date() &&
+    // tickets can be bought 'till the event finishes
+    new Date(event.end_datetime) > new Date() &&
     (event.available_capacity ?? 0) > 0;
 
   if (!isEventBookable) {

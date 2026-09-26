@@ -47,6 +47,9 @@ from .export import (
     events_to_json,
 )
 
+from .recommendations import (
+    rank_event_ids
+)
 __all__ = [
     # Ticket Type services
     'create_ticket_type',
@@ -90,4 +93,6 @@ __all__ = [
     'build_events_data',
     'events_to_xml',
     'events_to_json',
+
+    # recommendations
 ]

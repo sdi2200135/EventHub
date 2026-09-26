@@ -77,7 +77,7 @@ class Booking(models.Model):
                 errors['event'] = 'This event is not accepting bookings.'
             # no bookings, it has already began
             elif not self.event.is_active:
-                errors['event'] = 'This event has already started.'
+                errors['event'] = 'This event has finished.'
 
         # not available tickets to purchase
         if not self.pk and self.ticket_type_id and self.number_of_tickets:
