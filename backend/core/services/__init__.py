@@ -95,4 +95,5 @@ __all__ = [
     'events_to_json',
 
     # recommendations
+    'rank_event_ids',
 ]

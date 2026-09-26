@@ -88,9 +88,8 @@ def build_interactions():
 # ===========================================
 K = 2                   # how many dimensions describe each user and each event
 LEARNING_RATE = 0.01    # eta - how far each step moves, if it is too big overshoots the minimum and bounces if it too small need many more epochs
-                        # same accuracy as 0.05
-REGULARIZATION = 0.005   # lambda - the penalty that keeps the weights small, slide 36(λ(Σ‖v‖² + Σ‖f‖² + Σb² + Σc²))
-                        # minimum bracketed: 0.01/0.02 differ by 0.0001
+                        # same accuracy as 0.005
+REGULARIZATION = 0.005  # lambda - the penalty that keeps the weights small, slide 36(λ(Σ‖v‖² + Σ‖f‖² + Σb² + Σc²))
 MAX_EPOCHS = 17         # no validation slice is available when the live model is fitted, so the stopping rule cannot fire and this ceiling is what ends training
 PATIENCE = 2            # stop after this many epochs with no improvement, taken from slides
 SEED = 67               # fixes the randomness so two runs on the same data give the same model
