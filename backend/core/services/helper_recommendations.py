@@ -3,8 +3,6 @@
 import csv, math, random
 from core.models import Booking, EventView
 
-from core.models import Booking, EventView
-
 # ===========================================
 #   rating scale for recommendations
 # ===========================================
@@ -88,32 +86,27 @@ def build_interactions():
 # ===========================================
 #   Biased Matrix Factorization
 # ===========================================
-K = 4                   # how many dimensions describe each user and each event
-                        # RMSE prefers 4 consistently (4/4 lambda values), precision@5 cannot separate any K from popularity-only
-LEARNING_RATE = 0.005   # eta - how far each step moves, if it is too big overshoots the minimum and bounces if it too small need many more epochs
-                        # best converged setting; 0.002 and below hit MAX_EPOCHS
-REGULARIZATION = 0.01   # lambda - the penalty that keeps the weights small, slide 36(λ(Σ‖v‖² + Σ‖f‖² + Σb² + Σc²))
+K = 2                   # how many dimensions describe each user and each event
+LEARNING_RATE = 0.01    # eta - how far each step moves, if it is too big overshoots the minimum and bounces if it too small need many more epochs
+                        # same accuracy as 0.05
+REGULARIZATION = 0.005   # lambda - the penalty that keeps the weights small, slide 36(λ(Σ‖v‖² + Σ‖f‖² + Σb² + Σc²))
                         # minimum bracketed: 0.01/0.02 differ by 0.0001
 MAX_EPOCHS = 17         # no validation slice is available when the live model is fitted, so the stopping rule cannot fire and this ceiling is what ends training
 PATIENCE = 2            # stop after this many epochs with no improvement, taken from slides
 SEED = 67               # fixes the randomness so two runs on the same data give the same model
 
 
+
+# X_hat(i, j) = μ + b[i] + c[j] + V[i] . F[j]
+#     μ    the mean of the known ratings - a baseline for everybody
+#     b[i]  user bias
+#     c[j]  event bias
+#     V[i]  the user's K latent features
+#     F[j]  the event's K latent features
+#     V[i] * F[j] = interaction between users and events
+# Trained with stochastic gradient descent over S only. A cell which doesn't belong in
+# S is never a training row, it is a value to predict, not a zero to learn from.
 class BiasedMF:
-    """
-    X_hat(i, j) = μ + b[i] + c[j] + V[i] . F[j]
-
-        μ    the mean of the known ratings - a baseline for everybody
-        b[i]  user bias
-        c[j]  event bias
-        V[i]  the user's K latent features
-        F[j]  the event's K latent features
-
-        V[i] * F[j] = interaction between users and events
-
-    Trained with stochastic gradient descent over S only. A cell which doesn't belong in
-    S is never a training row, it is a value to predict, not a zero to learn from.
-    """
 
     def __init__(self, factors=K, learning_rate=LEARNING_RATE,
                  regularization=REGULARIZATION, max_epochs=MAX_EPOCHS,

@@ -97,7 +97,8 @@ DATABASES = {
         os.environ['DATABASE_URL'],
         conn_max_age = 60,
         conn_health_checks = True,
-        ssl_require=True,
+        # DB_SSL=False for a local PostgreSQL; set it to True only for a server that requires TLS (for example Neon).
+        ssl_require=os.environ.get('DB_SSL', 'False').strip().lower() == 'true',
     )
 }
 

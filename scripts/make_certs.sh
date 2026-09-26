@@ -1,5 +1,5 @@
-# TEDI-2026/scripts/make_certs.sh
 #!/bin/sh
+# TEDI-2026/scripts/make_certs.sh
 
 # creates the self-signed certificate used to serve the app over HTTPS for 1 year
 mkdir -p "$(dirname "$0")/../certs"

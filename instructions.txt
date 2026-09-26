@@ -1,22 +1,46 @@
-BACKEND VENV
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python manage.py migrate 
+EVENTHUB — INSTALLATION AND RUN
 
-CERTIFICATE SELF SIGNED
-cd ..
-sh scripts/make_certs.sh
+REQUIREMENTS
+  python3 with the venv module (Ubuntu: sudo apt install python3-venv)
+  node v24.x (via nvm)
+  No database setup is needed: the application connects to our hosted PostgreSQL
+  (Neon) over TLS, so the events, users, bookings and messages are the real data
+  of the project.
 
+Installation and Deployment steps - run from project root:
+1. INSTALL — venv, python packages, npm packages and the self-signed certificate
+   sh scripts/install_requirements.sh
 
-FRONT END
-cd frontend
-node -v            # v24.x, via nvm
-npm install
+2. SETTINGS
+   cp backend/.env.example backend/.env
+   cp frontend/.env.example frontend/.env
+   Nothing needs editing. The application connects to our PostgreSQL database which is Neon.
+   The connection to Neon is over TLS cause Neon refuses plaintext
 
-RUN
-cd backend && source venv/bin/activate
-python manage.py runserver_plus 8000 --threaded \
-  --cert-file ../certs/localhost.pem --key-file ../certs/localhost-key.pem
+3. RUN — two shells, both must stay open
 
-cd frontend && npm run dev
+   shell 1 — backend, HTTPS on 8000:
+     cd backend && source venv/bin/activate
+     python manage.py runserver_plus 8000 --threaded \
+       --cert-file ../certs/localhost.pem --key-file ../certs/localhost-key.pem
+
+   shell 2 — frontend, HTTPS on 5173:
+     cd frontend && npm run dev
+4. OPEN
+   https://localhost:5173        the application
+
+   The certificate is self-signed, so the browser warns once per origin. Accept it at
+   https://localhost:8000/api/ as well as at the app, otherwise the browser silently
+   blocks the app's requests to the API.
+
+5. ACCOUNTS
+   administrator : <admin> / <123456>      is set by the .env
+   organizer/attendee     : <tsaki> / <!@#$%^&*>      creates and manages events
+   Any new sign-up starts as PENDING and has to be approved by the administrator
+   before it can log in.
+
+RECOMMENDER — offline evaluation (optional)
+  cd backend && source venv/bin/activate
+   python manage.py evaluate_recommender          5-fold cross-validation on the e-class dataset
+   python manage.py evaluate_recommender --tune   the K / lambda / eta grid
+   Reads rel_event_csvs/event_interest.csv; pass --csv <path> if it is elsewhere.
