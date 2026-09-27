@@ -34,7 +34,7 @@ const MyBookings = () => {
   }, []);
 
 
-  // Ημερομηνία + ώρα σε 24ωρο format, ανεξαρτήτως locale
+  // Date + time in 24-hour format, regardless of locale
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);

@@ -288,22 +288,6 @@
   box-shadow: 0 4px 12px rgba(32, 56, 85, 0.4);
 }
 
-/* .my-bookings-btn-cancel {
-  background: transparent;
-  color: #e74c3c;
-  border: 1px solid rgba(231, 76, 60, 0.4);
-}
-
-.my-bookings-btn-cancel:hover:not(:disabled) {
-  background: rgba(231, 76, 60, 0.1);
-  border-color: #e74c3c;
-}
-
-.my-bookings-btn-cancel:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-} */
-
 /* .my-bookings-btn-cancel svg, */
 .my-bookings-btn-view svg {
   font-size: 16px !important;
