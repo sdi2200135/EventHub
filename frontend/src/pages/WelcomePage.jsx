@@ -10,11 +10,11 @@ const WelcomePage = () => {
   const goHome = () => {
     if (isLeaving) return;
     setIsLeaving(true);
-    // Μικρή καθυστέρηση για να προλάβει το fade-out animation
+    // Small delay so the fade-out animation has time to finish
     setTimeout(() => navigate('/homepage'), 400);
   };
 
-  // Enter / Space για πρόσβαση (accessibility)
+  // Enter / Space for accessibility
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -41,10 +41,10 @@ const WelcomePage = () => {
       <div className="welcome-orb welcome-orb-3" aria-hidden="true" />
       <div className="welcome-orb welcome-orb-4" aria-hidden="true" />
 
-      {/* Watermark logo - καλύπτει όλο το background */}
+      {/* Watermark logo - covers the whole background */}
       <div className="welcome-watermark" aria-hidden="true" />
 
-      {/* Welcome μήνυμα */}
+      {/* Welcome message */}
       <div className="welcome-content">
         <h1 className="welcome-heading">Welcome to EventHub</h1>
         <p className="welcome-subtext">

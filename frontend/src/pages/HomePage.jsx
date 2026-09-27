@@ -19,7 +19,7 @@ const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [totalCount, setTotalCount] = useState(0);
 
-  // State για τα φίλτρα του search
+  // State for the search filters
   const [searchFilters, setSearchFilters] = useState({
     category: '',
     region: ''
@@ -49,12 +49,12 @@ const HomePage = () => {
   };
 
   // ============================================
-  // SEARCH HANDLER - ΠΗΓΑΙΝΕΙ ΣΤΗ ΣΕΛΙΔΑ EVENTS
+  // SEARCH HANDLER - NAVIGATES TO THE EVENTS PAGE
   // ============================================
   const handleSearch = (e) => {
     e.preventDefault();
     
-    // Δημιουργία των query parameters
+    // Build the query parameters
     const params = new URLSearchParams();
     
     if (searchFilters.category && searchFilters.category !== 'all') {
@@ -72,7 +72,7 @@ const HomePage = () => {
       params.append('dateTo', dateStr);
     }
     
-    // Πλοήγηση στη σελίδα Events με τα φίλτρα
+    // Navigate to the Events page with the filters
     navigate(`/events?${params.toString()}`);
   };
 
@@ -114,7 +114,7 @@ const HomePage = () => {
   };
 
   const getEventPhoto = (event) => {
-    // endpoind sends image 0 as cover photo
+    // the endpoint sends image 0 as the cover photo
       return event.cover_photo || event.photos?.[0]?.image || null
   };
 
@@ -239,7 +239,7 @@ const HomePage = () => {
                   className="event-card-link"
                 >
                   <div className="event-card">
-                    {/* ΦΩΤΟΓΡΑΦΙΑ */}
+                    {/* PHOTO */}
                     <div className="event-image">
                       {photo ? (
                         <img 
@@ -252,30 +252,30 @@ const HomePage = () => {
                       )}
                     </div>
                     
-                    {/* ΠΛΗΡΟΦΟΡΙΕΣ - ΚΕΝΤΡΑΡΙΣΜΕΝΕΣ */}
+                    {/* INFO - CENTERED */}
                     <div className="event-body">                      
-                      {/* ΤΙΤΛΟΣ */}
+                      {/* TITLE */}
                       <h3 className="event-title">{event.title}</h3>
                       
-                      {/* Category: Στοιχείο */}
+                      {/* Category: element */}
                       <p className="event-info">
                         <span className="info-label">Category: </span>
                         <span className="info-value">{categoriesText}</span>
                       </p>
 
-                      {/* REGION: Στοιχείο */}
+                      {/* REGION: element */}
                       <p className="event-info">
                         <span className="info-label">Region: </span>
                         <span className="info-value">{event.city}</span>
                       </p>
 
-                      {/* DATE: Στοιχείο */}
+                      {/* DATE: element */}
                       <p className="event-info">
                         <span className="info-label">Date: </span>
                         <span className="info-value">{formatDate(event.start_datetime)}</span>
                       </p>
                       
-                      {/* AVAILABILITY - ΩΣ ΓΡΑΜΜΗ ΠΛΗΡΟΦΟΡΙΑΣ ΜΕ ΧΡΩΜΑ */}
+                      {/* AVAILABILITY - AS AN INFO LINE WITH COLOR */}
                       <p className="event-info">
                         <span className="info-label">Availability: </span>
                         <span 

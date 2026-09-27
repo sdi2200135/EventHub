@@ -31,7 +31,7 @@
   will-change: transform;
 }
 
-/* Orb 1 — μπλε, πάνω αριστερά */
+/* Orb 1 — blue, top left */
 .welcome-orb-1 {
   width: 450px;
   height: 450px;
@@ -41,7 +41,7 @@
   animation: orbFloat1 18s ease-in-out infinite;
 }
 
-/* Orb 2 — μωβ, κάτω δεξιά */
+/* Orb 2 — purple, bottom right */
 .welcome-orb-2 {
   width: 500px;
   height: 500px;
@@ -51,7 +51,7 @@
   animation: orbFloat2 22s ease-in-out infinite;
 }
 
-/* Orb 3 — τυρκουάζ, κέντρο */
+/* Orb 3 — turquoise, center */
 .welcome-orb-3 {
   width: 380px;
   height: 380px;
@@ -61,7 +61,7 @@
   animation: orbFloat3 26s ease-in-out infinite;
 }
 
-/* Orb 4 — κίτρινο accent, κάτω αριστερά */
+/* Orb 4 — yellow accent, bottom left */
 .welcome-orb-4 {
   width: 280px;
   height: 280px;
@@ -73,7 +73,7 @@
 }
 
 /* ============================================
-   WATERMARK LOGO - καλύπτει όλο το background
+   WATERMARK LOGO - covers the whole background
    ============================================ */
 .welcome-watermark {
   position: absolute;
@@ -82,15 +82,15 @@
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  opacity: 0.1;              /* πολύ διακριτικό */
+  opacity: 0.1;              /* very subtle */
   pointer-events: none;
   z-index: 1;
-  /* Απαλό blur για πιο «watermark» αίσθηση */
+  /* Soft blur for a more "watermark" feel */
   filter: blur(1px);
   animation: welcomeWatermarkIn 1s ease-out;
 }
 
-/* Διακοσμητικό glow πίσω από το κείμενο */
+/* Decorative glow behind the text */
 .welcome-overlay::before {
   content: '';
   position: absolute;
@@ -141,7 +141,7 @@
 }
 
 /* ============================================
-   CLICK HINT - μικρό διακριτικό κείμενο
+   CLICK HINT - small subtle text
    ============================================ */
 .welcome-hint {
   font-size: 0.75rem;
@@ -228,7 +228,7 @@
 }
 
 /* ============================================
-   ORB ANIMATIONS - απαλή κίνηση
+   ORB ANIMATIONS - gentle motion
    ============================================ */
 @keyframes orbFloat1 {
   0%, 100% {
@@ -302,7 +302,7 @@
     margin-top: 2rem;
   }
 
-  /* Πιο ελαφριά orbs για tablets */
+  /* Lighter orbs for tablets */
   .welcome-orb {
     filter: blur(60px);
   }
@@ -338,7 +338,7 @@
     margin-top: 1.5rem;
   }
 
-  /* Ακόμα πιο ελαφριά orbs για κινητά */
+  /* Even lighter orbs for mobile */
   .welcome-orb {
     filter: blur(50px);
     animation-duration: 30s;

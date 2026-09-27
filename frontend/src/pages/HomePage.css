@@ -22,7 +22,7 @@
   padding: 0 1.5rem;
 }
 
-/* ========== ΑΡΙΣΤΕΡΑ: Κείμενο ========== */
+/* LEFT: Text */
 .hero-left {
   flex: 1;
   max-width: 100%;
@@ -44,7 +44,7 @@
   max-width: 45%;
 }
 
-/* ========== ΔΕΞΙΑ: Search Bar ========== */
+/* RIGHT: Search Bar */
 .hero-right {
   flex: 1;
   max-width: 100%;
@@ -200,7 +200,7 @@
   flex-wrap: wrap;
 }
 
-/* ========== ΚΑΤΗΓΟΡΙΕΣ ========== */
+/* CATEGORIES */
 .categories-list .category-item {
   color: #B0B0B0;
   font-size: 1rem;
@@ -215,7 +215,7 @@
   color: #FFFFFF;
 }
 
-/* ΕΠΙΛΕΓΜΕΝΗ ΚΑΤΗΓΟΡΙΑ - ΛΕΥΚΟ, BOLD, ΥΠΟΓΡΑΜΜΙΣΜΕΝΗ */
+/* SELECTED CATEGORY - WHITE, BOLD, UNDERLINED */
 .categories-list .category-item.active {
   color: #FFFFFF;
   font-weight: 700;
@@ -304,7 +304,7 @@
 }
 
 /* ============================================
-   EVENTS GRID - 5 ΚΑΡΤΕΣ ΑΝΑ ΣΕΙΡΑ
+   EVENTS GRID - 5 CARDS PER ROW
    ============================================ */
 .events-grid {
   display: grid;
@@ -337,7 +337,7 @@
 }
 
 /* ============================================
-   EVENT CARD LINK - ΟΛΟΚΛΗΡΗ Η ΚΑΡΤΑ CLICKABLE
+   EVENT CARD LINK - THE WHOLE CARD IS CLICKABLE
    ============================================ */
 .event-card-link {
   text-decoration: none;
@@ -350,7 +350,7 @@
 }
 
 /* ============================================
-   EVENT CARD - ΝΕΑ ΧΡΩΜΑΤΑ
+   EVENT CARD - NEW COLORS
    ============================================ */
 .event-card {
   background: #181818;
@@ -407,7 +407,7 @@
 }
 
 /* ============================================
-   EVENT BODY - ΚΕΝΤΡΑΡΙΣΜΕΝΑ ΠΑΝΤΑ
+   EVENT BODY - ALWAYS CENTERED
    ============================================ */
 .event-card .event-body {
   padding: 0.75rem 1rem 1rem;
@@ -418,7 +418,7 @@
   flex: 1;
 }
 
-/* ========== ΤΙΤΛΟΣ - ΝΑ ΚΑΝΕΙ WORD-WRAP ========== */
+/* TITLE - SHOULD WORD-WRAP */
 .event-card .event-body .event-title {
   font-size: 0.95rem;
   font-weight: 700;
@@ -433,7 +433,7 @@
   line-height: 1.3;
 }
 
-/* ========== ΠΛΗΡΟΦΟΡΙΕΣ - ΚΑΤΗΓΟΡΙΑ: ΣΤΟΙΧΕΙΟ ========== */
+/* INFO - CATEGORY: ELEMENT */
 .event-card .event-body .event-info {
   font-size: 0.75rem;
   margin-bottom: 0.15rem;
@@ -451,7 +451,7 @@
   color: #B0B0B0;
 }
 
-/* ========== AVAILABILITY - ΜΕ ΧΡΩΜΑ ========== */
+/* AVAILABILITY - WITH COLOR */
 .event-card .event-body .event-info .availability-value {
   font-weight: 700;
 }
