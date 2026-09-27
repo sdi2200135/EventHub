@@ -1,6 +1,6 @@
 /* src/pages/events/RecommendationsPage.css */
 
-/* Το hero έχει πλέον icon + subtitle, οπότε μικρές προσαρμογές */
+/* The hero now has an icon + subtitle, so small adjustments */
 .recommendations-page .events-hero h1 {
   display: inline-flex;
   align-items: center;
@@ -19,14 +19,14 @@
   margin: -0.5rem 0 1.5rem 0;
 }
 
-/* Το search bar χωρίς Filters button — πιο στενό */
+/* The search bar without the Filters button — narrower */
 .recommendations-page .rec-filter-bar {
   display: flex;
   justify-content: right;
   margin-bottom: 1.5rem;
 }
 
-/* Empty state με icon */
+/* Empty state with icon */
 .recommendations-page .empty-state.rec-empty {
   display: flex;
   flex-direction: column;

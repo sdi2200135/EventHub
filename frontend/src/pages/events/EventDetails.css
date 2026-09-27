@@ -18,7 +18,7 @@
 }
 
 /* ============================================
-   ΑΡΙΣΤΕΡΗ ΣΤΗΛΗ
+   LEFT COLUMN
    ============================================ */
 .event-left-column {
   display: flex;
@@ -65,7 +65,7 @@
   line-height: 1.4;
 }
 
-/* Σταθερό πλάτος στο label ώστε τα βελάκια να ευθυγραμμίζονται κατακόρυφα */
+/* Fixed width on the label so the arrows align vertically */
 .meta-item .meta-label {
   font-size: 1rem;
   font-weight: 400;
@@ -92,7 +92,7 @@
 }
 
 /* ============================================
-   ΔΕΞΙΑ ΣΤΗΛΗ
+   RIGHT COLUMN
    ============================================ */
 .event-right-column {
   display: flex;
@@ -169,7 +169,7 @@
 }
 
 /* ============================================
-   EVENT INFO LIST (2 στήλες)
+   EVENT INFO LIST (2 columns)
    ============================================ */
 .event-info-list {
   display: grid;
@@ -191,7 +191,7 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* Αφαίρεση της κάτω γραμμής από τα τελευταία 2 (τα κάτω-κάτω) */
+/* Remove the bottom border from the last 2 (the bottom-most) */
 .info-list-item:nth-last-child(-n+2) {
   border-bottom: none;
 }

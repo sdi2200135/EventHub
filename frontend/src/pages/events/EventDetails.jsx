@@ -10,7 +10,7 @@ import './EventDetails.css';
 import BookTicket from '../../components/BookTicket';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-// Διόρθωση για τα εικονίδια του Leaflet (χρειάζεται για να δουλέψει με React)
+// Fix for the Leaflet icons (needed to work with React)
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -51,7 +51,7 @@ const EventDetails = () => {
     fetchEvent();
   }, [id]);
 
-  // Αρχικοποίηση χάρτη όταν φορτώσει το event και είναι ενεργή η καρτέλα description
+  // Initialize the map when the event has loaded and the description tab is active
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.remove();
@@ -104,7 +104,7 @@ const EventDetails = () => {
     });
   };
 
-  // 24h format ανεξαρτήτως locale
+  // 24h format regardless of locale
   const formatDateTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
@@ -117,7 +117,7 @@ const EventDetails = () => {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
-  // Επιστρέφει το κείμενο των κατηγοριών — υποστηρίζει strings και objects {id, name}
+  // Returns the category text — supports strings and objects {id, name}
   const getCategoriesText = (ev) => {
     if (!ev?.categories || ev.categories.length === 0) return null;
     return ev.categories
@@ -156,13 +156,13 @@ const EventDetails = () => {
     }
   };
 
-  // Άνοιγμα modal
+  // Open modal
   const openModal = (ticketId) => {
     setSelectedTicket(ticketId);
     setIsModalOpen(true);
   };
 
-  // Κλείσιμο modal
+  // Close modal
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedTicket(null);
@@ -207,7 +207,7 @@ const EventDetails = () => {
   return (
     <div className="event-details-page">
       <div className="event-details-container">
-        {/* ΑΡΙΣΤΕΡΗ ΣΤΗΛΗ: Εικόνα + Category + When + Where */}
+        {/* LEFT COLUMN: Image + Category + When + Where */}
         <div className="event-left-column">
           <div className="event-image-wrapper">
             {photos.length > 0 ? (
@@ -220,7 +220,7 @@ const EventDetails = () => {
 
                 {hasMultiplePhotos && (
                   <>
-                    {/* Αριστερό βελάκι */}
+                    {/* Left arrow */}
                     <button
                       className="carousel-arrow carousel-arrow-left"
                       onClick={goToPrevPhoto}
@@ -229,7 +229,7 @@ const EventDetails = () => {
                       ‹
                     </button>
 
-                    {/* Δεξί βελάκι */}
+                    {/* Right arrow */}
                     <button
                       className="carousel-arrow carousel-arrow-right"
                       onClick={goToNextPhoto}
@@ -283,7 +283,7 @@ const EventDetails = () => {
           </div>
         </div>
 
-        {/* ΔΕΞΙΑ ΣΤΗΛΗ: Τίτλος + Tabs + Περιεχόμενο */}
+        {/* RIGHT COLUMN: Title + Tabs + Content */}
         <div className="event-right-column">
           <h1 className="event-title">
             {event.title}
@@ -321,7 +321,7 @@ const EventDetails = () => {
             {/* Description Tab */}
             {activeTab === 'description' && (
               <div className="tab-panel description-panel">
-                {/* Event Info List — 2 στήλες */}
+                {/* Event Info List — 2 columns */}
                 <div className="event-info-list">
                   <div className="info-list-item">
                     <span className="info-list-label">Category</span>
@@ -384,10 +384,10 @@ const EventDetails = () => {
               </div>
             )}
 
-            {/* Organizer Tab - ΧΩΡΙΣ STATS */}
+            {/* Organizer Tab - WITHOUT STATS */}
             {activeTab === 'organizer' && (
               <div className="tab-panel organizer-panel">
-                {/* Όνομα χωρίς avatar */}
+                {/* Name without avatar */}
                 <div className="organizer-header">
                   <h3 className="organizer-name">
                     {event.organizer?.first_name} {event.organizer?.last_name}
@@ -395,7 +395,7 @@ const EventDetails = () => {
                   <p className="organizer-username">@{event.organizer?.username}</p>
                 </div>
 
-                {/* Δύο στήλες με πληροφορίες organizer */}
+                {/* Two columns with organizer info */}
                 <div className="organizer-details-grid">
                   <div className="organizer-detail-column">
                     <h4>Contact Information</h4>
@@ -465,7 +465,7 @@ const EventDetails = () => {
                         </div>
                       </div>
 
-                      {/* Μήνυμα αιτιολόγησης όταν δεν επιτρέπεται κράτηση */}
+                      {/* Reason message when booking is not allowed */}
                       {!canBook(event) && (
                         <p className="booking-block-reason">
                           {getBookingBlockReason(event)}

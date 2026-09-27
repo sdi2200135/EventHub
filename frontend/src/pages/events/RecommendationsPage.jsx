@@ -33,7 +33,7 @@ const RecommendationsPage = () => {
     priceMax: searchParams.get('priceMax') || '',
   });
 
-  // Ξεχωριστά states για τα UI controls
+  // Separate states for the UI controls
   const [selectedDateFrom, setSelectedDateFrom] = useState(
     filters.dateFrom ? new Date(filters.dateFrom) : null
   );
@@ -41,7 +41,7 @@ const RecommendationsPage = () => {
     filters.dateTo ? new Date(filters.dateTo) : null
   );
 
-  // Temporary state για το drawer
+  // Temporary state for the drawer
   const [draftFilters, setDraftFilters] = useState(filters);
   const [draftDateFrom, setDraftDateFrom] = useState(selectedDateFrom);
   const [draftDateTo, setDraftDateTo] = useState(selectedDateTo);
@@ -51,7 +51,7 @@ const RecommendationsPage = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   // ============================================
-  // LOAD CATEGORIES (για το dropdown)
+  // LOAD CATEGORIES (for the dropdown)
   // ============================================
   useEffect(() => {
     categoryService.getCategories()
@@ -198,7 +198,7 @@ const RecommendationsPage = () => {
     setSearchParams(params);
   };
 
-  // Μέτρημα ενεργών φίλτρων
+  // Counting active filters
   const hasSingleDate =
     filters.dateFrom && filters.dateTo && filters.dateFrom === filters.dateTo;
 

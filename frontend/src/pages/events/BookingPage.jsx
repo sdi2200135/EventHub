@@ -15,7 +15,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
 
   // ============================================
-  // 1. ΦΟΡΤΩΣΗ/ΑΠΟΘΗΚΕΥΣΗ ΔΕΔΟΜΕΝΩΝ
+  // 1. LOAD/SAVE DATA
   // ============================================
   const getBookingData = () => {
     const ticketId = searchParams.get('ticketId');
@@ -62,7 +62,7 @@ const BookingPage = () => {
   const [submitError, setSubmitError] = useState(null);
 
   // ============================================
-  // 2. ΕΛΕΓΧΟΣ AUTHENTICATION
+  // 2. AUTHENTICATION CHECK
   // ============================================
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -72,7 +72,7 @@ const BookingPage = () => {
   }, [authLoading, isAuthenticated, navigate, id, bookingData]);
 
   // ============================================
-  // 3. ΦΟΡΤΩΣΗ ΣΤΟΙΧΕΙΩΝ EVENT
+  // 3. LOAD EVENT DETAILS
   // ============================================
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -83,7 +83,7 @@ const BookingPage = () => {
         const response = await eventService.getEvent(bookingData.eventId);
         const ev = response.data;
 
-        // Έλεγχος κατάστασης
+        // Status check
         if (ev.status !== 'PUBLISHED') {
           setError(
             ev.status === 'CANCELLED'
@@ -134,14 +134,14 @@ const BookingPage = () => {
   }, [bookingData.eventId, bookingData.ticketId, isAuthenticated]);
 
   // ============================================
-  // 4. ΚΑΘΑΡΙΣΜΟΣ LOCALSTORAGE
+  // 4. CLEAR LOCALSTORAGE
   // ============================================
   const clearBookingData = () => {
     localStorage.removeItem('bookingData');
   };
 
   // ============================================
-  // 5. ΜΟΡΦΟΠΟΙΗΣΗ ΗΜΕΡΟΜΗΝΙΑΣ — 24h format
+  // 5. DATE FORMATTING — 24h format
   // ============================================
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -158,7 +158,7 @@ const BookingPage = () => {
   };
 
   // ============================================
-  // 6. ΥΠΟΛΟΓΙΣΜΟΣ ΣΥΝΟΛΟΥ
+  // 6. CALCULATE TOTAL
   // ============================================
   const getTotalCost = () => {
     if (!ticket) return 0;
@@ -166,7 +166,7 @@ const BookingPage = () => {
   };
 
   // ============================================
-  // 7. ΥΠΟΒΟΛΗ ΚΡΑΤΗΣΗΣ - ΜΕ CONFIRM DIALOG
+  // 7. SUBMIT BOOKING - WITH CONFIRM DIALOG
   // ============================================
   const handleSubmitBooking = async () => {
     if (!isAuthenticated) {
@@ -174,7 +174,7 @@ const BookingPage = () => {
       return;
     }
 
-    // Guard: τελευταίος έλεγχος πριν το POST
+    // Guard: last check before POST
     if (!event || event.status !== 'PUBLISHED') {
       setSubmitError('This event is no longer available for booking.');
       return;
@@ -186,7 +186,7 @@ const BookingPage = () => {
     }
 
     // ============================================
-    // CONFIRM DIALOG - ΑΠΑΙΤΕΙΤΑΙ ΑΠΟ ΤΗΝ ΕΚΦΩΝΗΣΗ
+    // CONFIRM DIALOG - REQUIRED BY THE ASSIGNMENT
     // ============================================
     const confirmMessage = [
       '⚠️  Confirm this booking?',
@@ -231,7 +231,7 @@ const BookingPage = () => {
   };
 
   // ============================================
-  // 8. ΕΛΕΓΧΟΣ ΑΝ ΥΠΑΡΧΟΥΝ ΔΕΔΟΜΕΝΑ
+  // 8. CHECK IF DATA EXISTS
   // ============================================
   if (!bookingData.ticketId) {
     return (
@@ -246,7 +246,7 @@ const BookingPage = () => {
   }
 
   // ============================================
-  // 9. ΦΟΡΤΩΣΗ
+  // 9. LOADING
   // ============================================
   if (authLoading || loading) {
     return <LoadingSpinner message="Loading booking details..." />;
@@ -268,7 +268,7 @@ const BookingPage = () => {
   }
 
   // ============================================
-  // 11. SUCCESS - ΜΕ ΚΟΥΜΠΙ ΓΙΑ ΕΠΙΣΤΡΟΦΗ ΣΤΗΝ ΑΡΧΙΚΗ
+  // 11. SUCCESS - WITH BUTTON TO RETURN HOME
   // ============================================
   if (success) {
     return (

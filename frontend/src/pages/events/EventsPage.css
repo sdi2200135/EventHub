@@ -275,7 +275,7 @@
   line-height: 1.3;
 }
 
-/* ✅ ΑΛΛΑΓΗ: line-clamp 2 για να μη χαλάει το layout αν έχει πολλές κατηγορίες */
+/* ✅ CHANGE: line-clamp 2 so the layout doesn't break when there are many categories */
 .event-card .event-body .event-info {
   font-size: 0.75rem;
   margin-bottom: 0.15rem;

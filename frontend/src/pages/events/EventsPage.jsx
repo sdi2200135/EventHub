@@ -33,7 +33,7 @@ const EventsPage = () => {
     search: searchParams.get('search') || '',
   });
 
-  // Ξεχωριστά states για τα UI controls (γιατί τα DatePickers δουλεύουν με Date objects)
+  // Separate states for the UI controls (because DatePickers work with Date objects)
   const [selectedDateFrom, setSelectedDateFrom] = useState(
     filters.dateFrom ? new Date(filters.dateFrom) : null
   );
@@ -42,7 +42,7 @@ const EventsPage = () => {
   );
   const [searchInput, setSearchInput] = useState(filters.search);
 
-  // Temporary state για το drawer (δεν εφαρμόζεται μέχρι το Apply)
+  // Temporary state for the drawer (not applied until Apply)
   const [draftFilters, setDraftFilters] = useState(filters);
   const [draftDateFrom, setDraftDateFrom] = useState(selectedDateFrom);
   const [draftDateTo, setDraftDateTo] = useState(selectedDateTo);
@@ -85,7 +85,7 @@ const EventsPage = () => {
   // ============================================
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
-  // Scroll στο top όταν αλλάζει σελίδα
+  // Scroll to top when the page changes
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -95,7 +95,7 @@ const EventsPage = () => {
   // DRAWER HANDLERS
   // ============================================
   const openDrawer = () => {
-    // Sync draft με τα τρέχοντα φίλτρα
+    // Sync draft with the current filters
     setDraftFilters(filters);
     setDraftDateFrom(selectedDateFrom);
     setDraftDateTo(selectedDateTo);
@@ -163,7 +163,7 @@ const EventsPage = () => {
       dateTo: '',
       priceMin: '',
       priceMax: '',
-      search: filters.search, // κρατάμε το search
+      search: filters.search, // we keep the search
     };
     setDraftFilters(empty);
     setDraftDateFrom(null);
@@ -218,8 +218,8 @@ const EventsPage = () => {
     setSearchParams(params);
   };
 
-  // Μέτρημα ενεργών φίλτρων (για το badge)
-  // Αν dateFrom === dateTo μετράει ως 1 (single date), αλλιώς 2
+  // Count active filters (for the badge)
+  // If dateFrom === dateTo it counts as 1 (single date), otherwise 2
   const hasSingleDate =
     filters.dateFrom && filters.dateTo && filters.dateFrom === filters.dateTo;
 
@@ -442,7 +442,7 @@ const EventsPage = () => {
               </span>
             )}
 
-            {/* Date — αν είναι ίδια μέρα, ένα tag. Αλλιώς From/To ξεχωριστά */}
+            {/* Date — if it's the same day, one tag. Otherwise From/To separately */}
             {hasSingleDate ? (
               <span className="filter-tag">
                 Date: {new Date(filters.dateFrom).toLocaleDateString()}
