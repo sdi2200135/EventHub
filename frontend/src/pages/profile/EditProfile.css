@@ -67,7 +67,7 @@
   font-size: 14px;
 }
 
-/* Form Layout — 3 ίσες στήλες */
+/* Form Layout — 3 equal columns */
 .edit-profile-form-layout {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -115,16 +115,16 @@
   color: #6c7a89;
 }
 
-/* Disabled fields — αχνό κείμενο, μη επεξεργάσιμα */
+/* Disabled fields — faded text, not editable */
 .edit-profile-form-group input.input-disabled {
-  color: #6c7a89;           /* αχνό γκρι για το κείμενο */
-  background: #171717;      /* ελαφρώς πιο σκούρο background */
+  color: #6c7a89;           /* faded grey for the text */
+  background: #171717;      /* slightly darker background */
   border-color: #232323;
   cursor: not-allowed;
 }
 
 .edit-profile-form-group input.input-disabled:focus {
-  border-color: #232323;    /* χωρίς focus highlight */
+  border-color: #232323;    /* no focus highlight */
 }
 
 /* Password Section */
@@ -198,7 +198,7 @@
     gap: 32px;
   }
 
-  /* Το password section πάει κάτω από τα δύο columns, full width */
+  /* The password section goes below the two columns, full width */
   .edit-profile-actions-section {
     grid-column: 1 / -1;
   }
@@ -275,7 +275,7 @@
   color: #2ecc71;
 }
 
-/* Mismatch μήνυμα κάτω από το confirm password */
+/* Mismatch message below the confirm password */
 .pwd-mismatch {
   display: block;
   margin-top: 0.35rem;

@@ -7,11 +7,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import './EditProfile.css';
 
 // ============================================
-// PASSWORD REQUIREMENTS (ίδια λογική με SignUp)
+// PASSWORD REQUIREMENTS (same logic as SignUp)
 // ============================================
 const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
 
-// Helper για rendering requirement
+// Helper for rendering a requirement
 const Requirement = ({ ok, children }) => (
   <li className={`pwd-req ${ok ? 'ok' : ''}`}>
     <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
@@ -316,7 +316,7 @@ const EditProfile = () => {
                 />
               </div>
 
-              {/* ΝΕΑ επεξεργάσιμα πεδία */}
+              {/* NEW editable fields */}
               <div className="edit-profile-form-group">
                 <label htmlFor="latitude">Latitude:</label>
                 <input

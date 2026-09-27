@@ -32,7 +32,7 @@ const UserDashboard = ({ user }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // ============================================
-  // 1. ACTIVE TAB (sync με URL)
+  // 1. ACTIVE TAB (synced with the URL)
   // ============================================
   const getInitialTab = () => {
     const tab = searchParams.get('tab');
@@ -46,7 +46,7 @@ const UserDashboard = ({ user }) => {
     setSearchParams({ tab });
   };
 
-  // Αν το URL έχει άκυρο tab → reset
+  // If the URL has an invalid tab → reset
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
     if (tabFromUrl && !VALID_TAB_IDS.includes(tabFromUrl)) {
@@ -291,7 +291,7 @@ const UserDashboard = ({ user }) => {
 // ============================================
 const PersonalInfoTab = ({ user, navigate }) => {
   // ============================================
-  // ΝΕΑ ΠΕΔΙΑ — ξεχωριστές μεταβλητές
+  // NEW FIELDS — separate variables
   // ============================================
   const userLatitude =
     user?.latitude ??
@@ -367,7 +367,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
         </div>
 
         <div className="profile-info-grid">
-          {/* Στήλη 1 */}
+          {/* Column 1 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Username:</span>
@@ -395,7 +395,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
             </div>
           </div>
 
-          {/* Στήλη 2 */}
+          {/* Column 2 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Phone Number:</span>
@@ -431,7 +431,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
 };
 
 // ============================================
-// MESSAGES LAYOUT (3 στήλες)
+// MESSAGES LAYOUT (3 columns)
 // ============================================
 const MessagesLayout = ({
   user, messages, loading, activeFolder, setActiveFolder,
