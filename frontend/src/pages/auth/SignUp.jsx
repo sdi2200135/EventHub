@@ -7,10 +7,10 @@ import './auth.css';
   // ============================================
   // PASSWORD REQUIREMENTS
   // ============================================
-  // Μόνο αγγλικά γράμματα, αριθμοί και "κοινά" σύμβολα
+  // Only English letters, numbers and "common" symbols
   const ALLOWED_PASSWORD_REGEX = /^[A-Za-z0-9!@#$%^&*()_\-+=[\]{};:'",.<>/?\\|`~]+$/;
 
-  // Helper για rendering requirement
+  // Helper for rendering a requirement
   const Requirement = ({ ok, children }) => (
     <li className={`pwd-req ${ok ? 'ok' : ''}`}>
       <span className="pwd-req-icon">{ok ? '✓' : '○'}</span>
@@ -63,14 +63,14 @@ const SignUp = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Phone: μόνο ψηφία, max 10
+    // Phone: digits only, max 10
     if (name === 'phone') {
       const digitsOnly = value.replace(/\D/g, '').slice(0, 10);
       setFormData(prev => ({ ...prev, phone: digitsOnly }));
       return;
     }
 
-    // AFM: μόνο ψηφία, max 9
+    // AFM: digits only, max 9
     if (name === 'afm') {
       const digitsOnly = value.replace(/\D/g, '').slice(0, 9);
       setFormData(prev => ({ ...prev, afm: digitsOnly }));
@@ -100,14 +100,14 @@ const SignUp = () => {
       return;
     }
 
-    // Validation: phone - ακριβώς 10 ψηφία
+    // Validation: phone - exactly 10 digits
     if (!/^\d{10}$/.test(formData.phone)) {
       setError('Phone number must be exactly 10 digits.');
       setLoading(false);
       return;
     }
 
-    // Validation: AFM - ακριβώς 9 ψηφία
+    // Validation: AFM - exactly 9 digits
     if (!/^\d{9}$/.test(formData.afm)) {
       setError('Tax Number (AFM) must be exactly 9 digits.');
       setLoading(false);
@@ -217,7 +217,7 @@ const SignUp = () => {
                 autoComplete="new-password"
               />
 
-              {/* Password requirements - live, κλείνει όταν είναι valid */}
+              {/* Password requirements - live, hides when valid */}
               {formData.password.length > 0 && !isPasswordValid && (
                 <ul className="pwd-requirements">
                   <Requirement ok={passwordChecks.length}>

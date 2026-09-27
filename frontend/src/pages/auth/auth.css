@@ -1,5 +1,5 @@
 /* src/pages/auth/auth.css */
-/* Shared styles για SignIn, SignUp */
+/* Shared styles for SignIn, SignUp */
 
 /* ============================================
    CONTAINERS
@@ -115,7 +115,7 @@
   gap: 0.6rem;
 }
 
-/* FORM ROW — μόνο στο SignUp */
+/* FORM ROW — only in SignUp */
 .auth-form-row {
   display: flex;
   gap: 0.8rem;
@@ -367,7 +367,7 @@
   color: #2ecc71;
 }
 
-/* Mismatch μήνυμα κάτω από το confirm password */
+/* Mismatch message below the confirm password */
 .pwd-mismatch {
   display: block;
   margin-top: 0.35rem;
