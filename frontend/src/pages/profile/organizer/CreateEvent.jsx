@@ -32,7 +32,7 @@ const EVENT_TYPES = [
 const getEventTypeLabel = (value) =>
   EVENT_TYPES.find(t => t.value === value)?.label || value || '—';
 
-// "2025-06-15" → Date object (ή null)
+// "2025-06-15" → Date object (or null)
 const dateStrToObj = (dateStr) => {
   if (!dateStr) return null;
   const d = new Date(dateStr + 'T00:00:00');
@@ -54,7 +54,7 @@ const joinDateTime = (date, hour, minute) => {
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
 const MINUTES = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
-// Επιτρέπει μόνο navigation keys — όχι πληκτρολόγηση
+// Allows only navigation keys — no typing
 const blockTyping = (e) => {
   const allowedKeys = [
     'Tab', 'Escape',

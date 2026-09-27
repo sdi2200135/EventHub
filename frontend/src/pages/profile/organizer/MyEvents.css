@@ -408,8 +408,8 @@
   opacity: 0.5;
 }
 
-/* Όταν το event είναι selected αλλά μετά γίνει non-deletable,
-   να μην φαίνεται επιλεγμένο */
+/* When an event is selected but then becomes non-deletable,
+   it should no longer appear selected */
 .event-item.not-deletable.selected {
   background: inherit;
   border-color: inherit;

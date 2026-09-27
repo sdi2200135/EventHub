@@ -18,7 +18,7 @@ const STEPS = [
   { id: 3, label: 'Photos & Description' },
 ];
 
-const MAX_DESCRIPTION = 4096;  // set max limit of charactes to 4096
+const MAX_DESCRIPTION = 4096;  // set max limit of characters to 4096
 const MAX_PHOTOS = 20;
 
 const EVENT_TYPES = [

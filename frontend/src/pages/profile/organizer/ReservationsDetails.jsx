@@ -57,7 +57,7 @@ const ReservationsDetails = () => {
     });
   };
 
-  // Ώρα σε 24h format
+  // Time in 24h format
   const formatTime = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
@@ -69,7 +69,7 @@ const ReservationsDetails = () => {
     return `${hh}:${min}`;
   };
 
-  // Robust name — διαβάζει από nested attendee object
+  // Robust name — reads from nested attendee object
   const getUserName = (booking) => {
     const a = booking?.attendee;
     if (!a) return 'Unknown user';
@@ -77,10 +77,10 @@ const ReservationsDetails = () => {
       const full = `${a.first_name || ''} ${a.last_name || ''}`.trim();
       return full || a.username || `User #${a.id}`;
     }
-    return `User #${a}`; // αν είναι σκέτο ID
+    return `User #${a}`; // if it's just an ID
   };
 
-  // Robust username — για το modal (πιο σύντομο)
+  // Robust username — for the modal (shorter)
   const getUsername = (booking) => {
     const a = booking?.attendee;
     if (!a) return '—';

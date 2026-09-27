@@ -1018,7 +1018,7 @@
 }
 
 /* ============================================
-   PREVIEW DETAILS GRID (3 στήλες)
+   PREVIEW DETAILS GRID (3 columns)
    ============================================ */
 .preview-details-grid {
   display: grid;
@@ -1099,7 +1099,7 @@
 }
 
 /* ============================================
-   PREVIEW INFO GRID (2 στήλες)
+   PREVIEW INFO GRID (2 columns)
    ============================================ */
 .preview-info-grid {
   display: grid;
@@ -1320,14 +1320,14 @@
   color: #e0e0e0;
 }
 
-/* Διατήρησε τα υπάρχοντα styles */
+/* Keep the existing styles */
 .category-input-wrapper {
   width: 100%;
   position: relative;
 }
 
 /* ============================================
-   DATETIME SPLIT — Flexbox (πιο αξιόπιστο)
+   DATETIME SPLIT — Flexbox (more reliable)
    ============================================ */
 .datetime-split {
   display: flex;
@@ -1338,7 +1338,7 @@
   box-sizing: border-box;
 }
 
-/* DatePicker wrapper — παίρνει τον υπόλοιπο χώρο */
+/* DatePicker wrapper — takes the remaining space */
 .datetime-split .react-datepicker-wrapper {
   flex: 1 1 auto;
   min-width: 0;
@@ -1373,7 +1373,7 @@
   color: #6c7a89;
 }
 
-/* Ώρα — σταθερό μικρό πλάτος */
+/* Time — fixed small width */
 .datetime-split .datetime-select {
   flex: 0 0 auto;
   width: 60px;
@@ -1400,7 +1400,7 @@
   color: #e0e0e0;
 }
 
-/* Άνω-κάτω τελεία */
+/* Colon separator */
 .datetime-split .datetime-colon {
   flex: 0 0 auto;
   color: #a0a0b8;

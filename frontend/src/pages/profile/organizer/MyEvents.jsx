@@ -7,7 +7,7 @@ import AddIcon from '@mui/icons-material/Add';
 import './MyEvents.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
-// order to of status in my events
+// sort order of statuses in my events
 const STATUS_ORDER = { PUBLISHED: 0, DRAFT: 1, COMPLETED: 2, CANCELLED: 3 };
 
 const MyEvents = ({ user }) => {
@@ -55,7 +55,7 @@ const MyEvents = ({ user }) => {
   const getFilteredEvents = () => {
     let filtered = [...events];
 
-    // Filter κατά status
+    // Filter by status
     if (activeFilter !== 'ALL') {
       filtered = filtered.filter(e => e.status === activeFilter);
     }
@@ -80,7 +80,7 @@ const MyEvents = ({ user }) => {
 
   const filteredEvents = getFilteredEvents();
 
-  // Counts ανά filter
+  // Counts per filter
   const counts = {
     ALL: events.length,
     PUBLISHED: events.filter(e => e.status === 'PUBLISHED').length,
@@ -89,11 +89,11 @@ const MyEvents = ({ user }) => {
     CANCELLED: events.filter(e => e.status === 'CANCELLED').length,
   };
 
-  // Η διαγραφή επιτρέπεται μόνο πριν τη δημοσίευση
-  // ή το αργότερο πριν την υποβολή της πρώτης κράτησης.
+  // Deletion is only allowed before publishing
+  // or at the latest before the first booking is submitted.
   const canDelete = (event) => (event.total_booked ?? 0) === 0;
 
-  // Events του τρέχοντος φίλτρου που μπορούν να διαγραφούν
+  // Events of the current filter that can be deleted
   const deletableEvents = filteredEvents.filter(canDelete);
 
   // ============================================
@@ -108,7 +108,7 @@ const MyEvents = ({ user }) => {
   };
 
   const handleSelectAll = () => {
-    // Επιλέγουμε ΜΟΝΟ τα events που επιτρέπεται να διαγραφούν
+    // We select ONLY the events that are allowed to be deleted
     if (selectedEvents.length === deletableEvents.length && deletableEvents.length > 0) {
       setSelectedEvents([]);
     } else {
@@ -122,7 +122,7 @@ const MyEvents = ({ user }) => {
   const handleDeleteSelected = async () => {
     if (selectedEvents.length === 0) return;
 
-    // Φιλτράρουμε ξανά για ασφάλεια (ο χρήστης μπορεί να άλλαξε filter ενδιάμεσα)
+    // We filter again for safety (the user may have changed filter in the meantime)
     const eventsToDelete = selectedEvents.filter(id => {
       const ev = events.find(e => e.id === id);
         return ev && canDelete(ev);
@@ -200,7 +200,7 @@ const MyEvents = ({ user }) => {
 
   return (
     <div className="my-events-layout">
-      {/* Στήλη 1: Filters */}
+      {/* Column 1: Filters */}
       <aside className="my-events-sidebar">
         {filters.map(f => (
           <button
@@ -217,7 +217,7 @@ const MyEvents = ({ user }) => {
         ))}
       </aside>
 
-      {/* Στήλη 2: Events List */}
+      {/* Column 2: Events List */}
       <div className="my-events-content">
         {/* Toolbar */}
         <div className="my-events-toolbar">
