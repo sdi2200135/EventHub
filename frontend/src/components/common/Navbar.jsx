@@ -11,7 +11,7 @@ const Navbar = () => {
   const location = useLocation();
 
   // ============================================
-  // 1. FETCH UNREAD COUNT (όταν αλλάζει σελίδα ή user)
+  // 1. FETCH UNREAD COUNT (when the page or user changes)
   // ============================================
   useEffect(() => {
     if (!isAuthenticated || !user?.id) {

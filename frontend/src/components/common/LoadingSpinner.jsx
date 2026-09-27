@@ -3,13 +3,13 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import './LoadingSpinner.css';
 
 /**
- * Ενιαίο loading spinner για όλη την εφαρμογή.
+ * Unified loading spinner for the entire application.
  *
- * Χρήση:
+ * Usage:
  *   <LoadingSpinner />                         // default "Loading..."
  *   <LoadingSpinner message="Loading events..." />
- *   <LoadingSpinner message="" />              // χωρίς κείμενο
- *   <LoadingSpinner fullHeight />              // για full-page loading
+ *   <LoadingSpinner message="" />              // without text
+ *   <LoadingSpinner fullHeight />              // for full-page loading
  */
 const LoadingSpinner = ({ message = 'Loading...', fullHeight = false }) => {
   return (

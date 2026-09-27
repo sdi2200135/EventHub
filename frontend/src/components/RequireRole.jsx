@@ -4,14 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
 
 /**
- * Προστατεύει routes βάσει ρόλου χρήστη.
+ * Protects routes based on user role.
  *
- * Μοντέλο 2 ρόλων:
- *   - USER  → μπορεί να δημιουργεί events ΚΑΙ να κάνει κρατήσεις.
- *             Δεν υπάρχει διάκριση organizer/participant.
- *   - ADMIN → ό,τι ο USER + admin tools (User Management, Export, κλπ.)
+ * role model:
+ *   - USER  → can create events AND make bookings.
+ *             There is no distinction between organizer/participant.
+ *   - ADMIN → everything a USER can do + admin tools (User Management, Export, etc.)
  *
- * Χρήση:
+ * Usage:
  *   <RequireRole roles={['USER']}>
  *     <CreateEvent />
  *   </RequireRole>
@@ -20,15 +20,15 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
  *     <AdminDashboard />
  *   </RequireRole>
  *
- * Κανόνες:
- *   - Αν δεν είναι συνδεδεμένος → redirect στο /signin με ?redirect=...
- *   - Αν ο ρόλος του δεν είναι στη λίστα → redirect στο /
- *   - Ο admin έχει πρόσβαση παντού (περνάει από κάθε roles check)
+ * Rules:
+ *   - If not signed in → redirect to /signin with ?redirect=...
+ *   - If the user's role is not in the list → redirect to /
+ *   - Admin has access everywhere (passes any roles check)
  */
 const RequireRole = ({ roles = [], children }) => {
   const { user, isAuthenticated, loading } = useAuth();
 
-  // Όσο φορτώνει το auth state, δείξε spinner για να μην κάνουμε λάθος redirect
+  // While the auth state is loading, show a spinner to avoid a wrong redirect
   if (loading) {
     return (
       <div className="require-role-loading">
@@ -38,23 +38,23 @@ const RequireRole = ({ roles = [], children }) => {
     );
   }
 
-  // Αν δεν είναι συνδεδεμένος → signin με redirect πίσω στο path
+  // If not signed in → signin with redirect back to the path
   if (!isAuthenticated) {
     return <Navigate to={`/signin`} replace />;
   }
 
   // ============================================
-  // Προσδιορισμός ρόλου χρήστη (2 ρόλοι μόνο)
+  // Determine the user's role (2 roles only)
   // ============================================
 
   const isAdmin = Boolean(user?.is_staff);
 
   const userRole = isAdmin ? 'ADMIN' : 'USER';
 
-  // Admin έχει πρόσβαση παντού
+  // Admin has access everywhere
   if (isAdmin) return children;
 
-  // Έλεγχος: ο ρόλος του χρήστη πρέπει να είναι στη λίστα
+  // Check: the user's role must be in the list
   if (roles.length > 0 && !roles.includes(userRole)) {
     return <Navigate to="/homepage" replace />;
   }

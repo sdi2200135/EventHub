@@ -10,7 +10,7 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
 
-  // Reset όταν κλείνει το modal
+  // Reset when the modal closes
   useEffect(() => {
     if (!isOpen) {
       setSelectedTicket(null);
@@ -18,7 +18,7 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Auto-select πρώτου διαθέσιμου ticket type
+  // Auto-select the first available ticket type
   useEffect(() => {
     if (isOpen && event?.ticket_types) {
       const available = event.ticket_types.filter(t => t.available > 0);
@@ -139,7 +139,7 @@ const BookTicket = ({ event, ticket, isOpen, onClose }) => {
                   className={`bk-ticket-type-btn ${selectedTicket === t.id ? 'active' : ''}`}
                   onClick={() => {
                     setSelectedTicket(t.id);
-                    // Clamp quantity αν αλλάξει σε ticket type με λιγότερα διαθέσιμα
+                    // Clamp quantity if switching to a ticket type with fewer available
                     setQuantity(prev => Math.min(prev, t.available) || 1);
                   }}
                   style={{

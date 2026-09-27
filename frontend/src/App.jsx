@@ -22,6 +22,7 @@ import CreateEvent from './pages/profile/organizer/CreateEvent';
 import EventDetailsOrganizer from './pages/profile/organizer/EventDetailsOrganizer';
 import EditEvent from './pages/profile/organizer/EditEvent';
 import ReservationsDetails from './pages/profile/organizer/ReservationsDetails';
+
 // keeps the browser tab title in sync with the route
 const PageTitle = () => {
   const location = useLocation();
@@ -51,7 +52,6 @@ const PageTitle = () => {
     else if (path === '/') title = 'Welcome';
     else if (path === '/recommendations') title = 'For You';
 
-
     document.title = title === 'EventHub' ? 'EventHub' : `${title} · EventHub`;
   }, [location]);
 
@@ -64,14 +64,10 @@ function App() {
       <Router>
         <PageTitle />
         <Routes>
-          {/* ============================================
-              WELCOME (χωρίς Navbar/Footer - fullscreen)
-              ============================================ */}
+          {/* WELCOME (χωρίς Navbar/Footer - fullscreen) */}
           <Route path="/" element={<WelcomePage />} />
 
-          {/* ============================================
-              ΟΛΕΣ ΟΙ ΑΛΛΕΣ ROUTES (με Navbar/Footer)
-              ============================================ */}
+          {/* ALL OTHER ROUTES (with Navbar/Footer) */}
           <Route
             path="*"
             element={

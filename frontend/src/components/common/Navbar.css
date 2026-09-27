@@ -25,12 +25,12 @@
   padding: 0 1.5rem;
 }
 
-/* LOGO - Τετράγωνο πλαίσιο - ΤΕΡΜΑ ΑΡΙΣΤΕΡΑ */
+/* LOGO - Square box - FAR LEFT */
 .navbar .logo-wrapper {
-  position: absolute;      /* βγαίνει από τη ροή του container */
-  left: 0;                 /* τέρμα αριστερά */
+  position: absolute;      /* takes it out of the container flow */
+  left: 0;                 /* far left */
   top: 0;
-  height: 100%;            /* ίδιο ύψος με το navbar (64px) */
+  height: 100%;            /* same height as the navbar (64px) */
   padding: 0 1.2rem;
   display: flex;
   align-items: center;
@@ -55,7 +55,7 @@
   color: #FFFFFF;
 }
 
-/* Λογότυπο εικόνα */
+/* Logo image */
 .logo-img {
   height: 42px;
   width: auto;
@@ -63,7 +63,7 @@
   object-fit: contain;
 }
 
-/* Nav Right - ΤΕΡΜΑ ΔΕΞΙΑ */
+/* Nav Right - FAR RIGHT */
 .navbar .nav-right {
   position: absolute;
   right: 0;
@@ -157,7 +157,7 @@
 }
 
 /* ============================================
-   PROFILE BUTTON - ΜΕ AVATAR ΣΕ ΜΠΛΕ ΠΛΑΙΣΙΟ
+   PROFILE BUTTON - WITH AVATAR IN BLUE FRAME
    ============================================ */
 .profile-btn {
   display: flex;
@@ -210,7 +210,7 @@
 }
 
 /* ============================================
-   LOGOUT BUTTON - ΚΟΚΚΙΝΟ ΠΛΑΙΣΙΟ
+   LOGOUT BUTTON - RED FRAME
    ============================================ */
 .btn-logout {
   background: transparent;
@@ -354,7 +354,7 @@
 }
 
 /* ============================================
-   UNREAD BADGE - Πάνω στο Profile avatar
+   UNREAD BADGE - On top of the Profile avatar
    ============================================ */
 .profile-avatar-wrapper {
   position: relative;
@@ -380,13 +380,13 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  border: 2px solid #203855; /* ίδιο χρώμα με profile-btn background */
+  border: 2px solid #203855; 
   box-shadow: 0 2px 6px rgba(231, 76, 60, 0.5);
   animation: badgePulse 0.4s ease;
   pointer-events: none;
 }
 
-/* Animation όταν εμφανίζεται/αλλάζει */
+/* Animation when it appears/changes */
 @keyframes badgePulse {
   0% {
     transform: scale(0);
@@ -402,14 +402,14 @@
   }
 }
 
-/* Όταν το profile-btn είναι active/hover, το border του badge να ταιριάζει */
+/* When the profile-btn is active/hover, the badge border matches */
 .profile-btn.active .nav-badge,
 .profile-btn:hover .nav-badge {
   border-color: #2a4a6f;
 }
 
 /* ============================================
-   RESPONSIVE - Badge σε μικρές οθόνες
+   RESPONSIVE - Badge on small screens
    ============================================ */
 @media (max-width: 768px) {
   .nav-badge {
