@@ -33,8 +33,8 @@ Installation and Deployment steps - run from project root:
    The certificate is self-signed, so the browser warns once per origin. Accept it on both otherwise the browser silently blocks the app's requests to the API.
 
 5. ACCOUNTS
-   administrator : <admin> / <123456>      is set by the .env
-   organizer/attendee     : <tsaki> / <!@#$%^&*>      creates and manages events
+   administrator: <admin> / <123456>      is set by the .env
+   organizer/attendee: <tsaki> / <!@#$%^&*>      creates and manages events
    Any new sign-up starts as PENDING and has to be approved by the administrator
    before it can log in.
 
