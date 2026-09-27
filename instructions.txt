@@ -14,6 +14,7 @@ Installation and Deployment steps - run from project root:
 2. SETTINGS
    cp backend/.env.example backend/.env
    cp frontend/.env.example frontend/.env
+    
    Nothing needs editing. The application connects to our PostgreSQL database which is Neon.
    The connection to Neon is over TLS cause Neon refuses plaintext
 
@@ -28,10 +29,8 @@ Installation and Deployment steps - run from project root:
      cd frontend && npm run dev
 4. OPEN
    https://localhost:5173        the application
-
-   The certificate is self-signed, so the browser warns once per origin. Accept it at
-   https://localhost:8000/api/ as well as at the app, otherwise the browser silently
-   blocks the app's requests to the API.
+   https://localhost:8000/api/   api root
+   The certificate is self-signed, so the browser warns once per origin. Accept it on both otherwise the browser silently blocks the app's requests to the API.
 
 5. ACCOUNTS
    administrator : <admin> / <123456>      is set by the .env
@@ -41,6 +40,6 @@ Installation and Deployment steps - run from project root:
 
 RECOMMENDER — offline evaluation (optional)
   cd backend && source venv/bin/activate
-   python manage.py evaluate_recommender          5-fold cross-validation on the e-class dataset
+   python manage.py evaluate_recommend er          5-fold cross-validation on the e-class dataset
    python manage.py evaluate_recommender --tune   the K / lambda / eta grid
    Reads rel_event_csvs/event_interest.csv; pass --csv <path> if it is elsewhere.
