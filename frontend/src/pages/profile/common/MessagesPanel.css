@@ -1,7 +1,7 @@
 /* src/pages/profile/common/MessagesPanel.css */
 
 /* ============================================
-   MESSAGES LAYOUT - 3 ΣΤΗΛΕΣ (Chat-style)
+   MESSAGES LAYOUT - 3 COLUMNS (Chat-style)
    ============================================ */
 .msg-layout {
   display: grid;
@@ -11,7 +11,7 @@
   transition: grid-template-columns 0.3s ease;
 }
 
-/* Όταν υπάρχει ανοιχτό μήνυμα → 3 στήλες */
+/* When there is an open message → 3 columns */
 .msg-layout.with-opened {
   grid-template-columns: 140px 1fr 1fr;
 }
@@ -208,7 +208,7 @@
   box-shadow: 0 0 0 1px #4a90d9;
 }
 
-/* Avatar στη λίστα */
+/* Avatar in the list */
 .msg-row-avatar {
   width: 36px;
   height: 36px;
@@ -293,7 +293,7 @@
 }
 
 /* ============================================
-   MESSAGE DETAIL PANEL (3η στήλη - Chat style)
+   MESSAGE DETAIL PANEL (3rd column - Chat style)
    ============================================ */
 .msg-detail-panel {
   background: #1a1a1a;
@@ -319,7 +319,7 @@
   }
 }
 
-/* Header του detail panel */
+/* Detail panel header */
 .msg-detail-header {
   display: flex;
   align-items: center;
@@ -517,56 +517,6 @@
 }
 
 /* ============================================
-   MESSAGE ACTION BUTTONS (Junk / Restore)
-   ============================================ */
-/* .msg-btn-action {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.msg-btn-action svg {
-  font-size: 20px !important;
-} */
-
-/* Junk - κίτρινο */
-/* .msg-btn-action.junk {
-  color: #a0a0b8;
-}
-
-.msg-btn-action.junk:hover {
-  background: rgba(243, 156, 18, 0.15);
-  color: #f39c12;
-} */
-
-/* Unjunk - πράσινο */
-/* .msg-btn-action.unjunk {
-  color: #a0a0b8;
-}
-
-.msg-btn-action.unjunk:hover {
-  background: rgba(46, 204, 113, 0.15);
-  color: #2ecc71;
-} */
-
-/* Restore - μπλε */
-/* .msg-btn-action.restore {
-  color: #a0a0b8;
-}
-
-.msg-btn-action.restore:hover {
-  background: rgba(74, 144, 217, 0.15);
-  color: #4a90d9;
-} */
-
-/* ============================================
    RESPONSIVE
    ============================================ */
 @media (max-width: 1100px) {
@@ -576,7 +526,7 @@
 }
 
 @media (max-width: 900px) {
-  /* Σε tablet: folders οριζόντια, detail panel κάτω */
+  /* On tablet: folders horizontal, detail panel below */
   .msg-layout,
   .msg-layout.with-opened {
     grid-template-columns: 1fr;
@@ -644,8 +594,4 @@
   .msg-bubble {
     max-width: 95%;
   }
-
-  /* .msg-btn-action svg {
-    font-size: 18px !important;
-  } */
 }

@@ -158,7 +158,7 @@
   line-height: 1.6;
 }
 
-/* Body row - textarea κάτω από label */
+/* Body row - textarea below the label */
 .new-message-body-row {
   flex-direction: column;
   align-items: stretch;
