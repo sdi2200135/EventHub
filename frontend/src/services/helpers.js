@@ -3,11 +3,11 @@ import { api } from './client';
 
 
 // =====================================
-//       HELPER FNUCTIONS
+//       HELPER FUNCTIONS
 // =====================================
 
-// The API paginates is paginated so in order to get all events, or categories, events users floow then next
-// it is linked and returns the whole collection (like a linked list)
+// The API is paginated, so in order to get all events, or categories, or events users follow,
+// the `next` link is followed and the whole collection is returned (like a linked list)
 export const fetchAll = async (path, params = {}) => {
   const rows = [];
   let response = await api.get(path, { params });
@@ -35,7 +35,7 @@ export const resolveCategoryIds = async (names = []) => {
   return ids;
 };
 
-// the from keeps photo as blob(url). read it back into a file and upload it, one request per photo in the correct order
+// the form keeps the photo as a blob(url). read it back into a file and upload it, one request per photo in the correct order
 export const uploadEventPhotos = async (eventId, photos = [], firstOrder = 0) => {
   for (const [index, photo] of photos.entries()) {
     const file = photo.file || await fetch(photo.image || photo.url).then((r) => r.blob());
@@ -51,14 +51,14 @@ export const uploadEventPhotos = async (eventId, photos = [], firstOrder = 0) =>
 export const syncTicketTypes = async (eventId, saved = [], wanted = []) => {
   const keep = new Set(wanted.filter((t) => t.pk).map((t) => t.pk));
 
-  // to remove ticket types
+  // ticket types to remove
   for (const t of saved) {
     if (!keep.has(t.id)) 
         await api.delete(`/ticket-types/${t.id}/`);
   }
 
-  // to update the ticket types which are changed
-  // when there is a decrease in the number of tickets, firstly decrease them so each patch can stay within capacity
+  // update the ticket types which are changed
+  // when there is a decrease in the number of tickets, decrease them first so each patch can stay within capacity
   const changed = wanted
     .filter((t) => t.pk)
     .map((t) => ({ form: t, old: saved.find((s) => s.id === t.pk) }))
@@ -77,7 +77,7 @@ export const syncTicketTypes = async (eventId, saved = [], wanted = []) => {
     });
   }
 
-  // to create new ticket types in bulk in on request
+  // create the new ticket types in bulk in one request
   const added = wanted.filter((t) => !t.pk);
   if (added.length) {
     await api.post('/ticket-types/bulk/', {
@@ -91,13 +91,13 @@ export const syncTicketTypes = async (eventId, saved = [], wanted = []) => {
 export const syncEventPhotos = async ( eventId, saved=[], wanted = []) => {
   const keep = new Set(wanted.filter((t) => t.pk).map((t) => t.pk));
 
-  // to remove old photos
+  // remove old photos
   for (const p of saved) {
     if (!keep.has(p.id)) 
         await api.delete(`/events/${eventId}/photos/${p.id}/`);
   }
 
-  // add the new photo
+  // add the new photos
   const kept = saved.filter((p) => keep.has(p.id));
   const nextOrder = Math.max(-1, ...kept.map((p) => p.order)) + 1;
   await uploadEventPhotos(eventId, wanted.filter((p) => !p.pk), nextOrder);
