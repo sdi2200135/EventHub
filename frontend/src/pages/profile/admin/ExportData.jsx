@@ -6,7 +6,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import './AdminEvents.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
-// Helper: κατεβάζει string ως αρχείο
+// Helper: downloads a string as a file
 const downloadFile = (data, filename, mime) => {
   const blob = new Blob([data], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -19,7 +19,7 @@ const downloadFile = (data, filename, mime) => {
   URL.revokeObjectURL(url);
 };
 
-// Φιλτράρει το XML του backend ανά status (client-side)
+// Filters the backend XML by status (client-side)
 const filterXmlByStatus = (xmlString, status) => {
   if (status === 'ALL') return xmlString;
 
@@ -48,7 +48,7 @@ const filterXmlByStatus = (xmlString, status) => {
   return header + newBody;
 };
 
-// Φιλτράρει το JSON του backend ανά status (client-side)
+// Filters the backend JSON by status (client-side)
 const filterJsonByStatus = (jsonString, status) => {
   if (status === 'ALL') return jsonString;
   const parsed = JSON.parse(jsonString);
@@ -56,7 +56,7 @@ const filterJsonByStatus = (jsonString, status) => {
   return JSON.stringify({ Events: filtered }, null, 2);
 };
 
-// Robust categories: strings ή objects {id, name, slug}
+// Robust categories: strings or objects {id, name, slug}
 const getCategoriesText = (ev) => {
   if (!ev?.categories || ev.categories.length === 0) return '—';
   const result = ev.categories
@@ -121,7 +121,7 @@ const ExportData = () => {
   }, [events, activeFilter]);
 
   // ============================================
-  // SORTING (πάντα by day — χωρίς UI)
+  // SORTING (always by day — no UI)
   // ============================================
   const sortedEvents = useMemo(() => {
     return [...filteredEvents].sort(
@@ -218,7 +218,7 @@ const ExportData = () => {
 
   return (
     <div className="ae-layout ae-layout--3col">
-      {/* Στήλη 1: Filters */}
+      {/* Column 1: Filters */}
       <aside className="ae-sidebar">
         {filters.map(f => (
           <button
@@ -232,7 +232,7 @@ const ExportData = () => {
         ))}
       </aside>
 
-      {/* Στήλη 2: Events List (χωρίς search / sort) */}
+      {/* Column 2: Events List (without search / sort) */}
       <div className="ae-content">
         {sortedEvents.length === 0 ? (
           <div className="ae-empty">
@@ -264,7 +264,7 @@ const ExportData = () => {
         )}
       </div>
 
-      {/* Στήλη 3: Export Panel */}
+      {/* Column 3: Export Panel */}
       <aside className="ae-export-panel">
         <h4 className="ae-export-title">Export</h4>
         <p className="ae-export-subtitle">

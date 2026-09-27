@@ -8,7 +8,7 @@
 }
 
 /* ============================================
-   SIDEBAR - FILTERS (κοινόχρηστα .filter-btn από MyEvents.css)
+   SIDEBAR - FILTERS (shared .filter-btn from MyEvents.css)
    ============================================ */
 .um-sidebar {
   display: flex;

@@ -8,7 +8,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import './AdminEvents.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
-// Robust categories: strings ή objects {id, name, slug}
+// Robust categories: strings or objects {id, name, slug}
 const getCategoriesText = (ev) => {
   if (!ev?.categories || ev.categories.length === 0) return '—';
   const result = ev.categories
@@ -36,7 +36,7 @@ const AdminEvents = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Bookings του ανοιχτού event (το list endpoint δεν τα φέρνει)
+  // Bookings of the open event (the list endpoint doesn't return them)
   const [selectedEventBookings, setSelectedEventBookings] = useState([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
 
@@ -60,7 +60,7 @@ const AdminEvents = () => {
     fetchEvents();
   }, []);
 
-  // Fetch bookings όταν ανοίγει το modal
+  // Fetch bookings when the modal opens
   useEffect(() => {
     if (!selectedEvent) return;
 
@@ -235,7 +235,7 @@ const AdminEvents = () => {
     });
   };
 
-  // Count active bookings από το state των fetched bookings
+  // Count active bookings from the fetched bookings state
   const activeBookingsCount = selectedEventBookings.filter(
     b => b.status !== 'CANCELLED'
   ).length;
@@ -261,7 +261,7 @@ const AdminEvents = () => {
 
   return (
     <div className="ae-layout ae-layout--2col">
-      {/* Στήλη 1: Filters */}
+      {/* Column 1: Filters */}
       <aside className="ae-sidebar">
         {filters.map(f => (
           <button
@@ -275,7 +275,7 @@ const AdminEvents = () => {
         ))}
       </aside>
 
-      {/* Στήλη 2: Events List */}
+      {/* Column 2: Events List */}
       <div className="ae-content">
         <div className="ae-toolbar">
           <div className="search-wrapper">

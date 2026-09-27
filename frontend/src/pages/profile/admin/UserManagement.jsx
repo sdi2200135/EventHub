@@ -9,7 +9,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import './UserManagement.css';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 
-// Helper: κατεβάζει string ως αρχείο
+// Helper: downloads a string as a file
 const downloadFile = (data, filename, mime) => {
   const blob = new Blob([data], { type: mime });
   const url = URL.createObjectURL(blob);
@@ -131,7 +131,7 @@ const UserManagement = () => {
   };
 
   // ============================================
-  // EXPORT — events που δημιούργησε ο user
+  // EXPORT — events created by the user
   // ============================================
   const handleExportUserEvents = async (format) => {
     if (!selectedUser) return;
@@ -175,7 +175,7 @@ const UserManagement = () => {
   };
 
   // ============================================
-  // ΝΕΑ ΠΕΔΙΑ — ίδια λογική με UserDashboard
+  // NEW FIELDS — same logic as UserDashboard
   // ============================================
   const userLatitude =
     selectedUser?.latitude ??

@@ -76,7 +76,7 @@ const AdminDashboard = ({ user }) => {
 // ============================================
 const PersonalInfoTab = ({ user, navigate }) => {
   // ============================================
-  // ΝΕΑ ΠΕΔΙΑ — ίδια λογική με UserDashboard
+  // NEW FIELDS — same logic as UserDashboard
   // ============================================
   const userLatitude =
     user?.latitude ??
@@ -156,7 +156,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
         </div>
 
         <div className="profile-info-grid">
-          {/* Στήλη 1 */}
+          {/* Column 1 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Username:</span>
@@ -184,7 +184,7 @@ const PersonalInfoTab = ({ user, navigate }) => {
             </div>
           </div>
 
-          {/* Στήλη 2 */}
+          {/* Column 2 */}
           <div className="dashboard-info-column">
             <div className="dashboard-info-row">
               <span className="dashboard-info-label">Phone Number:</span>

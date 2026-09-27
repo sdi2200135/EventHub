@@ -1,19 +1,19 @@
 /* src/pages/profile/admin/AdminEvents.css */
 
 /* ============================================
-   LAYOUT — βασικό
+   LAYOUT — basic
    ============================================ */
 .ae-layout {
   display: grid;
   gap: 24px;
 }
 
-/* 2 στήλες — AdminEvents */
+/* 2 columns — AdminEvents */
 .ae-layout--2col {
   grid-template-columns: 200px 1fr;
 }
 
-/* 3 στήλες — ExportData */
+/* 3 columns — ExportData */
 .ae-layout--3col {
   grid-template-columns: 200px 1fr 200px;
 }
@@ -81,7 +81,7 @@
   color: #6c7a89;
 }
 
-/* Sort wrapper στο toolbar */
+/* Sort wrapper in the toolbar */
 .ae-sort-wrapper {
   display: flex;
   align-items: center;
@@ -689,13 +689,13 @@
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
-  /* Και τα δύο πάνε σε 2 στήλες */
+  /* Both go to 2 columns */
   .ae-layout--2col,
   .ae-layout--3col {
     grid-template-columns: 180px 1fr;
   }
 
-  /* Στο 3col, το export panel πηγαίνει κάτω από όλα */
+  /* In 3col, the export panel goes below everything */
   .ae-layout--3col .ae-export-panel {
     grid-column: 1 / -1;
     position: static;
